@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Drawing;
 using System.IO;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -128,36 +130,50 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
     }
 
-    public static string ShowDialog(string text1, string text2, string caption)
+    public static string ShowDialog(string text, string error, string caption)
     {
         System.Windows.Forms.Form prompt = new System.Windows.Forms.Form()
         {
-            Width = 500,
-            Height = 250,
+            Width = 700,
+            Height = 280,
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog,
             Text = caption,
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         };
-        System.Windows.Forms.Label emailLabel = new System.Windows.Forms.Label() { Left = 50, Top = 20, Text = text1 };
-        System.Windows.Forms.TextBox emailTextBox = new System.Windows.Forms.TextBox() { Left = 50, Top = 20 + 25, Width = 400 };
 
-        System.Windows.Forms.Label passwordLabel = new System.Windows.Forms.Label() { Left = 50, Top = 20 + 60, Text = text2 };
-        System.Windows.Forms.TextBox passswordTextBox = new System.Windows.Forms.TextBox() { Left = 50, Top = 20 + 60 + 25, Width = 400 };
+        Font LargeFont = new Font("Arial", 14);
+
+        System.Windows.Forms.Label email_passLabel = new System.Windows.Forms.Label() { Left = 50, Top = 15, Width = 600, Text  = text };
+        email_passLabel.Font = LargeFont;
+        System.Windows.Forms.Label email_passLabelError = new System.Windows.Forms.Label() { Left = 50, Top = 15 + email_passLabel.Height + 5, Width = 600, Text = error };
+        email_passLabelError.Font = new Font(new Font("Arial", 12), System.Drawing.FontStyle.Italic);
+        
+     
+        email_passLabelError.AutoSize = false;
+        email_passLabelError.Size = new System.Drawing.Size(600, email_passLabelError.Height * 2);
+        email_passLabelError.ForeColor = Color.Red;
+        
+
+        System.Windows.Forms.TextBox email_passTextBox = new System.Windows.Forms.TextBox() { Left = 50, Top = 100, Width = 600 , Height = 80 };
+        email_passTextBox.Multiline = true;
+        email_passTextBox.Font = LargeFont;
+
 
         System.Windows.Forms.Button confirmation = new System.Windows.Forms.Button()
         {
-            Text = "Ok",
-            Left = 350,
-            Width = 100,
-            Top = 70 + 60,
+            Text = "OK",
+            Left = 275,
+            Width = 150,
+            Height = 40,
+            Top = 190,
             DialogResult = System.Windows.Forms.DialogResult.OK
         };
+        confirmation.Font = LargeFont;
         confirmation.Click += (sender, e) => { prompt.Close(); };
-        prompt.Controls.Add(emailLabel);
-        prompt.Controls.Add(emailTextBox);
+        prompt.Controls.Add(email_passLabel);
+        prompt.Controls.Add(email_passLabelError);
+        prompt.Controls.Add(email_passTextBox);
 
-        prompt.Controls.Add(passwordLabel);
-        prompt.Controls.Add(passswordTextBox);
 
         prompt.Controls.Add(confirmation);
         prompt.AcceptButton = confirmation;
@@ -168,12 +184,33 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         //emailTextBox.Text = email;
         //passswordTextBox.Text = pass;
 
-        return prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK ? emailTextBox.Text + "]-[" + passswordTextBox.Text : "";
+
+        string email_passText = "";
+        if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+        {
+            if (email_passTextBox.Lines.Length > 2)
+            {
+                email_passTextBox.Text = email_passTextBox.Lines[0] + Environment.NewLine + email_passTextBox.Lines[1];
+                email_passText = email_passTextBox.Lines[0] + " " + email_passTextBox.Lines[1];
+            }
+            else if (email_passTextBox.Lines.Length == 1)
+            {
+                email_passText = email_passTextBox.Lines[0];
+            }
+
+            email_passText = Regex.Replace(email_passText, @"\s+", " ");
+        }
+        else
+        {
+            email_passText = "close";
+        }
+        return email_passText;
     }
     public async void Upload()
     {
         if (!CanShowFile)
             return;
+
         try
         {
             string? path = Path.GetDirectoryName(FilePath!);
@@ -187,10 +224,30 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                     break;
                 }
             }
-            string email_pass = ShowDialog("Email", "Mật khẩu", "Vui lòng nhập vào Email và mật khẩu của Kênh GJW");
-            string[] parts = email_pass.Trim().Split("]-[");
-            string email = parts[0];
-            string pass = parts[1];
+        
+            string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW");
+        re_enter:
+            if (email_pass == "close")
+            {
+                return;
+            }
+           
+
+            string[] parts = email_pass.Trim().Split(" ");
+            string email = "";
+            string pass = "";
+            if (parts.Length == 2)
+            {
+                email = parts[0];
+                pass = parts[1];
+            }
+            else
+            {
+                email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.", 
+                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW");
+                goto re_enter;
+            }
+
             string category = "Entertainment";
             
             if (email != "" && pass != "")
