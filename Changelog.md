@@ -1,3 +1,8 @@
+### v1.9.63 (20-Jan-2023)
+
+- Fixed cannot auto upload to GJW
+- Now can paste email & password of GJW with 1 time
+
 ### v1.9.62 (10-Jan-2023)
 
 - Fixed cannot auto upload to GJW

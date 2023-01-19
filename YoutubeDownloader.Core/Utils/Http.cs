@@ -57,18 +57,18 @@ public static class Http
             IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[name='password'][type='password']"));
             elementTxtBoxPass.SendKeys(pass);
 
-            IWebElement elementCheckBoxRemember = driver.FindElement(By.Id("comments"));
-            elementCheckBoxRemember.Click();
+            //IWebElement elementCheckBoxRemember = driver.FindElement(By.Id("comments"));
+           // elementCheckBoxRemember.Click();
 
             elementTxtBoxPass.Submit();
 
             //IWebElement elementBtnSubmit = driver.FindElement(By.ClassName("btn-basic btn-contained w-full mt-5 dark:bg-gjw-gray-600 dark:text-white"));
             //elementBtnSubmit.Click();
 
-            wait.Until(driver=>driver.FindElement(By.Id("headlessui-menu-button-2")));
-            IWebElement elementMenuBtn = driver.FindElement(By.Id("headlessui-menu-button-2"));
+
             //Console.WriteLine(pages);
-            if (elementMenuBtn != null)
+            Thread.Sleep(5000);
+            if (true)
             {
                 driver.Navigate().GoToUrl("https://studio.ganjing.com/");
 

@@ -188,7 +188,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         string email_passText = "";
         if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
-            if (email_passTextBox.Lines.Length > 2)
+            if (email_passTextBox.Lines.Length >= 2)
             {
                 email_passTextBox.Text = email_passTextBox.Lines[0] + Environment.NewLine + email_passTextBox.Lines[1];
                 email_passText = email_passTextBox.Lines[0] + " " + email_passTextBox.Lines[1];
