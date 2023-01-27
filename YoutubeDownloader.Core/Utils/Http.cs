@@ -44,7 +44,7 @@ public static class Http
 
             driver.Navigate().GoToUrl("https://www.ganjing.com/signin");
             
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(100));
             
             string emailCSSSelector = "input[name='email'][type='email']";
 

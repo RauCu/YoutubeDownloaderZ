@@ -48,6 +48,8 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
     public BindableCollection<DownloadViewModel> Downloads { get; } = new();
 
+    public bool IsDownloadsAvailable => Downloads.Any();
+
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public DashboardViewModel(
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
@@ -63,6 +65,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
         _settingsService.BindAndInvoke(o => o.ParallelLimit, (_, e) => _downloadSemaphore.MaxCount = e.NewValue);
         Progress.Bind(o => o.Current, (_, _) => NotifyOfPropertyChange(() => IsProgressIndeterminate));
+        Downloads.Bind(o => o.Count, (_, _) => NotifyOfPropertyChange(() => IsDownloadsAvailable));
     }
 
     public bool CanShowSettings => !IsBusy;

@@ -7,7 +7,10 @@ using YoutubeExplode.Videos.Streams;
 
 namespace YoutubeDownloader.Core.Downloading;
 
-public partial record VideoDownloadOption(Container Container, IReadOnlyList<IStreamInfo> StreamInfos)
+public partial record VideoDownloadOption(
+    Container Container,
+    bool IsAudioOnly,
+    IReadOnlyList<IStreamInfo> StreamInfos)
 {
     public VideoQuality? VideoQuality => Memo.Cache(this, () =>
         StreamInfos
@@ -35,6 +38,7 @@ public partial record VideoDownloadOption
                 {
                     yield return new VideoDownloadOption(
                         videoStreamInfo.Container,
+                        false,
                         new[] { videoStreamInfo }
                     );
                 }
@@ -54,6 +58,7 @@ public partial record VideoDownloadOption
                     {
                         yield return new VideoDownloadOption(
                             videoStreamInfo.Container,
+                            false,
                             new IStreamInfo[] { videoStreamInfo, audioStreamInfo }
                         );
                     }
@@ -75,8 +80,23 @@ public partial record VideoDownloadOption
 
                 if (audioStreamInfo is not null)
                 {
-                    yield return new VideoDownloadOption(new Container("mp3"), new[] { audioStreamInfo });
-                    yield return new VideoDownloadOption(new Container("ogg"), new[] { audioStreamInfo });
+                    yield return new VideoDownloadOption(
+                        Container.WebM,
+                        true,
+                        new[] { audioStreamInfo }
+                    );
+
+                    yield return new VideoDownloadOption(
+                        Container.Mp3,
+                        true,
+                        new[] { audioStreamInfo }
+                    );
+
+                    yield return new VideoDownloadOption(
+                        new Container("ogg"),
+                        true,
+                        new[] { audioStreamInfo }
+                    );
                 }
             }
 
@@ -91,7 +111,11 @@ public partial record VideoDownloadOption
 
                 if (audioStreamInfo is not null)
                 {
-                    yield return new VideoDownloadOption(new Container("m4a"), new[] { audioStreamInfo });
+                    yield return new VideoDownloadOption(
+                        Container.Mp4,
+                        true,
+                        new[] { audioStreamInfo }
+                    );
                 }
             }
         }

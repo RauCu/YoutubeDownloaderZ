@@ -161,8 +161,8 @@
             <!--  Placeholder  -->
             <StackPanel
                 Margin="8,32,8,8"
-                
-                Visibility="{Binding Downloads.Count, Converter={x:Static s:BoolToVisibilityConverter.InverseInstance}}">
+                HorizontalAlignment="Center"
+                Visibility="{Binding IsDownloadsAvailable, Converter={x:Static converters:BoolToVisibilityConverter.CollapsedOrVisible}}">
                 <materialDesign:PackIcon
                     Width="258"
                     Height="258"
@@ -199,7 +199,7 @@
                 ItemsSource="{Binding Downloads}"
                 ScrollViewer.CanContentScroll="False"
                 VerticalScrollBarVisibility="Auto"
-                Visibility="{Binding Downloads.Count, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                Visibility="{Binding IsDownloadsAvailable, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrHidden}}">
                 <DataGrid.Resources>
                 <Style TargetType="ScrollBar">
                     <Style.Triggers>
@@ -468,8 +468,8 @@
                                         s:View.ActionTarget="{Binding}"
                                         Command="{s:Action WathOnYoutube}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
-                                        ToolTip="Xem trên Youtube"
-                                        Visibility="Visible">
+                                        ToolTip="Play"
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -484,8 +484,8 @@
                                         s:View.ActionTarget="{Binding}"
                                         Command="{s:Action Cancel}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
-                                        ToolTip="Hủy tải"
-                                        Visibility="{Binding CanCancel, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        ToolTip="Cancel download"
+                                        Visibility="{Binding CanCancel, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -499,8 +499,8 @@
                                         Command="{s:Action RestartDownload}"
                                         CommandParameter="{Binding}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
-                                        ToolTip="Tải lại"
-                                        Visibility="{Binding IsCanceledOrFailed, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        ToolTip="Restart download"
+                                        Visibility="{Binding IsCanceledOrFailed, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -518,7 +518,7 @@
                                         Command="{s:Action OpenFile}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Mở tệp"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -534,7 +534,7 @@
                                         Command="{s:Action CopyVideoTitle}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Sao chép tên video"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -550,7 +550,7 @@
                                         Command="{s:Action ShowFile}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Mở thư mục tải"
-                                        Visibility="{Binding CanShowFile, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        Visibility="{Binding CanShowFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -565,7 +565,7 @@
                                         Command="{s:Action Upload}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Đăng lên GJW"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -581,7 +581,7 @@
                                         Command="{s:Action DeleteFile}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Xóa tệp"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static s:BoolToVisibilityConverter.Instance}}">
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"

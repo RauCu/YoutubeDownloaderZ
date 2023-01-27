@@ -1,3 +1,15 @@
+### v1.9.71 (23-Jan-2023)
+
+- Sync to up_stream
+- Use YoutubeExplodeZ 6.2.52
+- Keep using .NET 6.0
+
+### v1.9.7 (11-Jan-2023)
+
+- Switched from .NET 6.0 to .NET 7.0. The application should update the required prerequisites automatically.
+- Fixed an issue where the grid showing the list of downloads failed to resize properly as new items were added. (Thanks [@Jeremy](https://github.com/jerry08))
+- Fixed an issue where trying to close the same dialog twice in a short time crashed the application.
+
 ### v1.9.63 (20-Jan-2023)
 
 - Fixed cannot auto upload to GJW

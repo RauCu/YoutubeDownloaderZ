@@ -270,11 +270,11 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
     }
     public async void WathOnYoutube()
     {
-        if (MessageBox.Show("Bạn có muốn xem video này trên Youtube không?",
-                            "Xem trên Youtube",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question) == MessageBoxResult.Yes)
-        {
+        // if (MessageBox.Show("Bạn có muốn xem video này trên Youtube không?",
+        //                     "Xem trên Youtube",
+        //                     MessageBoxButton.YesNo,
+        //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
+        // {
             string url = "https://www.youtube.com/watch?v=" + Video!.Id;
             IWebDriver? driver = null;
             try
@@ -288,16 +288,16 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
                 );
             }
-        }
+        // }
     }
 
     public async void SearchOnGJW()
     {
-        if (MessageBox.Show("Bạn có muốn kiểm tra xem video này đã được đăng lên GJW chưa?",
-                            "Kiểm tra trùng",
-                            MessageBoxButton.YesNo,
-                            MessageBoxImage.Question) == MessageBoxResult.Yes)
-        {
+        // if (MessageBox.Show("Bạn có muốn kiểm tra xem video này đã được đăng lên GJW chưa?",
+        //                     "Kiểm tra trùng",
+        //                     MessageBoxButton.YesNo,
+        //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
+        // {
             string[] parts = Video!.Title.Split(" ");
             string newTitle = "";
             for (int i = 1; i < parts.Length -1 ; i++){
@@ -318,7 +318,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
                 );
             }
-        }
+        // }
     }
 
     public bool CanOpenFile => (Status == DownloadStatus.Completed || Status == DownloadStatus.Completed_Already);
