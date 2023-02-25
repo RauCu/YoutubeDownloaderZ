@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -50,6 +52,8 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
      DownloadStatus.Failed or
      DownloadStatus.Deleted;
 
+    public bool SelectedToUpload { get; set; } = false;
+
     public string? ErrorMessage { get; set; }
 
     public DownloadViewModel(IViewModelFactory viewModelFactory, DialogManager dialogManager)
@@ -72,7 +76,8 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             DeleteFileInternal();
         }
-        catch (Exception){
+        catch (Exception)
+        {
             // ignore
         }
         _cancellationTokenSource.Cancel();
@@ -80,9 +85,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     public string ContentStatusText()
     {
-        if(ContentStatus == ContentStatus.New)
+        if (ContentStatus == ContentStatus.New)
             return "MỚI";
-        if(ContentStatus == ContentStatus.MostView)
+        if (ContentStatus == ContentStatus.MostView)
             return "Xem nhiều";
         return "Cũ";
     }
@@ -117,7 +122,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             Clipboard.SetText(Video!.Title);
             //MessageBox.Show("Tên video đã được sao chép (copy)!", "Sao chép tên video", MessageBoxButton.OK, MessageBoxImage.Information);
-            ToolTip tooltip = new ToolTip{ Content = "Tiêu đề video đã được sao chép" };
+            ToolTip tooltip = new ToolTip { Content = "Tiêu đề video đã được sao chép" };
             tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
             tooltip.IsOpen = true;
             tooltip.StaysOpen = false;
@@ -143,18 +148,18 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
         Font LargeFont = new Font("Arial", 14);
 
-        System.Windows.Forms.Label email_passLabel = new System.Windows.Forms.Label() { Left = 50, Top = 15, Width = 600, Text  = text };
+        System.Windows.Forms.Label email_passLabel = new System.Windows.Forms.Label() { Left = 50, Top = 15, Width = 600, Text = text };
         email_passLabel.Font = LargeFont;
         System.Windows.Forms.Label email_passLabelError = new System.Windows.Forms.Label() { Left = 50, Top = 15 + email_passLabel.Height + 5, Width = 600, Text = error };
         email_passLabelError.Font = new Font(new Font("Arial", 12), System.Drawing.FontStyle.Italic);
-        
-     
+
+
         email_passLabelError.AutoSize = false;
         email_passLabelError.Size = new System.Drawing.Size(600, email_passLabelError.Height * 2);
         email_passLabelError.ForeColor = Color.Red;
-        
 
-        System.Windows.Forms.TextBox email_passTextBox = new System.Windows.Forms.TextBox() { Left = 50, Top = 100, Width = 600 , Height = 80 };
+
+        System.Windows.Forms.TextBox email_passTextBox = new System.Windows.Forms.TextBox() { Left = 50, Top = 100, Width = 600, Height = 80 };
         email_passTextBox.Multiline = true;
         email_passTextBox.Font = LargeFont;
 
@@ -206,6 +211,171 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
         return email_passText;
     }
+
+    private static readonly Lazy<string> DefaultFFmpegCliPathLazy = new(() =>
+        // Try to find FFmpeg in the probe directory
+        Directory
+            .EnumerateFiles(AppDomain.CurrentDomain.BaseDirectory ?? Directory.GetCurrentDirectory())
+            .FirstOrDefault(f =>
+                string.Equals(
+                    Path.GetFileNameWithoutExtension(f),
+                    "ffmpeg",
+                    StringComparison.OrdinalIgnoreCase
+                )
+            ) ??
+
+        // Otherwise fallback to just "ffmpeg" and hope it's on the PATH
+        "ffmpeg"
+    );
+    public string FFmpegCliPath()
+    {
+        return DefaultFFmpegCliPathLazy.Value;
+    }
+
+    int videoWidth = 0; int videoHeight = 0;
+    public void GetVideoInfo(string input)
+    {
+        //  set up the parameters for video info.
+        string @params = string.Format("-i \"{0}\"", input);
+        string output = Run(FFmpegCliPath(), @params);
+
+        //get the video format
+        Regex re = new Regex("(\\d{2,3})x(\\d{2,3})");
+        Match m = re.Match(output);
+        if (m.Success)
+        {
+            videoWidth = 0;
+            videoHeight = 0;
+            int.TryParse(m.Groups[1].Value, out videoWidth);
+            int.TryParse(m.Groups[2].Value, out videoHeight);
+        }
+    }
+
+    private static string Run(string process/*ffmpegFile*/, string parameters)
+    {
+        if (!File.Exists(process))
+            throw new Exception(string.Format("Cannot find {0}.", process));
+
+        //  Create a process info.
+        ProcessStartInfo oInfo = new ProcessStartInfo(process, parameters);
+        oInfo.UseShellExecute = false;
+        oInfo.CreateNoWindow = true;
+        oInfo.RedirectStandardOutput = true;
+        oInfo.RedirectStandardError = true;
+
+        //  Create the output and streamreader to get the output.
+        string output = "";
+        StreamReader? outputStream = null;
+
+        //  Try the process.
+        try
+        {
+            //  Run the process.
+            Process? proc = System.Diagnostics.Process.Start(oInfo);
+            proc.WaitForExit();
+
+            outputStream = proc.StandardError;
+            output = outputStream.ReadToEnd();
+
+            proc.Close();
+        }
+        catch (Exception ex)
+        {
+            output = ex.Message;
+        }
+        finally
+        {
+            //  Close out the streamreader.
+            if (outputStream != null)
+                outputStream.Close();
+        }
+        return output;
+    }
+    public IWebDriver? SignInGJW()
+    {
+        IWebDriver? driver = null;
+        if (!CanShowFile)
+            return null;
+
+        try
+        {
+            string? path = Path.GetDirectoryName(FilePath!);
+            string videoPath = FilePath!;
+            string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+            if (files.Length > 0)
+            {
+                for (int i = 0; i < files.Length; i++)
+                {
+                    videoPath = files[i];
+                    break;
+                }
+            }
+
+            string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW");
+        re_enter:
+            if (email_pass == "close")
+            {
+                return null;
+            }
+
+            string[] parts = email_pass.Trim().Split(" ");
+            string email = "";
+            string pass = "";
+            if (parts.Length == 2)
+            {
+                email = parts[0];
+                pass = parts[1];
+            }
+            else
+            {
+                email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.",
+                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW");
+                goto re_enter;
+            }
+
+            if (email != "" && pass != "")
+            {
+                driver = Http.SignInGJW(email, pass);
+            }
+        }
+        catch (Exception)
+        {
+
+        }
+        return driver;
+    }
+
+    public void UploadOnly(IWebDriver driver)
+    {
+        if (!CanShowFile)
+            return;
+
+        string? path = Path.GetDirectoryName(FilePath!);
+        string videoPath = FilePath!;
+        string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+        if (files.Length > 0)
+        {
+            for (int i = 0; i < files.Length; i++)
+            {
+                videoPath = files[i];
+                break;
+            }
+        }
+
+        string category = "Entertainment";
+
+        // .VideoQuality?.MaxHeight
+        GetVideoInfo(videoPath);
+        bool isShortVideo = false;
+        if (Video!.Duration?.TotalSeconds <= 60 && videoHeight > videoWidth)
+        {
+            isShortVideo = true;
+        }
+        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
+    }
+
+
+
     public async void Upload()
     {
         if (!CanShowFile)
@@ -224,14 +394,13 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                     break;
                 }
             }
-        
+
             string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW");
         re_enter:
             if (email_pass == "close")
             {
                 return;
             }
-           
 
             string[] parts = email_pass.Trim().Split(" ");
             string email = "";
@@ -243,21 +412,32 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }
             else
             {
-                email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.", 
+                email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.",
                     "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW");
                 goto re_enter;
             }
 
             string category = "Entertainment";
-            
+
             if (email != "" && pass != "")
             {
-                bool result = Http.SignInGJW(email, pass, videoPath, Video!.Title, category);
-                if (!result)
+                IWebDriver driver = Http.SignInGJW(email, pass);
+                if (driver == null)
                 {
                     await _dialogManager.ShowDialogAsync(
                         _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
                     );
+                }
+                else
+                {
+                    // .VideoQuality?.MaxHeight
+                    GetVideoInfo(videoPath);
+                    bool isShortVideo = false;
+                    if (Video!.Duration?.TotalSeconds <= 60 && videoHeight > videoWidth)
+                    {
+                        isShortVideo = true;
+                    }
+                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
                 }
             }
         }
@@ -275,19 +455,19 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         //                     MessageBoxButton.YesNo,
         //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
         // {
-            string url = "https://www.youtube.com/watch?v=" + Video!.Id;
-            IWebDriver? driver = null;
-            try
-            {
-                driver = Http.GetDriver();
-                driver.Navigate().GoToUrl(url);
-            }
-            catch (Exception ex)
-            {
-                await _dialogManager.ShowDialogAsync(
-                    _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
-                );
-            }
+        string url = "https://www.youtube.com/watch?v=" + Video!.Id;
+        IWebDriver? driver = null;
+        try
+        {
+            driver = Http.GetDriver();
+            driver.Navigate().GoToUrl(url);
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+            );
+        }
         // }
     }
 
@@ -298,26 +478,27 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         //                     MessageBoxButton.YesNo,
         //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
         // {
-            string[] parts = Video!.Title.Split(" ");
-            string newTitle = "";
-            for (int i = 1; i < parts.Length -1 ; i++){
-                newTitle += parts[i] + " ";
-            }
+        string[] parts = Video!.Title.Split(" ");
+        string newTitle = "";
+        for (int i = 1; i < parts.Length - 1; i++)
+        {
+            newTitle += parts[i] + " ";
+        }
 
-            // TODO: bỏ 2 từ đầu và 2 từ cuối
-            string url = "https://www.ganjing.com/search?s=" + newTitle + "&type=video";
-            IWebDriver? driver = null;
-            try
-            {
-                driver = Http.GetDriver();
-                driver.Navigate().GoToUrl(url);
-            }
-            catch (Exception ex)
-            {
-                await _dialogManager.ShowDialogAsync(
-                    _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
-                );
-            }
+        // TODO: bỏ 2 từ đầu và 2 từ cuối
+        string url = "https://www.ganjing.com/search?s=" + newTitle + "&type=video";
+        IWebDriver? driver = null;
+        try
+        {
+            driver = Http.GetDriver();
+            driver.Navigate().GoToUrl(url);
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+            );
+        }
         // }
     }
 
@@ -331,12 +512,12 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         try
         {
             string? path = Path.GetDirectoryName(FilePath!);
-            string[] files = System.IO.Directory.GetFiles(path!,"*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+            string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
             if (files.Length > 0)
             {
                 ProcessEx.StartShellExecute(files[0]);
-            }            
-            
+            }
+
         }
         catch (Exception ex)
         {
@@ -346,28 +527,32 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
     }
 
-    private void DeleteFileInternal(){
+    private void DeleteFileInternal()
+    {
         string? path = Path.GetDirectoryName(FilePath!);
-        string[] files = System.IO.Directory.GetFiles(path!,"*" + Video!.Id + "*.*", System.IO.SearchOption.TopDirectoryOnly);
+        string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.*", System.IO.SearchOption.TopDirectoryOnly);
         if (files.Length > 0)
         {
             for (int i = 0; i < files.Length; i++)
             {
                 File.Delete(files[i]);
             }
-                
-        }     
-        Status =  DownloadStatus.Deleted;
+
+        }
+        Status = DownloadStatus.Deleted;
+
+        // UpdateNumberVideoNeedToUpload
+        SelectedToUpload = false;
     }
     public async void DeleteFile()
     {
         if (!CanOpenFile)
             return;
-            if (MessageBox.Show("Bạn có chắc là muốn xóa video này?",
-                                "Xóa video",
-                                MessageBoxButton.YesNo,
-                                MessageBoxImage.Question) == MessageBoxResult.Yes)
-            {
+        if (MessageBox.Show("Bạn có chắc là muốn xóa video này?",
+                            "Xóa video",
+                            MessageBoxButton.YesNo,
+                            MessageBoxImage.Question) == MessageBoxResult.Yes)
+        {
             try
             {
                 DeleteFileInternal();

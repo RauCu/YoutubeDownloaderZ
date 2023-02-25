@@ -1,4 +1,6 @@
-﻿using System.Windows.Input;
+﻿using System.Windows;
+using System.Windows.Input;
+using YoutubeDownloader.ViewModels.Components;
 
 namespace YoutubeDownloader.Views.Components;
 
@@ -8,7 +10,7 @@ public partial class DashboardView
     {
         InitializeComponent();
     }
-    
+
     private void QueryTextBox_OnPreviewKeyDown(object sender, KeyEventArgs e)
     {
         // Disable new lines when pressing enter without shift
@@ -24,5 +26,9 @@ public partial class DashboardView
     private void QueryTextBox_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
     {
 
+    }
+    private void SelectUploadVideoChanged(object sender, RoutedEventArgs e)
+    {
+        ((DashboardViewModel)this.DataContext).UpdateNumberVideoNeedToUpload();
     }
 }

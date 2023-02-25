@@ -132,6 +132,7 @@
             </Button>
 
             <Button
+                Visibility="Collapsed"
                 Grid.Column="3"
                 Margin="6"
                 Padding="4"
@@ -146,7 +147,26 @@
                     Width="24"
                     Height="24"
                     Kind="FileUploadOutline" />
+
             </Button>
+            <Button
+                Grid.Column="3"
+                Margin="6"
+                Padding="4"
+                Command="{s:Action UploadMultipleVideo}"
+                Foreground="{DynamicResource MaterialDesignDarkForeground}"
+                Style="{DynamicResource MaterialDesignFlatButton}"
+             
+                ToolTip="Tải lên"
+                IsEnabled="{Binding NumberVideoNeedToUpload, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}">
+                <Button.Content>
+                    <TextBlock>
+                        <Run Text="TẢI LÊN" />
+                        <Run Text="(" /><Run Text="{Binding NumberVideoNeedToUpload}" /><Run Text=")" />
+                    </TextBlock>
+                </Button.Content>
+            </Button>
+
         </Grid>
 
         <!--  Progress  -->
@@ -423,28 +443,15 @@
                                     Orientation="Horizontal">
 
                                     <!--  Upload status -->
-                                    <StackPanel  VerticalAlignment="Center"
-                                    Visibility="Collapsed"
-                                    >
-                                        <ComboBox materialDesign:ComboBoxAssist.ShowSelectedItem="False">
-                                            <ComboBoxItem
-                                                IsSelected="True"
-                                                Content="CHƯA RÕ" />
-                                            <ComboBoxItem
-                                                 Content="KHÔNG ĐĂNG" />
-                                            <ComboBoxItem
-                                                 Content="CHƯA ĐĂNG" />
-                                            <ComboBoxItem
-                                                Content="ĐÃ CÔNG KHAI" />
-                                            <ComboBoxItem
-                                                Content="CHƯA CÔNG KHAI" />
-                                        </ComboBox>
-                                        <CheckBox
-                                            x:Name="ClassicModeCheckBox"
-                                            IsThreeState="False"
-                                            IsChecked="True"
-                                            Content="CHỌN ĐỂ ĐĂNG" />
-                                    </StackPanel>
+
+                                    <CheckBox 
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}"
+                                        Padding="10,10,10,10"
+                                        x:Name="ClassicModeCheckBox"
+                                        Checked="SelectUploadVideoChanged" Unchecked="SelectUploadVideoChanged"
+                                        IsThreeState="False"
+                                        IsChecked="{Binding SelectedToUpload, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Content="" />
                                     
                                     <!--  Search on GJW  -->
                                     <Button
@@ -507,8 +514,7 @@
                                             Kind="Restart" />
                                     </Button>
 
-                                    
-                                    
+                                   
 
                                     <!--  Open file  -->
                                     <Button
@@ -579,6 +585,7 @@
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
                                         Command="{s:Action DeleteFile}"
+                                        Click="SelectUploadVideoChanged"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Xóa tệp"
                                         Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">

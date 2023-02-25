@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -18,7 +17,7 @@ using YoutubeDownloader.Core.Utils;
 using YoutubeDownloader.ViewModels.Dialogs;
 using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Exceptions;
-using System.Reflection;
+using System.Windows;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -43,10 +42,43 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
     public string? Query { get; set; }
 
-    private QueryResult firstChannelQueryResult;
-    private string channelTitle;
-
     public BindableCollection<DownloadViewModel> Downloads { get; } = new();
+
+    private int p_NumberVideoNeedToUpload;
+
+    public int NumberVideoNeedToUpload
+    {
+        get { return p_NumberVideoNeedToUpload; }
+
+        set
+        {
+            p_NumberVideoNeedToUpload = value;
+            base.NotifyOfPropertyChange("NumberVideoNeedToUpload");
+        }
+    }
+
+    void OnDownloadListChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        UpdateNumberVideoNeedToUpload();
+    }
+
+
+    public int UpdateNumberVideoNeedToUpload()
+    {
+        int count = 0;
+        foreach (var download in Downloads.ToArray())
+        {
+            if (download.CanShowFile)
+            {
+                if (download.SelectedToUpload)
+                {
+                    count++;
+                }
+            }
+        }
+        this.NumberVideoNeedToUpload = count;
+        return count;
+    }
 
     public bool IsDownloadsAvailable => Downloads.Any();
 
@@ -66,6 +98,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         _settingsService.BindAndInvoke(o => o.ParallelLimit, (_, e) => _downloadSemaphore.MaxCount = e.NewValue);
         Progress.Bind(o => o.Current, (_, _) => NotifyOfPropertyChange(() => IsProgressIndeterminate));
         Downloads.Bind(o => o.Count, (_, _) => NotifyOfPropertyChange(() => IsDownloadsAvailable));
+
+        // Subscribe to CollectionChanged event
+        Downloads.CollectionChanged += OnDownloadListChanged;
     }
 
     public bool CanShowSettings => !IsBusy;
@@ -84,6 +119,46 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         IWebDriver driver = Http.GetDriver();
         driver.Navigate().GoToUrl(url);
     }
+
+    public async void UploadMultipleVideo()
+    {
+        IWebDriver? driver = null;
+        foreach (var download in Downloads.ToArray())
+        {
+            if (download.CanShowFile && download.SelectedToUpload)
+            {
+                if (driver == null)
+                {
+                    driver = download.SignInGJW();
+                }
+
+                if (driver != null)
+                {
+                    try
+                    {
+                        download.UploadOnly(driver);
+                    }
+                    catch (Exception ex)
+                    {
+                        await _dialogManager.ShowDialogAsync(
+                            _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+                        );
+                        // stop upload
+                        break;
+                    }
+                }
+                else
+                {
+                    await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
+                    );
+                    // stop upload
+                    break;
+                }
+            }
+        }
+    }
+
     private void EnqueueDownload(DownloadViewModel download, int position = 0)
     {
         var progress = _progressMuxer.CreateInput();
@@ -99,10 +174,10 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 videoInfo = Database.Find(download.Video!.Id);
                 if (!download.ForceDownload)
                 {
-                    if (videoInfo!= null && videoInfo.DownloadStatus != "")
+                    if (videoInfo != null && videoInfo.DownloadStatus != "")
                     {
                         string status = videoInfo.DownloadStatus;
-                        if (status.Equals(DownloadStatus.Completed.ToString()) || 
+                        if (status.Equals(DownloadStatus.Completed.ToString()) ||
                             (status.Equals(DownloadStatus.Completed_Already.ToString())))
                         {
                             if (!File.Exists(download.FilePath))
@@ -155,14 +230,19 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             //throw new Exception(status);
                             download.Status = DownloadStatus.Canceled_too_long;
                         }
-                    }else{
+                    }
+                    else
+                    {
                         shouldDownload = true;
                     }
-                }else{
+                }
+                else
+                {
                     shouldDownload = true;
                 }
-                
-                if(shouldDownload){
+
+                if (shouldDownload)
+                {
                     // continue checking
                     shouldDownload = false;
                     download.Status = DownloadStatus.Started;
@@ -204,10 +284,11 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     }
                     int SECONDS_IN_MINUTE = 60;
 
-                    if (download.Video!.Duration?.TotalSeconds < SECONDS_IN_MINUTE)
+                    if (download.Video!.Duration?.TotalSeconds <= SECONDS_IN_MINUTE)
                     {
-                        //shorter than 1 minutes
-                        tooShort = true;
+                        //shorter than 1 minute
+                        // workaround to disable < 1 minute
+                        tooShort = false;
                     }
                     else if (download.Video!.Duration?.TotalSeconds > 60 * SECONDS_IN_MINUTE)
                     {
@@ -291,7 +372,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             }
             finally
             {
-                if (videoInfo!= null)
+                if (videoInfo != null)
                 {
                     string currentStatus = download.Status.ToString();
                     if (!currentStatus.Equals(videoInfo.DownloadStatus))
@@ -302,7 +383,8 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         mut.WaitOne();
                         Database.InsertOrUpdate(videoInfo);
                         // just work-around to optimize: if too much videos are deleted, then GUI is very slow
-                        if(Database.Count() < 200 || !videoInfo.DownloadStatus.Equals(DownloadStatus.Deleted.ToString())){
+                        if (Database.Count() < 200 || !videoInfo.DownloadStatus.Equals(DownloadStatus.Deleted.ToString()))
+                        {
                             Database.Save();
                         }
                         mut.ReleaseMutex();
@@ -317,16 +399,19 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
     private static void DownloadAvatar(string? dirPath)
     {
-        if(YTChannelPaser.GetInstance().Channel != null){
+        if (YTChannelPaser.GetInstance().Channel != null)
+        {
             string dst = dirPath + "/[0000]-[Avatar-Kenh]-[" +
             YoutubeDownloader.Core.Utils.PathEx.EscapeFileName(YTChannelPaser.GetInstance().Channel!.Name) + "].jpg";
             if (!YTChannelPaser.GetInstance().Channel!.isAvatarDownloaded &&
                 !File.Exists(dst))
             {
-                if(YTChannelPaser.GetInstance().Channel!.Avatar == ""){
+                if (YTChannelPaser.GetInstance().Channel!.Avatar == "")
+                {
                     if (!YTChannelPaser.GetInstance().Channel!.isAvatarDownloaded)
                     {
-                        try{
+                        try
+                        {
                             string src = Directory.GetCurrentDirectory() + "/avatar_trang.jpg";
                             File.Copy(src, dst);
                             YTChannelPaser.GetInstance().Channel!.isAvatarDownloaded = true;
@@ -335,7 +420,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         {
                         }
                     }
-                }else{
+                }
+                else
+                {
                     using (WebClient webClient = new WebClient())
                     {
                         bool downloadSuccess = true;
@@ -361,7 +448,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         }
                         catch (Exception)
                         {
-                        }finally{
+                        }
+                        finally
+                        {
                             mut.ReleaseMutex();
                         }
                     }
@@ -371,14 +460,16 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     }
     private static void DownloadBanner(string? dirPath)
     {
-        if(YTChannelPaser.GetInstance().Channel != null){
-            string dst = dirPath + "/[0000]-[Banner-Kenh]-[" + 
-                YoutubeDownloader.Core.Utils.PathEx.EscapeFileName(YTChannelPaser.GetInstance().Channel!.Name) +"].jpg";
+        if (YTChannelPaser.GetInstance().Channel != null)
+        {
+            string dst = dirPath + "/[0000]-[Banner-Kenh]-[" +
+                YoutubeDownloader.Core.Utils.PathEx.EscapeFileName(YTChannelPaser.GetInstance().Channel!.Name) + "].jpg";
             if (YTChannelPaser.GetInstance().Channel != null &&
-                !YTChannelPaser.GetInstance().Channel!.isBannerDownloaded && 
+                !YTChannelPaser.GetInstance().Channel!.isBannerDownloaded &&
                 !File.Exists(dst))
             {
-                if(YTChannelPaser.GetInstance().Channel!.Banner == ""){
+                if (YTChannelPaser.GetInstance().Channel!.Banner == "")
+                {
                     if (!YTChannelPaser.GetInstance().Channel!.isBannerDownloaded)
                     {
                         try
@@ -391,7 +482,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         {
                         }
                     }
-                }else{
+                }
+                else
+                {
                     using (WebClient webClient = new WebClient())
                     {
                         bool downloadSuccess = true;
@@ -418,7 +511,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         }
                         catch (Exception)
                         {
-                        }finally{
+                        }
+                        finally
+                        {
                             mut.ReleaseMutex();
                         }
                     }
@@ -427,9 +522,11 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         }
     }
 
-    public void DeleteQuery(){
-        if(!IsBusy && !string.IsNullOrWhiteSpace(Query)){
-            Query="";
+    public void DeleteQuery()
+    {
+        if (!IsBusy && !string.IsNullOrWhiteSpace(Query))
+        {
+            Query = "";
         }
     }
     public bool CanProcessQuery => !IsBusy && !string.IsNullOrWhiteSpace(Query);
@@ -439,142 +536,66 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             return;
 
         IsBusy = true;
-        // For channel: 1st search for TOP 50 videos, 2nd search for all videos
-        int countSearch = 1;
-        string originalQuery = Query;
-        
-        
 
         // Small weight to not offset any existing download operations
         var progress = _progressMuxer.CreateInput(0.01);
 
         try
         {
-            Console.WriteLine("=============> " + Query);
+            var result = await _queryResolver.ResolveAsync(
+                Query.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                progress
+            );
 
-            if (Query.Contains("youtube.com/c/") ||
-                Query.Contains("youtube.com/user/") ||
-                Query.Contains("youtube.com/@") ||
-                Query.Contains("youtube.com/channel/"))
+            // Single video
+            if (result.Videos.Count == 1)
             {
-                //if (_settingsService.DownloadMostViewedVideoOnly)
-                {
-                    YTChannel channel = YTChannelPaser.GetInstance().parseYTChannelInfo(Query);
-                    channelTitle = channel.Name;
-                    if (channel.MostPopularVideoUrlsText != "")
-                    {
-                        originalQuery = Query;
-                        Query = channel.MostPopularVideoUrlsText;
-                        // enable 2nd search for all videos
-                        countSearch = 2;
-                    }else{
-                        // cannot get most viewed video
-                        await _dialogManager.ShowDialogAsync(
-                            _viewModelFactory.CreateMessageBoxViewModel(
-                                "Không tìm thấy",
-                                "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp. Có thể do mạng yếu hoặc đường link/từ khóa bị sai, xin hãy kiểm tra và thử lại!"
-                            )
-                        );
-                        return;
-                    }
-                }
-            }
-            else
-            {
-                YTChannelPaser.GetInstance().clearData();
-            }
+                var video = result.Videos.Single();
+                var downloadOptions = await _videoDownloader.GetDownloadOptionsAsync(video.Id);
 
-            for(int i = 0; i < countSearch; i++){
-                var result = await _queryResolver.ResolveAsync(
-                    Query.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
-                    progress
+                var download = await _dialogManager.ShowDialogAsync(
+                    _viewModelFactory.CreateDownloadSingleSetupViewModel(video, downloadOptions)
                 );
 
-                // Single video
-                if (result.Videos.Count == 1)
-                {
-                    var video = result.Videos.Single();
-                    var downloadOptions = await _videoDownloader.GetDownloadOptionsAsync(video.Id);
+                if (download is null)
+                    return;
 
-                    var download = await _dialogManager.ShowDialogAsync(
-                        _viewModelFactory.CreateDownloadSingleSetupViewModel(video, downloadOptions)
-                    );
+                EnqueueDownload(download);
+            }
+            // Multiple videos
+            else if (result.Videos.Count > 1)
+            {
+                var downloads = await _dialogManager.ShowDialogAsync(
+                    _viewModelFactory.CreateDownloadMultipleSetupViewModel(
+                        result.Title,
+                        result.Videos,
+                        // Pre-select videos if they come from a single query and not from search
+                        result.Kind is not QueryResultKind.Search and not QueryResultKind.Aggregate
+                    )
+                );
 
-                    if (download is null)
-                        return;
+                if (downloads is null)
+                    return;
 
+                foreach (var download in downloads)
                     EnqueueDownload(download);
-                    // skip the 2nd search
-                    break;
-                }
-                // Multiple videos
-                else if (result.Videos.Count > 1)
-                {
-                    bool showChoseVideoDialog = false;
-                    if(countSearch == 2){
-                        
-                        if(i == 0){
-                            firstChannelQueryResult = result;
-                        }else{ // 2nd channel query
-                            List<YoutubeExplode.Videos.IVideo> videos = firstChannelQueryResult.Videos.Union(result.Videos).ToList();
-
-                            // remove duplicate video
-                            var unique = new List<YoutubeExplode.Videos.IVideo>();
-                            var hs = new HashSet<string>();
-                            foreach (YoutubeExplode.Videos.IVideo t in videos)
-                                if (hs.Add(t.Id))
-                                    unique.Add(t);
-
-                            QueryResult lastQueryResult = new QueryResult(QueryResultKind.Channel,$"Kênh: {channelTitle}", unique);
-                            result = lastQueryResult;
-                            showChoseVideoDialog = true;
-                        }
-                        
-                    }else{
-                        showChoseVideoDialog = true;
-                    }
-
-                    if(showChoseVideoDialog){
-                        var downloads = await _dialogManager.ShowDialogAsync(
-                            _viewModelFactory.CreateDownloadMultipleSetupViewModel(
-                                result.Title,
-                                result.Videos,
-                                // Pre-select videos if they come from a single query and not from search (e.g: playlist URL)
-                                // or URL is a Channel
-                                (result.Kind is not QueryResultKind.Search and not QueryResultKind.Aggregate) || true
-                            )
-                        );
-
-                        if (downloads is null)
-                            return;
-
-                        foreach (var download in downloads)
-                            EnqueueDownload(download);
-                    }
-                    
-                }
-                // No videos found
-                else
-                {
-                    await _dialogManager.ShowDialogAsync(
-                        _viewModelFactory.CreateMessageBoxViewModel(
-                            "Không tìm thấy",
-                            "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp"
-                        )
-                    );
-
-                    // skip the 2nd search
-                    break;
-                }
-                // using the 1st query for searching all videos of a channel
-                Query = originalQuery;
+            }
+            // No videos found
+            else
+            {
+                await _dialogManager.ShowDialogAsync(
+                    _viewModelFactory.CreateMessageBoxViewModel(
+                        "Không tìm thấy",
+                        "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp"
+                    )
+                );
             }
         }
         catch (Exception ex)
         {
             await _dialogManager.ShowDialogAsync(
                 _viewModelFactory.CreateMessageBoxViewModel(
-                    "Lỗi",
+                    "Error",
                     // Short error message for YouTube-related errors, full for others
                     ex is YoutubeExplodeException
                         ? ex.Message
@@ -600,7 +621,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     {
         foreach (var download in Downloads.ToArray())
         {
-            if (download.Status == DownloadStatus.Completed || download.Status == DownloadStatus.Completed_Already)
+            if (download.CanShowFile)
                 RemoveDownload(download);
         }
     }
@@ -652,14 +673,14 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
     public void RestartCancelDownloads()
     {
-        
+
         foreach (var download in Downloads.ToArray().Reverse())
         {
             if (download.Status == DownloadStatus.Canceled)
                 RestartDownload(download);
         }
     }
-    
+
 
     public void CancelAllDownloads()
     {

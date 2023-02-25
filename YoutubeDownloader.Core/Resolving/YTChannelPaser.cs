@@ -74,17 +74,25 @@ namespace YoutubeDownloader.Core.Resolving
                     //if URL is not "youtube.com/channel/, then need to construct URL like it by parsing channelID from Youtube page HTML source
                     if (!channelURL.Contains("youtube.com/channel/"))
                     {
+                        string channelID;
+                        string channelName;
+                        string avatar;
+                        string banner;
+                        
                         driver.Navigate().GoToUrl(channelURL);
                         string page = driver.PageSource;
                         //Console.WriteLine(page);
-                        string search_word = "<meta itemprop=\"channelId\" content=\"";
-                        int found = page.IndexOf(search_word);
-                        //Console.WriteLine(found);
-                        if (found != -1)
                         {
-                            string channelID = page.Substring(found + search_word.Length, 24 /* there are 24 characters in channelID*/);
-                            channelURL = "https://www.youtube.com/channel/" + channelID;
-                            Console.WriteLine(channelURL);
+                            string search_word = "<meta itemprop=\"channelId\" content=\"";
+                            int found = page.IndexOf(search_word);
+                            //Console.WriteLine(found);
+                            if (found != -1)
+                            {
+                                channelID = page.Substring(found + search_word.Length, 24 /* there are 24 characters in channelID*/);
+                                channelURL = "https://www.youtube.com/channel/" + channelID;
+                                Console.WriteLine(channelURL);
+                            }
+
                         }
                     }
 

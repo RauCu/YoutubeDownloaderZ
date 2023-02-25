@@ -131,7 +131,7 @@
                                             Margin="3,0,0,0"
                                             VerticalAlignment="Center"
                                             FontWeight="Light"
-                                            Text="{Binding Engagement.ViewCount, TargetNullValue=Live}"
+                                            Text="{Binding ViewCount, TargetNullValue=Live}"
                                             TextTrimming="CharacterEllipsis" />
                                     </StackPanel>
                                 </StackPanel>

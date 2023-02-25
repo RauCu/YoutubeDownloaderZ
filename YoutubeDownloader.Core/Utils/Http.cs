@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
@@ -15,7 +15,6 @@ using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
 using WindowsInput;
 using WindowsInput.Native;
-using YoutubeExplode.Videos;
 
 namespace YoutubeDownloader.Core.Utils;
 
@@ -35,144 +34,207 @@ public static class Http
             }
         }
     };
-
-    public static bool SignInGJW(string email, string pass, string path, string title, string category){
-        bool result = false;
-        IWebDriver driver = GetDriver();
-        if(driver != null){
-
-
+    public static IWebDriver SignInGJW(string email, string pass)
+    {
+        bool login_success = false;
+        IWebDriver? driver = GetDriver();
+        if (driver != null)
+        {
             driver.Navigate().GoToUrl("https://www.ganjing.com/signin");
-            
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(100));
-            
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             string emailCSSSelector = "input[name='email'][type='email']";
-
             // wait maximum 10 seconds
-            wait.Until(driver=>driver.FindElement(By.CssSelector(emailCSSSelector)));
+            wait.Until(driver => driver.FindElement(By.CssSelector(emailCSSSelector)));
 
             IWebElement elementTxtBoxEmail = driver.FindElement(By.CssSelector(emailCSSSelector));
             elementTxtBoxEmail.SendKeys(email);
 
             IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[name='password'][type='password']"));
             elementTxtBoxPass.SendKeys(pass);
-
-            //IWebElement elementCheckBoxRemember = driver.FindElement(By.Id("comments"));
-           // elementCheckBoxRemember.Click();
-
             elementTxtBoxPass.Submit();
 
-            //IWebElement elementBtnSubmit = driver.FindElement(By.ClassName("btn-basic btn-contained w-full mt-5 dark:bg-gjw-gray-600 dark:text-white"));
-            //elementBtnSubmit.Click();
+            int MAX_RETRY = 15;
+            int retry_count = 0;
 
+            while (true)
+            {
+                if (!driver.PageSource.Contains("Don't have an account?"))
+                {
+                    login_success = true;
+                    break;
+                }
+                else if (driver.PageSource.Contains("Email or password is incorrect."))
+                {
+                    login_success = false;
+                    break;
+                }
+                else
+                {
+                    if (retry_count >= MAX_RETRY)
+                    {
+                        login_success = false;
+                        break;
+                    }
+                    else
+                    {
+                        retry_count++;
+                        Thread.Sleep(1000);
+                    }
+                }
+            }
 
-            //Console.WriteLine(pages);
-            Thread.Sleep(5000);
-            if (true)
+            if (login_success)
             {
                 driver.Navigate().GoToUrl("https://studio.ganjing.com/");
-
-                //
-                string createContentXpath = "//button[normalize-space() = 'Create Content']";
-
-                wait.Until(driver => driver.FindElement(By.XPath(createContentXpath)));
-                IWebElement elementBtnCreateContent = driver.FindElement(By.XPath(createContentXpath));
-                elementBtnCreateContent.Click();
-                //
-
-                string uploadVideoXpath = "/html/body/div[3]/div[3]/ul/li[1]";
-
-                try
-                {
-                    wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
-                    IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
-
-                    elementBtnUploadVideo.Click();
-                }
-                catch (Exception)
-                {
-                    wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
-                    IWebElement elementBtnUploadVideo1 = driver.FindElement(By.XPath(uploadVideoXpath));
-                    elementBtnUploadVideo1.Click();
-                }
-
-                string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
-                wait.Until(driver=>driver.FindElement(By.XPath(selectFileBtnXpath)));
-                IWebElement elementBtnSelectFile = driver.FindElement(By.XPath(selectFileBtnXpath));
-                elementBtnSelectFile.Click();
-
-                // select video
-                Thread.Sleep(2000);
-                InputSimulator sim = new InputSimulator();
-                //System.Windows.Clipboard.SetText(path);
-                sim.Keyboard.TextEntry(path);
-                //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-
-                // select 720
-                try
-                {
-                    WebDriverWait wait2 = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
-                    string select720BtnXpath = "/html/body/div[4]/div[3]/div/div[3]/button[2]";
-                    wait2.Until(driver => driver.FindElement(By.XPath(select720BtnXpath)));
-                    IWebElement elementBtnSelect720 = driver.FindElement(By.XPath(select720BtnXpath));
-                    elementBtnSelect720.Click();
-                    Thread.Sleep(2000);
-                }
-                catch (Exception)
-                {
-                }
-
-                // select thumbnail
-
-                string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/label/span";
-                wait.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
-                IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
-                elementBtnSelectThumnail.Click();
-                Thread.Sleep(2000);
-                //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
-                sim.Keyboard.TextEntry(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
-                //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-                
-                // title
-                Thread.Sleep(2000);
-                string titleXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div/div[1]/div/div/div/input";
-                wait.Until(driver => driver.FindElement(By.XPath(titleXpath)));
-                IWebElement titleElement = driver.FindElement(By.XPath(titleXpath));
-                titleElement.Click();
-                Thread.Sleep(1000);
-                sim.Keyboard.TextEntry(title.Substring(0, Math.Min(title.Length,100 /*max 100 characters*/)));
-
-                // category
-                Thread.Sleep(1000);
-                string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/div/div/input";
-                wait.Until(driver => driver.FindElement(By.XPath(categoryXpath)));
-                IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
-                string selectedCategory = categoryElement.GetAttribute("value");
-                if (selectedCategory.Equals("")){
-                    categoryElement.SendKeys(category);
-                }
-
-
-                // save button
-                Thread.Sleep(1000);
-                string selectSaveBtnXpath = "/html/body/div[3]/div[3]/div/div/div[2]/button[2]";
-                wait.Until(driver=>driver.FindElement(By.XPath(selectSaveBtnXpath)));
-                IWebElement elementBtnSave = driver.FindElement(By.XPath(selectSaveBtnXpath));
-                elementBtnSave.Click();
-
-                result = true;
             }
             else
             {
-
+                driver = null;
             }
         }
-
-        return result;
+        return driver;
     }
 
+    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category)
+    {
+        bool result = false;
+        if (driver != null)
+        {
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            //
+            string createContentXpath = "//button[normalize-space() = 'Create Content']";
+            bool clickUploadBtnSuccess = false;
+            for (int i = 0; i < 10 && clickUploadBtnSuccess == false; i++)
+            {
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(createContentXpath)));
+                    IWebElement elementBtnCreateContent = driver.FindElement(By.XPath(createContentXpath));
+                    elementBtnCreateContent.Click();
+                    clickUploadBtnSuccess = true;
+                }
+                catch (Exception)
+                {
+                }
+                Thread.Sleep(1000);
+            }
+
+            string uploadVideoXpath = "/html/body/div[3]/div[3]/ul/li[1]";
+            if (!isShortVideo)
+            {
+                uploadVideoXpath = "/html/body/div[3]/div[3]/ul/li[2]";
+            }
+
+            try
+            {
+                wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
+                IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
+
+                elementBtnUploadVideo.Click();
+            }
+            catch (Exception)
+            {
+                wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
+                IWebElement elementBtnUploadVideo1 = driver.FindElement(By.XPath(uploadVideoXpath));
+                elementBtnUploadVideo1.Click();
+            }
+
+            string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
+            if (isShortVideo)
+            {
+                selectFileBtnXpath = "//button[normalize-space() = 'Select Short']";
+            }
+            wait.Until(driver => driver.FindElement(By.XPath(selectFileBtnXpath)));
+            IWebElement elementBtnSelectFile = driver.FindElement(By.XPath(selectFileBtnXpath));
+            elementBtnSelectFile.Click();
+
+            // select video
+            Thread.Sleep(2000);
+            InputSimulator sim = new InputSimulator();
+            //System.Windows.Clipboard.SetText(path);
+            sim.Keyboard.TextEntry(path);
+            //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
+            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+            // select 720
+            try
+            {
+                WebDriverWait wait2 = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
+                string select720BtnXpath = "/html/body/div[4]/div[3]/div/div[3]/button[2]";
+                wait2.Until(driver => driver.FindElement(By.XPath(select720BtnXpath)));
+                IWebElement elementBtnSelect720 = driver.FindElement(By.XPath(select720BtnXpath));
+                elementBtnSelect720.Click();
+                Thread.Sleep(2000);
+            }
+            catch (Exception)
+            {
+            }
+
+            // select thumbnail
+            string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/div/label/button";
+            if (isShortVideo)
+            {
+                selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
+            }
+            bool uploadThumbnailSuccess = false;
+            for (int i = 0; i < 10 && uploadThumbnailSuccess == false; i++)
+            {
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
+                    IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
+                    elementBtnSelectThumnail.Click();
+                    uploadThumbnailSuccess = true;
+                }
+                catch (Exception)
+                {
+                }
+                Thread.Sleep(1000);
+            }
+            //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
+            sim.Keyboard.TextEntry(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
+            //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
+            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+            // title
+            Thread.Sleep(2000);
+            string titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div/input";
+            if (isShortVideo)
+            {
+                titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div";
+            }
+
+            wait.Until(driver => driver.FindElement(By.XPath(titleXpath)));
+            IWebElement titleElement = driver.FindElement(By.XPath(titleXpath));
+            titleElement.Click();
+            Thread.Sleep(1000);
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_A);
+            sim.Keyboard.TextEntry(title.Substring(0, Math.Min(title.Length, 100 /*max 100 characters*/)));
+
+            if (!isShortVideo)
+            {
+                // category
+                Thread.Sleep(1000);
+                string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/input";
+                wait.Until(driver => driver.FindElement(By.XPath(categoryXpath)));
+                IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
+                string selectedCategory = categoryElement.GetAttribute("value");
+                if (selectedCategory.Equals(""))
+                {
+                    categoryElement.SendKeys(category);
+                }
+            }
+            // save button
+            Thread.Sleep(1000);
+            string selectSaveBtnXpath = "/html/body/div[3]/div[3]/div/div/div[2]/button[2]";
+            wait.Until(driver => driver.FindElement(By.XPath(selectSaveBtnXpath)));
+            IWebElement elementBtnSave = driver.FindElement(By.XPath(selectSaveBtnXpath));
+            elementBtnSave.Click();
+
+            result = true;
+        }
+        return result;
+    }
     public static IWebDriver GetDriver()
     {
         IWebDriver? driver = null;
@@ -256,7 +318,8 @@ public static class Http
         catch (Exception ex)
         {
             throw ex;
-        }finally
+        }
+        finally
         {
 
         }
