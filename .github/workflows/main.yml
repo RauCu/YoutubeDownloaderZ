@@ -21,13 +21,13 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Publish
-        run: dotnet publish YoutubeDownloader/ -o YoutubeDownloader/bin/Publish --configuration Release
+        run: dotnet publish YoutubeDownloaderZ/ -o YoutubeDownloaderZ/bin/Publish --configuration Release
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: YoutubeDownloader
-          path: YoutubeDownloader/bin/Publish
+          name: YoutubeDownloaderZ
+          path: YoutubeDownloaderZ/bin/Publish
 
   deploy:
     if: ${{ github.event_name == 'push' && github.ref_type == 'tag' }}
@@ -38,11 +38,11 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: YoutubeDownloader
-          path: YoutubeDownloader
+          name: YoutubeDownloaderZ
+          path: YoutubeDownloaderZ
 
       - name: Create package
-        run: Compress-Archive -Path YoutubeDownloader/* -DestinationPath YoutubeDownloader.zip -Force
+        run: Compress-Archive -Path YoutubeDownloaderZ/* -DestinationPath YoutubeDownloaderZ.zip -Force
         shell: pwsh
 
       - name: Create release
@@ -50,9 +50,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: YoutubeDownloader.zip
+          files: YoutubeDownloaderZ.zip
           body: |
-            [Changelog](https://github.com/Tyrrrz/YoutubeDownloader/blob/master/Changelog.md)
+            [Changelog](https://github.com/RauCu/YoutubeDownloaderZ/blob/${{ steps.get_version.outputs.tag }}/Changelog.md)
 
   notify:
     needs: deploy
@@ -74,5 +74,5 @@ jobs:
             }
           payload: |
             {
-              "content": "**YoutubeDownloader** new version released!\nVersion: `${{ steps.get_version.outputs.tag }}`\nChangelog: <https://github.com/Tyrrrz/YoutubeDownloader/blob/${{ steps.get_version.outputs.tag }}/Changelog.md>"
+              "content": "**YoutubeDownloaderZ** new version released!\nVersion: `${{ steps.get_version.outputs.tag }}`\nChangelog: <https://github.com/RauCu/YoutubeDownloaderZ/blob/${{ steps.get_version.outputs.tag }}/Changelog.md>"
             }
