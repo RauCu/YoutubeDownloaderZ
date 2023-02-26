@@ -92,7 +92,9 @@ public static class Http
                 driver = null;
             }
         }
+#pragma warning disable CS8603 // Possible null reference return.
         return driver;
+#pragma warning restore CS8603 // Possible null reference return.
     }
 
     public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category)

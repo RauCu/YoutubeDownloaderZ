@@ -100,7 +100,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         Downloads.Bind(o => o.Count, (_, _) => NotifyOfPropertyChange(() => IsDownloadsAvailable));
 
         // Subscribe to CollectionChanged event
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
         Downloads.CollectionChanged += OnDownloadListChanged;
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
     }
 
     public bool CanShowSettings => !IsBusy;

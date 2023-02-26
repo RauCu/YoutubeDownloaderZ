@@ -38,7 +38,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     public string? FileName => Path.GetFileName(FilePath);
 
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
     public string? FileNameShort => FileName.Substring(0, FileName.Length - 18);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
     public ProgressContainer<Percentage> Progress { get; } = new();
 
@@ -134,7 +136,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             tooltip.IsOpen = true;
             DispatcherTimer vTimer = new DispatcherTimer();
             vTimer.Interval = new TimeSpan(0, 0, 3);
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             vTimer.Tick += new EventHandler(vTimer_Tick);
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             vTimer.Tag = tooltip;
             vTimer.Start();
         }
@@ -162,7 +166,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
             DispatcherTimer vTimer = new DispatcherTimer();
             vTimer.Interval = new TimeSpan(0, 0, 3);
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             vTimer.Tick += new EventHandler(vTimer_Tick);
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             vTimer.Tag = tooltip;
             vTimer.Start();
         }
@@ -190,7 +196,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
             DispatcherTimer vTimer = new DispatcherTimer();
             vTimer.Interval = new TimeSpan(0, 0, 3);
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             vTimer.Tick += new EventHandler(vTimer_Tick);
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             vTimer.Tag = tooltip;
             vTimer.Start();
         }
@@ -205,7 +213,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
     void vTimer_Tick(object sender, EventArgs e)
     {
         DispatcherTimer? vTimer = sender as DispatcherTimer;
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
         vTimer.Stop();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
         ToolTip? vTip = vTimer.Tag as ToolTip;
         if (vTip != null)
@@ -349,7 +359,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             //  Run the process.
             Process? proc = System.Diagnostics.Process.Start(oInfo);
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             proc.WaitForExit();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
 
             outputStream = proc.StandardError;
             output = outputStream.ReadToEnd();
