@@ -263,12 +263,36 @@
                     <DataGridTemplateColumn MinWidth="130" >
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type components:DownloadViewModel}">
-                                <Image
+
+                                <!--  Already uploaded  -->
+
+                                <StackPanel 
                                     Width="120"
+                                    Height="90"
+                                            Orientation="Horizontal"
+                                            Visibility="Visible">
+                                    <Image
+                                    Width="100"
                                     Height="90"
                                     Stretch="None"
                                     VerticalAlignment="Center"
-                                    Source="{Binding Video, Converter={x:Static converters:VideoToLowestQualityThumbnailUrlConverter.Instance}}" />
+                                    Source="{Binding Video, Converter={x:Static converters:VideoToLowestQualityThumbnailUrlConverter.Instance}}" >
+                                    </Image>
+
+                                    <CheckBox 
+                                        VerticalAlignment="Center"
+                                        Padding="0"
+                                        x:Name="AlreadyUploaded"
+                                        Checked="SelectUploadVideoChanged" Unchecked="SelectUploadVideoChanged"
+                                        IsThreeState="False"
+                                        IsChecked="{Binding SelectedToUpload, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                        Content="Đã đăng" >
+                                        <CheckBox.LayoutTransform>
+                                            <ScaleTransform ScaleX="1.3" ScaleY="1.3" />
+                                        </CheckBox.LayoutTransform>
+                                    </CheckBox>
+                                </StackPanel>
+
                             </DataTemplate>
                             
                         </DataGridTemplateColumn.CellTemplate>
@@ -286,10 +310,15 @@
                                     FontSize="18"
                                     TextWrapping="WrapWithOverflow"
                                     Width="300"
+                                    Cursor="Hand"
                                     Foreground="{DynamicResource MaterialDesignBody}"
-                                    Text="{Binding FileName}"
+                                    Text="{Binding FileNameShort}"
                                     TextTrimming="CharacterEllipsis"
-                                    ToolTip="{Binding FileName}" />
+                                    ToolTip="Xem trên Youtube" >
+                                    <TextBlock.InputBindings>
+                                        <MouseBinding Gesture="LeftClick" s:View.ActionTarget="{Binding}" Command="{s:Action WathOnYoutube}" />
+                                    </TextBlock.InputBindings>
+                                </TextBlock>
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
@@ -422,6 +451,19 @@
                                                         <Setter Property="ToolTip" Value="{Binding ErrorMessage}" />
                                                     </DataTrigger>
 
+                                                    <!--  Uploaded  -->
+                                                    <DataTrigger Binding="{Binding UploadDone}" Value="true">
+                                                        <Setter Property="Foreground" Value="{DynamicResource SuccessBrush}" />
+                                                        <Setter Property="Text" Value="✓ ĐĂNG LÊN THÀNH CÔNG" />
+                                                    </DataTrigger>
+
+                                                    <!--  Uploaded  -->
+                                                    <DataTrigger Binding="{Binding UploadError}" Value="true">
+                                                        <Setter Property="Foreground" Value="{DynamicResource FailedBrush}" />
+                                                        <Setter Property="Text" Value="⚠ ĐĂNG LÊN LỖI" />
+                                                        
+                                                        
+                                                    </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
@@ -434,7 +476,7 @@
 
                     <!--  Buttons  -->
                     <DataGridTemplateColumn 
-                        MinWidth="300">
+                        MinWidth="400">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type components:DownloadViewModel}">
                                 <StackPanel
@@ -442,19 +484,41 @@
                                     HorizontalAlignment="Right"
                                     Orientation="Horizontal">
 
-                                    <!--  Upload status -->
 
-                                    <CheckBox 
+
+                                    <!--  Going to upload  -->
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content="Muốn" />
+
+                                        <CheckBox
+                                        
+                                        VerticalAlignment="Center"
                                         Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}"
-                                        Padding="10,10,10,10"
-                                        x:Name="ClassicModeCheckBox"
+                                        Padding="5"
+                                        x:Name="GoingToUpload"
                                         Checked="SelectUploadVideoChanged" Unchecked="SelectUploadVideoChanged"
                                         IsThreeState="False"
                                         IsChecked="{Binding SelectedToUpload, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                        Content="" />
-                                    
+                                        Content="" >
+                                            <CheckBox.LayoutTransform>
+                                                <ScaleTransform ScaleX="1.3" ScaleY="1.3" />
+                                            </CheckBox.LayoutTransform>
+                                        </CheckBox>
+
+                                        <Label HorizontalAlignment="Center" Content="Đăng" />
+                                    </StackPanel>
                                     <!--  Search on GJW  -->
-                                    <Button
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="Visible">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
@@ -462,78 +526,143 @@
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Kiểm tra trùng trên GJW"
                                         Visibility="Visible">
-                                        <materialDesign:PackIcon
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
                                             Kind="SearchWeb" />
-                                    </Button>
-
-                                    <!--  Watch on Youtube  -->
-                                    <Button
-                                        Padding="4,0,4,0"
-                                        VerticalAlignment="Center"
-                                        s:View.ActionTarget="{Binding}"
-                                        Command="{s:Action WathOnYoutube}"
-                                        Style="{DynamicResource MaterialDesignFlatButton}"
-                                        ToolTip="Play"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
-                                            Width="24"
-                                            Height="24"
-                                            Kind="Youtube" />
-                                    </Button>
-
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="1" />
+                                    </StackPanel>
 
                                     <!--  Cancel download  -->
-                                    <Button
+
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanCancel, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
                                         Command="{s:Action Cancel}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
-                                        ToolTip="Cancel download"
+                                        ToolTip="Hủy tải xuống"
                                         Visibility="{Binding CanCancel, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
                                             Kind="CloseCircleOutline" />
-                                    </Button>
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="2" />
+                                    </StackPanel>
 
                                     <!--  Restart download  -->
-                                    <Button
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding IsCanceledOrFailed, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         Command="{s:Action RestartDownload}"
                                         CommandParameter="{Binding}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
-                                        ToolTip="Restart download"
+                                        ToolTip="Tải xuống lại"
                                         Visibility="{Binding IsCanceledOrFailed, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
                                             Kind="Restart" />
-                                    </Button>
-
-                                   
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="2" />
+                                    </StackPanel>
 
                                     <!--  Open file  -->
-                                    <Button
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
                                         Command="{s:Action OpenFile}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Mở tệp"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
+                                        >
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
                                             Kind="PlayCircleOutline" />
-                                    </Button>
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="2" />
+                                    </StackPanel>
+                                    <!--  Copy video path  -->
 
-                                    <!--  Copy video title  -->
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
 
-                                    <Button
+                                        <Label HorizontalAlignment="Center" Content=" " />
+                                        <Button
+                                                Padding="4,0,4,0"
+                                                VerticalAlignment="Center"
+                                                s:View.ActionTarget="{Binding}"
+                                                Command="{s:Action CopyVideoPath}"
+                                                Style="{DynamicResource MaterialDesignFlatButton}"
+                                                ToolTip="Sao chép đường dẫn video">
+                                            <materialDesign:PackIcon
+                                                Width="24"
+                                                Height="24"
+                                                Kind="ClipboardPlayOutline" />
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="3" />
+                                    </StackPanel>
+                                    
+                                    
+                                    <!--  Copy thumbnail path  -->
+
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+
+                                        <Button
+                                        Padding="4,0,4,0"
+                                        VerticalAlignment="Center"
+                                        s:View.ActionTarget="{Binding}"
+                                        Command="{s:Action CopyThumbnailPath}"
+                                        Style="{DynamicResource MaterialDesignFlatButton}"
+                                        ToolTip="Sao chép đường dẫn hình thumbnail"
+                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                            <materialDesign:PackIcon
+                                            Width="24"
+                                            Height="24"
+                                            Kind="ImageMultipleOutline" />
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="4" />
+                                    </StackPanel>
+
+
+                                    <!--  Copy title  -->
+
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
@@ -541,15 +670,23 @@
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Sao chép tên video"
                                         Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
+
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
                                             Kind="ContentCopy" />
-                                    </Button>
-
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="5" />
+                                    </StackPanel>
                                     <!--  Show file  -->
 
-                                    <Button
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanShowFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
@@ -557,21 +694,23 @@
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Mở thư mục tải"
                                         Visibility="{Binding CanShowFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
-                                            Kind="FileFindOutline" />
-                                    </Button>
-
+                                            Kind="FolderOpenOutline" />
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="6" />
+                                    </StackPanel>
                                     <!--  Upload video-->
                                     <Button
                                         Padding="4,0,4,0"
+                                        Visibility="Collapsed"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
                                         Command="{s:Action Upload}"
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Đăng lên GJW"
-                                        Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+                                        >
                                         <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
@@ -580,7 +719,15 @@
 
 
                                     <!--  Delete file  -->
-                                    <Button
+
+
+                                    <StackPanel 
+                                            Orientation="Vertical"
+                                            Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
+
+                                        <Label HorizontalAlignment="Center" Content=" " />
+
+                                        <Button
                                         Padding="4,0,4,0"
                                         VerticalAlignment="Center"
                                         s:View.ActionTarget="{Binding}"
@@ -589,11 +736,13 @@
                                         Style="{DynamicResource MaterialDesignFlatButton}"
                                         ToolTip="Xóa tệp"
                                         Visibility="{Binding CanOpenFile, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}">
-                                        <materialDesign:PackIcon
+                                            <materialDesign:PackIcon
                                             Width="24"
                                             Height="24"
                                             Kind="DeleteOutline" />
-                                    </Button>
+                                        </Button>
+                                        <Label HorizontalAlignment="Center" Content="7" />
+                                    </StackPanel>
 
                                 </StackPanel>
                             </DataTemplate>

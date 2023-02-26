@@ -8,7 +8,7 @@
     xmlns:s="https://github.com/canton7/Stylet"
     xmlns:viewModels="clr-namespace:YoutubeDownloader.ViewModels"
     xmlns:converters="clr-namespace:YoutubeDownloader.Converters"
-    Width="1000"
+    Width="1100"
     Height="700"
     d:DataContext="{d:DesignInstance Type=viewModels:RootViewModel}"
     Background="{DynamicResource MaterialDesignBackground}"

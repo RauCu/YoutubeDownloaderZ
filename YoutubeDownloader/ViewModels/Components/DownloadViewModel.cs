@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
 using Gress;
 using OpenQA.Selenium;
 using Stylet;
@@ -36,6 +38,8 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     public string? FileName => Path.GetFileName(FilePath);
 
+    public string? FileNameShort => FileName.Substring(0, FileName.Length - 18);
+
     public ProgressContainer<Percentage> Progress { get; } = new();
 
     public bool IsProgressIndeterminate => Progress.Current.Fraction is <= 0 or >= 1;
@@ -53,6 +57,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
      DownloadStatus.Deleted;
 
     public bool SelectedToUpload { get; set; } = false;
+    public bool UploadDone { get; set; } = false;
+
+    public bool UploadError { get; set; } = false;
 
     public string? ErrorMessage { get; set; }
 
@@ -113,6 +120,61 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
     }
 
+    public async void CopyVideoPath()
+    {
+        if (!CanShowFile)
+            return;
+
+        try
+        {
+            Clipboard.SetText(FilePath!);
+            //MessageBox.Show("Tên video đã được sao chép (copy)!", "Sao chép tên video", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToolTip tooltip = new ToolTip { Content = "Đường dẫn video đã được sao chép" };
+            tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
+            tooltip.IsOpen = true;
+            DispatcherTimer vTimer = new DispatcherTimer();
+            vTimer.Interval = new TimeSpan(0, 0, 3);
+            vTimer.Tick += new EventHandler(vTimer_Tick);
+            vTimer.Tag = tooltip;
+            vTimer.Start();
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+            );
+        }
+    }
+
+    public async void CopyThumbnailPath()
+    {
+        if (!CanShowFile)
+            return;
+
+        try
+        {
+            String thumbnailPath = System.IO.Path.GetFileNameWithoutExtension(FilePath) + ".jpg";
+            Clipboard.SetText(thumbnailPath);
+            //MessageBox.Show("Tên video đã được sao chép (copy)!", "Sao chép tên video", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToolTip tooltip = new ToolTip { Content = "Đường dẫn hình thumbnail đã được sao chép" };
+            tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
+            tooltip.IsOpen = true;
+
+            DispatcherTimer vTimer = new DispatcherTimer();
+            vTimer.Interval = new TimeSpan(0, 0, 3);
+            vTimer.Tick += new EventHandler(vTimer_Tick);
+            vTimer.Tag = tooltip;
+            vTimer.Start();
+        }
+        catch (Exception ex)
+        {
+            await _dialogManager.ShowDialogAsync(
+                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+            );
+        }
+    }
+
+
     public async void CopyVideoTitle()
     {
         if (!CanShowFile)
@@ -125,7 +187,12 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             ToolTip tooltip = new ToolTip { Content = "Tiêu đề video đã được sao chép" };
             tooltip.Placement = System.Windows.Controls.Primitives.PlacementMode.Mouse;
             tooltip.IsOpen = true;
-            tooltip.StaysOpen = false;
+
+            DispatcherTimer vTimer = new DispatcherTimer();
+            vTimer.Interval = new TimeSpan(0, 0, 3);
+            vTimer.Tick += new EventHandler(vTimer_Tick);
+            vTimer.Tag = tooltip;
+            vTimer.Start();
         }
         catch (Exception ex)
         {
@@ -133,6 +200,16 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                 _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
             );
         }
+    }
+
+    void vTimer_Tick(object sender, EventArgs e)
+    {
+        DispatcherTimer? vTimer = sender as DispatcherTimer;
+        vTimer.Stop();
+
+        ToolTip? vTip = vTimer.Tag as ToolTip;
+        if (vTip != null)
+            vTip.IsOpen = false;
     }
 
     public static string ShowDialog(string text, string error, string caption)
@@ -371,6 +448,8 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             isShortVideo = true;
         }
+        UploadDone = false;
+        UploadError = false;
         Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
     }
 
@@ -381,6 +460,12 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         if (!CanShowFile)
             return;
 
+        // reset previous upload status
+        UploadDone = false;
+        UploadError = false;
+
+        //
+        bool errorOccur = false;
         try
         {
             string? path = Path.GetDirectoryName(FilePath!);
@@ -443,12 +528,25 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
         catch (Exception ex)
         {
+            errorOccur = true;
             await _dialogManager.ShowDialogAsync(
-                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + Video!.Title + "\n" + ex.Message)
             );
         }
+        finally
+        {
+            if (errorOccur == false)
+            {
+                UploadDone = true;
+                SelectedToUpload = false;
+            }
+            else
+            {
+                UploadError = true;
+            }
+        }
     }
-    public async void WathOnYoutube()
+    public void WathOnYoutube()
     {
         // if (MessageBox.Show("Bạn có muốn xem video này trên Youtube không?",
         //                     "Xem trên Youtube",
@@ -456,22 +554,24 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
         // {
         string url = "https://www.youtube.com/watch?v=" + Video!.Id;
-        IWebDriver? driver = null;
-        try
-        {
-            driver = Http.GetDriver();
-            driver.Navigate().GoToUrl(url);
-        }
-        catch (Exception ex)
-        {
-            await _dialogManager.ShowDialogAsync(
-                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
-            );
-        }
+        // System.Diagnostics.Process.Start(url);
+        Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
+        // IWebDriver? driver = null;
+        // try
+        // {
+        //      driver = Http.GetDriver();
+        //      driver.Navigate().GoToUrl(url);
+        // }
+        // catch (Exception ex)
+        // {
+        //     await _dialogManager.ShowDialogAsync(
+        //         _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+        //     );
+        // }
         // }
     }
 
-    public async void SearchOnGJW()
+    public void SearchOnGJW()
     {
         // if (MessageBox.Show("Bạn có muốn kiểm tra xem video này đã được đăng lên GJW chưa?",
         //                     "Kiểm tra trùng",
@@ -487,18 +587,20 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
         // TODO: bỏ 2 từ đầu và 2 từ cuối
         string url = "https://www.ganjing.com/search?s=" + newTitle + "&type=video";
-        IWebDriver? driver = null;
-        try
-        {
-            driver = Http.GetDriver();
-            driver.Navigate().GoToUrl(url);
-        }
-        catch (Exception ex)
-        {
-            await _dialogManager.ShowDialogAsync(
-                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
-            );
-        }
+        // System.Diagnostics.Process.Start(url);
+        Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
+        // IWebDriver? driver = null;
+        // try
+        // {
+        //     driver = Http.GetDriver();
+        //     driver.Navigate().GoToUrl(url);
+        // }
+        // catch (Exception ex)
+        // {
+        //     await _dialogManager.ShowDialogAsync(
+        //         _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+        //     );
+        // }
         // }
     }
 

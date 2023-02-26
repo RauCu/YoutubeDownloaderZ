@@ -17,7 +17,7 @@ using YoutubeDownloader.Core.Utils;
 using YoutubeDownloader.ViewModels.Dialogs;
 using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Exceptions;
-using System.Windows;
+using System.Diagnostics;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -110,8 +110,10 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     public void Help()
     {
         string url = "https://www.ganjing.com/channel/1fckkvjkqh72FQ5r2Fvprfj6q1lg0c/playlist/1ff41rph6likfNRaA6hssga15e0p";
-        IWebDriver driver = Http.GetDriver();
-        driver.Navigate().GoToUrl(url);
+        // System.Diagnostics.Process.Start(url);
+        Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
+        // IWebDriver driver = Http.GetDriver();
+        // driver.Navigate().GoToUrl(url);
     }
     public void UploadVideo()
     {
@@ -123,6 +125,13 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     public async void UploadMultipleVideo()
     {
         IWebDriver? driver = null;
+        // reset previous upload status
+        foreach (var download in Downloads.ToArray())
+        {
+            download.UploadDone = false;
+            download.UploadError = false;
+        }
+        //
         foreach (var download in Downloads.ToArray())
         {
             if (download.CanShowFile && download.SelectedToUpload)
@@ -134,17 +143,31 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
                 if (driver != null)
                 {
+                    bool errorOccur = false;
                     try
                     {
                         download.UploadOnly(driver);
                     }
                     catch (Exception ex)
                     {
+                        errorOccur = true;
                         await _dialogManager.ShowDialogAsync(
-                            _viewModelFactory.CreateMessageBoxViewModel("Lỗi", ex.Message)
+                            _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.Video!.Title + "\n" + ex.Message)
                         );
                         // stop upload
                         break;
+                    }
+                    finally
+                    {
+                        if (errorOccur == false)
+                        {
+                            download.UploadDone = true;
+                            download.SelectedToUpload = false;
+                        }
+                        else
+                        {
+                            download.UploadError = true;
+                        }
                     }
                 }
                 else
