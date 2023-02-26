@@ -157,7 +157,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
         try
         {
-            String thumbnailPath = System.IO.Path.GetFileNameWithoutExtension(FilePath) + ".jpg";
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            String thumbnailPath = FilePath.Substring(0, FilePath.Length - 4) + ".jpg";
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             Clipboard.SetText(thumbnailPath);
             //MessageBox.Show("Tên video đã được sao chép (copy)!", "Sao chép tên video", MessageBoxButton.OK, MessageBoxImage.Information);
             ToolTip tooltip = new ToolTip { Content = "Đường dẫn hình thumbnail đã được sao chép" };
