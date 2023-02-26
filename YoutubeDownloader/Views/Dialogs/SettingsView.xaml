@@ -111,21 +111,6 @@
                             IsChecked="{Binding ShouldInjectTags}" />
                     </DockPanel>
 
-                    <!--  Skip existing files  -->
-                    <DockPanel
-                        Background="Transparent"
-                        LastChildFill="False"
-                        ToolTip="Trong chế độ tải nhiều video, bỏ qua không tải lại những video nào đã có trong thư mục tải về">
-                        <TextBlock
-                            Margin="16,8"
-                            DockPanel.Dock="Left"
-                            Text="Bỏ qua không tải tệp đã có" />
-                        <ToggleButton
-                            Margin="16,8"
-                            DockPanel.Dock="Right"
-                            IsChecked="{Binding ShouldSkipExistingFiles}" />
-                    </DockPanel>
-
                     <!--  File name template  -->
                     <DockPanel
                         Visibility="Collapsed"
@@ -191,24 +176,6 @@
                                 Style="{DynamicResource MaterialDesignThinSlider}"
                                 Value="{Binding ParallelLimit}" />
                         </StackPanel>
-                    </DockPanel>
-                    <!--  download all channel's video or just most viewed video only -->
-                    <DockPanel
-                        Background="Transparent"
-                        LastChildFill="False"
-                        ToolTip="Thay vì tải tất cả video của kênh, thì chỉ tải những video nào được xem nhiều nhất (trong top 50)?">
-                        <TextBlock
-                            Height="48"
-                            TextWrapping="Wrap"
-                            TextTrimming="CharacterEllipsis"
-                            Margin="16,8"
-                            DockPanel.Dock="Left"
-                            Text="Chỉ tải những video nào được xem nhiều nhất (trong top 50)?" Width="240" />
-                        <ToggleButton
-                            Margin="16,8"
-                            VerticalAlignment="Center"
-                            DockPanel.Dock="Right"
-                            IsChecked="{Binding DownloadMostViewedVideoOnly}" />
                     </DockPanel>
 
                 </StackPanel>

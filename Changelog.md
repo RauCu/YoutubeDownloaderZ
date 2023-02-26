@@ -1,3 +1,8 @@
+### v1.9.72 (27-Feb-2023)
+- Add view count
+- Auto upload multiple video
+- Add number to button
+
 ### v1.9.71 (23-Jan-2023)
 
 - Sync to up_stream
