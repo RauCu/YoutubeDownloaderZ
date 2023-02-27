@@ -60,6 +60,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     public bool SelectedToUpload { get; set; } = false;
     public bool UploadDone { get; set; } = false;
+    public bool AlreadyUploaded { get; set; } = false;
 
     public bool UploadError { get; set; } = false;
 
@@ -103,6 +104,11 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
 
     public bool CanShowFile => (Status == DownloadStatus.Completed || Status == DownloadStatus.Completed_Already);
+
+    public void AlreadyUploadedChanged()
+    {
+
+    }
 
     public async void ShowFile()
     {
@@ -222,6 +228,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         ToolTip? vTip = vTimer.Tag as ToolTip;
         if (vTip != null)
             vTip.IsOpen = false;
+
     }
 
     public static string ShowDialog(string text, string error, string caption)
@@ -229,7 +236,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         System.Windows.Forms.Form prompt = new System.Windows.Forms.Form()
         {
             Width = 700,
-            Height = 280,
+            Height = 280 + 30,
             FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog,
             Text = caption,
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
@@ -255,29 +262,20 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
         System.Windows.Forms.Button confirmation = new System.Windows.Forms.Button()
         {
-            Text = "OK",
+            Text = "DÁN VÀ ĐĂNG NHẬP",
             Left = 275,
             Width = 150,
-            Height = 40,
+            Height = 40 + 30,
             Top = 190,
             DialogResult = System.Windows.Forms.DialogResult.OK
         };
         confirmation.Font = LargeFont;
-        confirmation.Click += (sender, e) => { prompt.Close(); };
+        confirmation.Click += (sender, e) => { email_passTextBox.Text = Clipboard.GetText(); prompt.Close(); };
         prompt.Controls.Add(email_passLabel);
         prompt.Controls.Add(email_passLabelError);
         prompt.Controls.Add(email_passTextBox);
-
-
         prompt.Controls.Add(confirmation);
         prompt.AcceptButton = confirmation;
-
-        // TODO: remove after testing done
-        //string email = "raucuqua1002@gmail.com";
-        //string pass = "Testing123";
-        //emailTextBox.Text = email;
-        //passswordTextBox.Text = pass;
-
 
         string email_passText = "";
         if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -456,11 +454,15 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         string category = "Entertainment";
 
         // .VideoQuality?.MaxHeight
-        GetVideoInfo(videoPath);
+
         bool isShortVideo = false;
-        if (Video!.Duration?.TotalSeconds <= 60 && videoHeight > videoWidth)
+        if (Video!.Duration?.TotalSeconds <= 60)
         {
-            isShortVideo = true;
+            GetVideoInfo(videoPath);
+            if (videoHeight > videoWidth)
+            {
+                isShortVideo = true;
+            }
         }
         UploadDone = false;
         UploadError = false;
@@ -529,12 +531,17 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                 }
                 else
                 {
-                    // .VideoQuality?.MaxHeight
-                    GetVideoInfo(videoPath);
                     bool isShortVideo = false;
-                    if (Video!.Duration?.TotalSeconds <= 60 && videoHeight > videoWidth)
+                    if (Video!.Duration?.TotalSeconds <= 60)
                     {
-                        isShortVideo = true;
+                        {
+                            GetVideoInfo(videoPath);
+                            if (videoHeight > videoWidth)
+                            {
+                                isShortVideo = true;
+                            }
+                        }
+                        GetVideoInfo(videoPath);
                     }
                     Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
                 }
@@ -544,7 +551,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             errorOccur = true;
             await _dialogManager.ShowDialogAsync(
-                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + Video!.Title + "\n" + ex.Message)
+                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + FileNameShort + "\n\n\n" + ex.Message)
             );
         }
         finally

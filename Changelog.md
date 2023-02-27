@@ -1,3 +1,9 @@
+### v1.9.73 (28-Feb-2023)
+- Fix bug: hang when upload video
+- Add paste button on the search box
+- Move upload result checkbox to the end
+- Can login more quickly: paste email-password; login by just only 1 click to the button "DÁN VÀ ĐĂNG NHẬP"
+
 ### v1.9.72 (27-Feb-2023)
 - Add view count
 - Auto upload multiple video

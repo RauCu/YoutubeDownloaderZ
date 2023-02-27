@@ -18,6 +18,7 @@ using YoutubeDownloader.ViewModels.Dialogs;
 using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Exceptions;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -154,7 +155,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     {
                         errorOccur = true;
                         await _dialogManager.ShowDialogAsync(
-                            _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.Video!.Title + "\n" + ex.Message)
+                            _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
                         );
                         // stop upload
                         break;
@@ -554,6 +555,17 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             Query = "";
         }
     }
+
+    public void PasteQuery()
+    {
+        if (!IsBusy)
+        {
+            Query = Clipboard.GetText();
+            ProcessQuery();
+        }
+
+    }
+
     public bool CanProcessQuery => !IsBusy && !string.IsNullOrWhiteSpace(Query);
     public async void ProcessQuery()
     {
@@ -595,7 +607,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         result.Title,
                         result.Videos,
                         // Pre-select videos if they come from a single query and not from search
-                        result.Kind is not QueryResultKind.Search and not QueryResultKind.Aggregate
+                        result.Kind is not QueryResultKind.Search
                     )
                 );
 

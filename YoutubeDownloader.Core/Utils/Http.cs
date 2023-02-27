@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
@@ -103,42 +103,48 @@ public static class Http
         if (driver != null)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            if (isShortVideo)
+            {
+                string shortVideoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
+                bool clickShortVideoTabSuccess = false;
+                for (int i = 0; i < 10 && clickShortVideoTabSuccess == false; i++)
+                {
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(shortVideoTab)));
+                        IWebElement elementShortVideoTab = driver.FindElement(By.XPath(shortVideoTab));
+                        elementShortVideoTab.Click();
+                        clickShortVideoTabSuccess = true;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    Thread.Sleep(1000);
+                }
+            }
             //
-            string createContentXpath = "//button[normalize-space() = 'Create Content']";
-            bool clickUploadBtnSuccess = false;
-            for (int i = 0; i < 10 && clickUploadBtnSuccess == false; i++)
+
+
+            string uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[2]/div[2]/div/table/tr/td[2]/div/button";
+            if (isShortVideo)
+            {
+                uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div/table/tr/td[2]/div/button";
+            }
+
+            bool clickuploadVideoSuccess = false;
+            for (int i = 0; i < 10 && clickuploadVideoSuccess == false; i++)
             {
                 try
                 {
-                    wait.Until(driver => driver.FindElement(By.XPath(createContentXpath)));
-                    IWebElement elementBtnCreateContent = driver.FindElement(By.XPath(createContentXpath));
-                    elementBtnCreateContent.Click();
-                    clickUploadBtnSuccess = true;
+                    wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
+                    IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
+                    elementBtnUploadVideo.Click();
+                    clickuploadVideoSuccess = true;
                 }
                 catch (Exception)
                 {
                 }
                 Thread.Sleep(1000);
-            }
-
-            string uploadVideoXpath = "/html/body/div[3]/div[3]/ul/li[1]";
-            if (!isShortVideo)
-            {
-                uploadVideoXpath = "/html/body/div[3]/div[3]/ul/li[2]";
-            }
-
-            try
-            {
-                wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
-                IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
-
-                elementBtnUploadVideo.Click();
-            }
-            catch (Exception)
-            {
-                wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
-                IWebElement elementBtnUploadVideo1 = driver.FindElement(By.XPath(uploadVideoXpath));
-                elementBtnUploadVideo1.Click();
             }
 
             string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
@@ -199,7 +205,7 @@ public static class Http
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
 
             // title
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             string titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div/input";
             if (isShortVideo)
             {
