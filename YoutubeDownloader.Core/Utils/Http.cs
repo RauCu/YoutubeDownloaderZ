@@ -103,27 +103,48 @@ public static class Http
         if (driver != null)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            string videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
             if (isShortVideo)
             {
-                string shortVideoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
-                bool clickShortVideoTabSuccess = false;
-                for (int i = 0; i < 10 && clickShortVideoTabSuccess == false; i++)
-                {
-                    try
-                    {
-                        wait.Until(driver => driver.FindElement(By.XPath(shortVideoTab)));
-                        IWebElement elementShortVideoTab = driver.FindElement(By.XPath(shortVideoTab));
-                        elementShortVideoTab.Click();
-                        clickShortVideoTabSuccess = true;
-                    }
-                    catch (Exception)
-                    {
-                    }
-                    Thread.Sleep(1000);
-                }
+                videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
             }
-            //
-
+            bool clickVideoTabSuccess = false;
+            for (int i = 0; i < 10 && clickVideoTabSuccess == false; i++)
+            {
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(videoTab)));
+                    IWebElement elementVideoTab = driver.FindElement(By.XPath(videoTab));
+                    elementVideoTab.Click();
+                    clickVideoTabSuccess = true;
+                }
+                catch (Exception)
+                {
+                    if (!isShortVideo)
+                    {
+                        if (i % 2 == 0)
+                        {
+                            videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
+                        }
+                        else
+                        {
+                            videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
+                        }
+                    }
+                    else
+                    {
+                        if (i % 2 == 0)
+                        {
+                            videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
+                        }
+                        else
+                        {
+                            videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
+                        }
+                    }
+                }
+                Thread.Sleep(1000);
+            }
 
             string uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[2]/div[2]/div/table/tr/td[2]/div/button";
             if (isShortVideo)
@@ -180,29 +201,29 @@ public static class Http
 
             // select thumbnail
             string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/div/label/button";
-            if (isShortVideo)
+            if (!isShortVideo)
             {
-                selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
-            }
-            bool uploadThumbnailSuccess = false;
-            for (int i = 0; i < 10 && uploadThumbnailSuccess == false; i++)
-            {
-                try
+                //selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
+                bool uploadThumbnailSuccess = false;
+                for (int i = 0; i < 10 && uploadThumbnailSuccess == false; i++)
                 {
-                    wait.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
-                    IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
-                    elementBtnSelectThumnail.Click();
-                    uploadThumbnailSuccess = true;
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
+                        IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
+                        elementBtnSelectThumnail.Click();
+                        uploadThumbnailSuccess = true;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    Thread.Sleep(1000);
                 }
-                catch (Exception)
-                {
-                }
-                Thread.Sleep(1000);
+                //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
+                sim.Keyboard.TextEntry(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
+                //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             }
-            //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
-            sim.Keyboard.TextEntry(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
-            //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
-            sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
 
             // title
             Thread.Sleep(1000);

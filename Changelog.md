@@ -1,3 +1,7 @@
+### v1.9.74 (01-Mar-2023)
+- Fix bug: cannot upload normal video after upload short video
+- Ignore, don't upload thumnail for short video
+
 ### v1.9.73 (28-Feb-2023)
 - Fix bug: hang when upload video
 - Add paste button on the search box
