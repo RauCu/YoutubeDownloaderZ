@@ -468,6 +468,25 @@
                     <!--  Buttons  -->
                     <DataGridTemplateColumn 
                         MinWidth="400">
+                         <DataGridTemplateColumn.HeaderTemplate>
+                            <DataTemplate>
+                            <StackPanel 
+                                Orientation="Horizontal">
+                                <CheckBox
+                                    Uid="CheckAll"
+                                    Content=""
+                                    IsThreeState="False"
+                                    IsChecked="{Binding
+                                    RelativeSource={RelativeSource AncestorType={x:Type DataGrid}},
+                                    Path=DataContext.AllItemsAreChecked}" >
+                                    <CheckBox.LayoutTransform>
+                                        <ScaleTransform ScaleX="1.3" ScaleY="1.3" />
+                                    </CheckBox.LayoutTransform>
+                                </CheckBox>
+                                <Label HorizontalAlignment="Center" Content="CHỌN TẤT CẢ ĐỂ ĐĂNG" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.HeaderTemplate>
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate DataType="{x:Type components:DownloadViewModel}">
                                 <StackPanel

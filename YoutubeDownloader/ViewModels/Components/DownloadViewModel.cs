@@ -164,7 +164,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         try
         {
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-            String thumbnailPath = FilePath.Substring(0, FilePath.Length - 4) + ".jpg";
+            String thumbnailPath = Http.RemoveTitle(FilePath.Substring(0, FilePath.Length - 4) + ".jpg");
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
             Clipboard.SetText(thumbnailPath);
             //MessageBox.Show("Tên video đã được sao chép (copy)!", "Sao chép tên video", MessageBoxButton.OK, MessageBoxImage.Information);

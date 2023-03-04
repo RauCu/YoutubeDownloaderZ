@@ -19,11 +19,47 @@ using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Exceptions;
 using System.Diagnostics;
 using System.Windows.Forms;
+using System.ComponentModel;
+using System.Drawing;
+using System.Windows;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
 public class DashboardViewModel : PropertyChangedBase, IDisposable
 {
+    private bool allItemsAreChecked;
+    public event PropertyChangedEventHandler PropertyChanged;
+
+    public bool AllItemsAreChecked
+    {
+        get
+        {
+            return this.allItemsAreChecked;
+        }
+        set
+        {
+            this.allItemsAreChecked = value;
+            var handler = this.PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs("AllItemsAreChecked"));
+            }
+
+            int count = 0;
+            foreach (var download in Downloads.ToArray())
+            {
+                if (download.CanShowFile)
+                {
+                    download.SelectedToUpload = value;
+                    if (value)
+                    {
+                        count++;
+                    }
+                }
+            }
+            this.NumberVideoNeedToUpload = count;
+        }
+    }
     private readonly IViewModelFactory _viewModelFactory;
     private readonly DialogManager _dialogManager;
     private readonly SettingsService _settingsService;
@@ -135,6 +171,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             download.UploadError = false;
         }
         //
+        bool allSuccess = true;
         foreach (var download in Downloads.ToArray())
         {
             if (download.CanShowFile && download.SelectedToUpload)
@@ -158,6 +195,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
                         );
                         // stop upload
+                        allSuccess = false;
                         break;
                     }
                     finally
@@ -183,6 +221,72 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 }
             }
         }
+        if (driver != null && allSuccess)
+        {
+            Thread.Sleep(5000);
+            while (true)
+            {
+                string pageSrc = driver.PageSource;
+                if (!isUploading(pageSrc))
+                {
+                    System.Drawing.Size currentSize = driver.Manage().Window.Size;
+                    driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+
+                    string msg = "";
+                    if (isTranscoding(pageSrc))
+                    {
+                        msg = "Đang Transcoding ... ";
+                    }
+                    msg += "Có thể tắt trình duyệt được rồi! Đồng ý tắt?";
+                    MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                        "Đã Upload xong video!",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Question);
+
+                    if (confirm == MessageBoxResult.Yes)
+                    {
+                        driver.Close();
+                        driver = null;
+                    }
+                    else
+                    {
+                        driver.Manage().Window.Size = currentSize;
+                    }
+                    break;
+                }
+                Thread.Sleep(3000);
+            }
+        }
+    }
+
+    private bool isUploading(string text)
+    {
+        bool result = false;
+        for (int i = 0; i <= 100; i++)
+        {
+            string t = "Uploading " + i + "%";
+            if (text.Contains(t))
+            {
+                result = true;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private bool isTranscoding(string text)
+    {
+        bool result = false;
+        for (int i = 0; i <= 100; i++)
+        {
+            string t = "Transcoding " + i + "%";
+            if (text.Contains(t))
+            {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private void EnqueueDownload(DownloadViewModel download, int position = 0)
@@ -560,7 +664,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     {
         if (!IsBusy)
         {
-            Query = Clipboard.GetText();
+            Query = System.Windows.Clipboard.GetText();
             ProcessQuery();
         }
 
@@ -732,4 +836,6 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     {
         _downloadSemaphore.Dispose();
     }
+
+
 }

@@ -20,6 +20,12 @@ namespace YoutubeDownloader.Core.Utils;
 
 public static class Http
 {
+    public static string RemoveTitle(String input)
+    {
+        int start = input.IndexOf("]-[") + "]-[".Length;
+        int end = input.LastIndexOf("]-[");
+        return input.Remove(start - 2, end - start + 3);
+    }
     public static HttpClient Client { get; } = new()
     {
         DefaultRequestHeaders =
@@ -40,16 +46,17 @@ public static class Http
         IWebDriver? driver = GetDriver();
         if (driver != null)
         {
-            driver.Navigate().GoToUrl("https://www.ganjing.com/signin");
+            driver.Navigate().GoToUrl("https://studio.ganjing.com");
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            string emailCSSSelector = "input[name='email'][type='email']";
+            driver.SwitchTo().Frame("gjw_sso_page");
+            string emailCSSSelector = "input[placeholder='Email address*']";
             // wait maximum 10 seconds
             wait.Until(driver => driver.FindElement(By.CssSelector(emailCSSSelector)));
 
             IWebElement elementTxtBoxEmail = driver.FindElement(By.CssSelector(emailCSSSelector));
             elementTxtBoxEmail.SendKeys(email);
 
-            IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[name='password'][type='password']"));
+            IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[placeholder='Password*']"));
             elementTxtBoxPass.SendKeys(pass);
             elementTxtBoxPass.Submit();
 
@@ -61,6 +68,7 @@ public static class Http
                 if (!driver.PageSource.Contains("Don't have an account?"))
                 {
                     login_success = true;
+                    driver.SwitchTo().DefaultContent();
                     break;
                 }
                 else if (driver.PageSource.Contains("Email or password is incorrect."))
@@ -83,11 +91,7 @@ public static class Http
                 }
             }
 
-            if (login_success)
-            {
-                driver.Navigate().GoToUrl("https://studio.ganjing.com/");
-            }
-            else
+            if (!login_success)
             {
                 driver = null;
             }
@@ -103,7 +107,8 @@ public static class Http
         if (driver != null)
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            string videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
+            WebDriverWait wait1Second = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+            string videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
             if (isShortVideo)
             {
                 videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
@@ -113,7 +118,7 @@ public static class Http
             {
                 try
                 {
-                    wait.Until(driver => driver.FindElement(By.XPath(videoTab)));
+                    wait1Second.Until(driver => driver.FindElement(By.XPath(videoTab)));
                     IWebElement elementVideoTab = driver.FindElement(By.XPath(videoTab));
                     elementVideoTab.Click();
                     clickVideoTabSuccess = true;
@@ -122,7 +127,7 @@ public static class Http
                 {
                     if (!isShortVideo)
                     {
-                        if (i % 2 == 0)
+                        if (i % 2 != 0)
                         {
                             videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
                         }
@@ -133,7 +138,7 @@ public static class Http
                     }
                     else
                     {
-                        if (i % 2 == 0)
+                        if (i % 2 != 0)
                         {
                             videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
                         }
@@ -157,7 +162,7 @@ public static class Http
             {
                 try
                 {
-                    wait.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
+                    wait1Second.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
                     IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
                     elementBtnUploadVideo.Click();
                     clickuploadVideoSuccess = true;
@@ -209,7 +214,7 @@ public static class Http
                 {
                     try
                     {
-                        wait.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
+                        wait1Second.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
                         IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
                         elementBtnSelectThumnail.Click();
                         uploadThumbnailSuccess = true;
@@ -220,7 +225,7 @@ public static class Http
                     Thread.Sleep(1000);
                 }
                 //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
-                sim.Keyboard.TextEntry(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
+                sim.Keyboard.TextEntry(Http.RemoveTitle(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg"));
                 //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
             }

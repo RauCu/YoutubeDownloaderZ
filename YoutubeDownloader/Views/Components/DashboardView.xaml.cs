@@ -31,4 +31,9 @@ public partial class DashboardView
     {
         ((DashboardViewModel)this.DataContext).UpdateNumberVideoNeedToUpload();
     }
+    private void AllItemsAreChecked(object sender, RoutedEventArgs e)
+    {
+        ((DashboardViewModel)this.DataContext).AllItemsAreChecked = !((DashboardViewModel)this.DataContext).AllItemsAreChecked;
+    }
+    
 }

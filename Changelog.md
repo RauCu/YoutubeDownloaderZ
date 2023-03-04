@@ -1,3 +1,11 @@
+### v1.9.75 (05-Mar-2023)
+- Fix bug: download and upload video slowly
+- Add button to select all video to upload
+- Login to GJW via studio.ganjing.com, instead of ganjing.com/signin
+- Fix bug: cannot upload thumnail with too long file name (70-75 characters) 
+  contains chinese characters (e.g: https://www.youtube.com/watch?v=KfRfVPFz_5s)
+- Show Dialog after uploading done ==> let user choose to close browser
+
 ### v1.9.74 (01-Mar-2023)
 - Fix bug: cannot upload normal video after upload short video
 - Ignore, don't upload thumnail for short video

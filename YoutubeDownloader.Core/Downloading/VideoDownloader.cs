@@ -70,35 +70,42 @@ public class VideoDownloader
         if (!string.IsNullOrWhiteSpace(dirPath))
             Directory.CreateDirectory(dirPath);
 
-        String[] qualityThumbnails = new String[] {"maxresdefault.jpg", "sddefault.jpg", "hqdefault.jpg", "mqdefault.jpg", "default.jpg"}; 
-        using (WebClient webClient = new WebClient()){
+        String[] qualityThumbnails = new String[] { "maxresdefault.jpg", "sddefault.jpg", "hqdefault.jpg", "mqdefault.jpg", "default.jpg" };
+        using (WebClient webClient = new WebClient())
+        {
             int i = 0;
             String bestQualityThumbnail = qualityThumbnails[i];
 
             String thumbnailURL;
-            while(i < qualityThumbnails.Length){
+            while (i < qualityThumbnails.Length)
+            {
                 bool downloadSuccess = true;
                 bestQualityThumbnail = qualityThumbnails[i];
-                thumbnailURL ="https://img.youtube.com/vi/"+ video.Id + "/" + bestQualityThumbnail;
+                thumbnailURL = "https://img.youtube.com/vi/" + video.Id + "/" + bestQualityThumbnail;
                 //Console.WriteLine(thumbnailURL);
                 byte[] dataArr = new byte[1];
 
-                try {
+                try
+                {
                     dataArr = webClient.DownloadData(thumbnailURL);
                 }
-                catch (WebException ex){
-                // (HttpWebResponse)ex.Response).StatusCode
+                catch (WebException ex)
+                {
+                    // (HttpWebResponse)ex.Response).StatusCode
                     //Console.WriteLine("DownloadImage", ex.Message + " " + ex.InnerException + "URL: " + thumbnailURL + "Response: " + ((HttpWebResponse)ex.Response).StatusCode.ToString(), "Image");
-                    downloadSuccess =false;
+                    downloadSuccess = false;
                     i++;
                     Console.WriteLine(ex.Message);
-                }finally {
+                }
+                finally
+                {
                     //Console.WriteLine("DONE");
                 }
 
-                if(downloadSuccess){
+                if (downloadSuccess)
+                {
                     //save file to local
-                    String thumbnailPath = System.IO.Path.GetFileNameWithoutExtension(filePath)+".jpg";
+                    String thumbnailPath = Http.RemoveTitle(System.IO.Path.GetFileNameWithoutExtension(filePath) + ".jpg");
                     File.WriteAllBytes(dirPath + "/" + thumbnailPath, dataArr);
                     //Console.WriteLine(thumbnailURL);
                     break;

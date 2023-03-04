@@ -16,7 +16,7 @@ namespace YoutubeDownloader.Utils
             this.Id = "";
             this.Title = "";
             this.DownloadStatus = "";
-            this.ContentStatus ="";
+            this.ContentStatus = "";
         }
 
         public VideoInfo(int num, string title, string id, string downloadStatus, string contentStatus)
@@ -35,10 +35,10 @@ namespace YoutubeDownloader.Utils
 
         public string DownloadStatus { get; set; }
         public string ContentStatus { get; set; }
-        
+
         public override string ToString()
         {
-            return "[" + (Number).ToString().PadLeft(YoutubeDownloader.Utils.AppConsts.LenNumber, '0') + "]-[" + 
+            return "[" + (Number).ToString().PadLeft(YoutubeDownloader.Utils.AppConsts.LenNumber, '0') + "]-[" +
                 Title + "]-[" + Id + "]-[" + DownloadStatus + "]-[" + ContentStatus + "]";
         }
     }
@@ -80,5 +80,4 @@ namespace YoutubeDownloader.Utils
             return new VideoInfo(number, parsedParts[1], parsedParts[2], parsedParts[3], parsedParts[4]);
         }
     }
-
 }

@@ -29,7 +29,7 @@ public class QueryResolver
         if (isUrl && PlaylistId.TryParse(query) is { } playlistId)
         {
             var playlist = await _youtube.Playlists.GetAsync(playlistId, cancellationToken);
-            var videos = await _youtube.Playlists.GetVideosNewAsync(playlistId, cancellationToken);
+            var videos = await _youtube.Playlists.GetVideosAsync(playlistId, cancellationToken);
             return new QueryResult(QueryResultKind.Playlist, $"Danh sách phát: {playlist.Title}", videos);
         }
 
@@ -37,14 +37,14 @@ public class QueryResolver
         if (isUrl && VideoId.TryParse(query) is { } videoId)
         {
             var video = await _youtube.Videos.GetAsync(videoId, cancellationToken);
-            return new QueryResult(QueryResultKind.Video, video.Title, new[] {video});
+            return new QueryResult(QueryResultKind.Video, video.Title, new[] { video });
         }
 
         // Channel
         if (isUrl && ChannelId.TryParse(query) is { } channelId)
         {
             var channel = await _youtube.Channels.GetAsync(channelId, cancellationToken);
-            var videos = await _youtube.Channels.GetUploadsNewAsync(channelId, cancellationToken);
+            var videos = await _youtube.Channels.GetUploadsAsync(channelId, cancellationToken);
             return new QueryResult(QueryResultKind.Channel, $"Kênh: {channel.Title}", videos);
         }
 
@@ -52,7 +52,7 @@ public class QueryResolver
         if (isUrl && ChannelHandle.TryParse(query) is { } channelHandle)
         {
             var channel = await _youtube.Channels.GetByHandleAsync(channelHandle, cancellationToken);
-            var videos = await _youtube.Channels.GetUploadsNewAsync(channel.Id, cancellationToken);
+            var videos = await _youtube.Channels.GetUploadsAsync(channel.Id, cancellationToken);
             return new QueryResult(QueryResultKind.Channel, $"Kênh: {channel.Title}", videos);
         }
 
@@ -60,7 +60,7 @@ public class QueryResolver
         if (isUrl && UserName.TryParse(query) is { } userName)
         {
             var channel = await _youtube.Channels.GetByUserAsync(userName, cancellationToken);
-            var videos = await _youtube.Channels.GetUploadsNewAsync(channel.Id, cancellationToken);
+            var videos = await _youtube.Channels.GetUploadsAsync(channel.Id, cancellationToken);
             return new QueryResult(QueryResultKind.Channel, $"Kênh: {channel.Title}", videos);
         }
 
@@ -68,7 +68,7 @@ public class QueryResolver
         if (isUrl && ChannelSlug.TryParse(query) is { } channelSlug)
         {
             var channel = await _youtube.Channels.GetBySlugAsync(channelSlug, cancellationToken);
-            var videos = await _youtube.Channels.GetUploadsNewAsync(channel.Id, cancellationToken);
+            var videos = await _youtube.Channels.GetUploadsAsync(channel.Id, cancellationToken);
             return new QueryResult(QueryResultKind.Channel, $"Kênh: {channel.Title}", videos);
         }
 
