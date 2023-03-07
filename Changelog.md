@@ -1,3 +1,7 @@
+### v1.9.76 (08-Mar-2023)
+- Fix bug: normal video but detect as a short video (https://www.youtube.com/watch?v=5RYb-tf3E3o)
+- Change the size of browser to smaller when showing a dialog
+
 ### v1.9.75 (05-Mar-2023)
 - Fix bug: download and upload video slowly
 - Add button to select all video to upload

@@ -172,28 +172,55 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         }
         //
         bool allSuccess = true;
+        bool login_success = false;
         foreach (var download in Downloads.ToArray())
         {
             if (download.CanShowFile && download.SelectedToUpload)
             {
                 if (driver == null)
                 {
-                    driver = download.SignInGJW();
+                    driver = download.SignInGJW(out login_success);
                 }
 
-                if (driver != null)
+                if (login_success)
                 {
                     bool errorOccur = false;
                     try
                     {
+#pragma warning disable CS8604 // Possible null reference argument.
                         download.UploadOnly(driver);
+#pragma warning restore CS8604 // Possible null reference argument.
                     }
                     catch (Exception ex)
                     {
                         errorOccur = true;
-                        await _dialogManager.ShowDialogAsync(
-                            _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
-                        );
+                        // await _dialogManager.ShowDialogAsync(
+                        //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
+                        // );
+
+                        System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                        if (driver != null)
+                        {
+                            currentSize = driver.Manage().Window.Size;
+                            driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                        }
+
+                        string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileNameShort + "\n\n\nBạn có thể đăng video bị lỗi này thủ công," +
+                        "\nbằng cách dùng các nút 3-4-5 để sao chép các thông tin như tiêu đề, đường dẫn video, hình, rồi dán vào trình duyệt!\n\n\n" + ex.Message;
+
+                        MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                            "Lỗi",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Question);
+
+                        if (confirm == MessageBoxResult.OK)
+                        {
+                            if (driver != null)
+                            {
+                                driver.Manage().Window.Size = currentSize;
+                            }
+                        }
+
                         // stop upload
                         allSuccess = false;
                         break;
@@ -213,9 +240,31 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 }
                 else
                 {
-                    await _dialogManager.ShowDialogAsync(
-                        _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
-                    );
+                    // await _dialogManager.ShowDialogAsync(
+                    //     _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
+                    // );
+                    System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                    if (driver != null)
+                    {
+                        currentSize = driver.Manage().Window.Size;
+                        driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                    }
+
+                    string msg = "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!";
+
+                    MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                        "Đăng nhập tự động thất bại.",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Question);
+
+                    if (confirm == MessageBoxResult.OK)
+                    {
+                        if (driver != null)
+                        {
+                            driver.Manage().Window.Size = currentSize;
+                        }
+                    }
+                    allSuccess = false;
                     // stop upload
                     break;
                 }

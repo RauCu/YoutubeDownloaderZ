@@ -40,9 +40,9 @@ public static class Http
             }
         }
     };
-    public static IWebDriver SignInGJW(string email, string pass)
+    public static IWebDriver SignInGJW(string email, string pass, out bool login_success)
     {
-        bool login_success = false;
+        login_success = false;
         IWebDriver? driver = GetDriver();
         if (driver != null)
         {
@@ -89,11 +89,6 @@ public static class Http
                         Thread.Sleep(1000);
                     }
                 }
-            }
-
-            if (!login_success)
-            {
-                driver = null;
             }
         }
 #pragma warning disable CS8603 // Possible null reference return.

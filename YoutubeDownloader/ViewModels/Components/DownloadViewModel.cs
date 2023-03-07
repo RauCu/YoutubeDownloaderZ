@@ -327,7 +327,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         string output = Run(FFmpegCliPath(), @params);
 
         //get the video format
-        Regex re = new Regex("(\\d{2,3})x(\\d{2,3})");
+        Regex re = new Regex("(\\d{3,4})x(\\d{3,4})");
         Match m = re.Match(output);
         if (m.Success)
         {
@@ -380,8 +380,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
         return output;
     }
-    public IWebDriver? SignInGJW()
+    public IWebDriver? SignInGJW(out bool login_success)
     {
+        login_success = false;
         IWebDriver? driver = null;
         if (!CanShowFile)
             return null;
@@ -424,7 +425,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
             if (email != "" && pass != "")
             {
-                driver = Http.SignInGJW(email, pass);
+                driver = Http.SignInGJW(email, pass, out login_success);
             }
         }
         catch (Exception)
@@ -473,6 +474,8 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     public async void Upload()
     {
+        bool login_success = false;
+        IWebDriver? driver = null;
         if (!CanShowFile)
             return;
 
@@ -522,12 +525,33 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
             if (email != "" && pass != "")
             {
-                IWebDriver driver = Http.SignInGJW(email, pass);
-                if (driver == null)
+                driver = Http.SignInGJW(email, pass, out login_success);
+                if (!login_success)
                 {
-                    await _dialogManager.ShowDialogAsync(
-                        _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
-                    );
+                    // await _dialogManager.ShowDialogAsync(
+                    //     _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
+                    // );
+                    System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                    if (driver != null)
+                    {
+                        currentSize = driver.Manage().Window.Size;
+                        driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                    }
+
+                    string msg = "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!";
+
+                    MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                        "Đăng nhập tự động thất bại.",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Question);
+
+                    if (confirm == MessageBoxResult.OK)
+                    {
+                        if (driver != null)
+                        {
+                            driver.Manage().Window.Size = currentSize;
+                        }
+                    }
                 }
                 else
                 {
@@ -550,9 +574,30 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         catch (Exception ex)
         {
             errorOccur = true;
-            await _dialogManager.ShowDialogAsync(
-                _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + FileNameShort + "\n\n\n" + ex.Message)
-            );
+            // await _dialogManager.ShowDialogAsync(
+            //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + FileNameShort + "\n\n\n" + ex.Message)
+            // );
+            System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+            if (driver != null)
+            {
+                currentSize = driver.Manage().Window.Size;
+                driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+            }
+            string msg = "Đăng video lỗi, đang lỗi ở video: " + Video!.Title + "\n\n\nBạn có thể đăng video bị lỗi này thủ công," +
+            "\nbằng cách dùng các nút 3-4-5 để sao chép các thông tin như tiêu đề, đường dẫn video, hình, rồi dán vào trình duyệt!\n\n\n" + ex.Message;
+
+            MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                "Lỗi",
+                MessageBoxButton.OK,
+                MessageBoxImage.Question);
+
+            if (confirm == MessageBoxResult.OK)
+            {
+                if (driver != null)
+                {
+                    driver.Manage().Window.Size = currentSize;
+                }
+            }
         }
         finally
         {
