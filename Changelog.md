@@ -1,3 +1,7 @@
+### v1.9.77 (08-Mar-2023)
+- Fix bug: app is hanging when detect heigh & with of this video (https://www.youtube.com/watch?v=zi0iSLxuWVs)
+- cannot detect upload video button due to HTML changed from GJW. (Haizz ...)
+
 ### v1.9.76 (08-Mar-2023)
 - Fix bug: normal video but detect as a short video (https://www.youtube.com/watch?v=5RYb-tf3E3o)
 - Change the size of browser to smaller when showing a dialog

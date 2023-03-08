@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Gress;
+using NReco.VideoInfo;
 using OpenQA.Selenium;
 using Stylet;
 using YoutubeDownloader.Core.Downloading;
@@ -18,6 +19,7 @@ using YoutubeDownloader.Utils;
 using YoutubeDownloader.ViewModels.Dialogs;
 using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Videos;
+using static NReco.VideoInfo.MediaInfo;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -320,7 +322,19 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
     }
 
     int videoWidth = 0; int videoHeight = 0;
+
     public void GetVideoInfo(string input)
+    {
+        var ffProbe = new NReco.VideoInfo.FFProbe();
+        var videoInfo = ffProbe.GetMediaInfo(input);
+        MediaInfo.StreamInfo[] s = videoInfo.Streams;
+        if (s.Length> 0)
+        {
+            videoWidth = s[0].Width;
+            videoHeight = s[0].Height;
+        }
+    }
+    public void GetVideoInfo2(string input)
     {
         //  set up the parameters for video info.
         string @params = string.Format("-i \"{0}\"", input);
@@ -558,14 +572,13 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                     bool isShortVideo = false;
                     if (Video!.Duration?.TotalSeconds <= 60)
                     {
-                        {
-                            GetVideoInfo(videoPath);
-                            if (videoHeight > videoWidth)
-                            {
-                                isShortVideo = true;
-                            }
-                        }
+
                         GetVideoInfo(videoPath);
+                        if (videoHeight > videoWidth)
+                        {
+                            isShortVideo = true;
+                        }
+
                     }
                     Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
                 }

@@ -103,6 +103,7 @@ public static class Http
         {
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             WebDriverWait wait1Second = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+            
             string videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
             if (isShortVideo)
             {
@@ -146,10 +147,10 @@ public static class Http
                 Thread.Sleep(1000);
             }
 
-            string uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[2]/div[2]/div/table/tr/td[2]/div/button";
+            string uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[2]/div[2]/div/table/tbody[1]/tr/td[2]/div/button";
             if (isShortVideo)
             {
-                uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div/table/tr/td[2]/div/button";
+                uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div/table/tbody[1]/tr/td[2]/div/button";
             }
 
             bool clickuploadVideoSuccess = false;

@@ -205,7 +205,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
                         }
 
-                        string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileNameShort + "\n\n\nBạn có thể đăng video bị lỗi này thủ công," +
+                        string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileName + "\n\n\nBạn có thể đăng video bị lỗi này thủ công," +
                         "\nbằng cách dùng các nút 3-4-5 để sao chép các thông tin như tiêu đề, đường dẫn video, hình, rồi dán vào trình duyệt!\n\n\n" + ex.Message;
 
                         MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
