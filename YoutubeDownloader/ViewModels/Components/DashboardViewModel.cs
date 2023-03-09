@@ -272,7 +272,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         }
         if (driver != null && allSuccess)
         {
-            Thread.Sleep(5000);
+            Thread.Sleep(7000);
             while (true)
             {
                 string pageSrc = driver.PageSource;

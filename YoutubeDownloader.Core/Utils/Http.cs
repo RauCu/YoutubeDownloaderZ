@@ -101,9 +101,10 @@ public static class Http
         bool result = false;
         if (driver != null)
         {
+            driver.Manage().Window.Maximize();
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             WebDriverWait wait1Second = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
-            
+
             string videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
             if (isShortVideo)
             {
@@ -156,6 +157,10 @@ public static class Http
             bool clickuploadVideoSuccess = false;
             for (int i = 0; i < 10 && clickuploadVideoSuccess == false; i++)
             {
+                if (i == 9)
+                { // last try
+                    ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.8)';");
+                }
                 try
                 {
                     wait1Second.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));

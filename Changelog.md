@@ -1,5 +1,10 @@
+### v1.9.78 (09-Mar-2023)
+- Fix bug: cannot upload video on some computer by set maximum the size / scale down browser
+- Correct the way get width & height of short video
+- Correct wrong path in deploy stage in workflow
+
 ### v1.9.77 (08-Mar-2023)
-- Fix bug: app is hanging when detect heigh & with of this video (https://www.youtube.com/watch?v=zi0iSLxuWVs)
+- Fix bug: app is hanging when detect width & height of this video (https://www.youtube.com/watch?v=zi0iSLxuWVs)
 - cannot detect upload video button due to HTML changed from GJW. (Haizz ...)
 
 ### v1.9.76 (08-Mar-2023)

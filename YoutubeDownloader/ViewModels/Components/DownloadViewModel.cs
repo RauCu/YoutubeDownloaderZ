@@ -328,10 +328,14 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         var ffProbe = new NReco.VideoInfo.FFProbe();
         var videoInfo = ffProbe.GetMediaInfo(input);
         MediaInfo.StreamInfo[] s = videoInfo.Streams;
-        if (s.Length> 0)
+        for (int i = 0; i < s.Length; i++)
         {
-            videoWidth = s[0].Width;
-            videoHeight = s[0].Height;
+            if (s[i].Width != 0 && s[i].Height != 0)
+            {
+                videoWidth = s[i].Width;
+                videoHeight = s[i].Height;
+                break;
+            }
         }
     }
     public void GetVideoInfo2(string input)
@@ -578,7 +582,6 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                         {
                             isShortVideo = true;
                         }
-
                     }
                     Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
                 }

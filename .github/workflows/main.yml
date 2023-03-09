@@ -38,7 +38,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v3
         with:
-          name: YoutubeDownloaderZ
+          name: YoutubeDownloader
           path: YoutubeDownloaderZ
 
       - name: Create package
