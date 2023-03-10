@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
@@ -19,7 +18,6 @@ using YoutubeDownloader.Utils;
 using YoutubeDownloader.ViewModels.Dialogs;
 using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Videos;
-using static NReco.VideoInfo.MediaInfo;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -301,26 +299,6 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         return email_passText;
     }
 
-    private static readonly Lazy<string> DefaultFFmpegCliPathLazy = new(() =>
-        // Try to find FFmpeg in the probe directory
-        Directory
-            .EnumerateFiles(AppDomain.CurrentDomain.BaseDirectory ?? Directory.GetCurrentDirectory())
-            .FirstOrDefault(f =>
-                string.Equals(
-                    Path.GetFileNameWithoutExtension(f),
-                    "ffmpeg",
-                    StringComparison.OrdinalIgnoreCase
-                )
-            ) ??
-
-        // Otherwise fallback to just "ffmpeg" and hope it's on the PATH
-        "ffmpeg"
-    );
-    public string FFmpegCliPath()
-    {
-        return DefaultFFmpegCliPathLazy.Value;
-    }
-
     int videoWidth = 0; int videoHeight = 0;
 
     public void GetVideoInfo(string input)
@@ -328,6 +306,8 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         var ffProbe = new NReco.VideoInfo.FFProbe();
         var videoInfo = ffProbe.GetMediaInfo(input);
         MediaInfo.StreamInfo[] s = videoInfo.Streams;
+        videoWidth = 0;
+        videoHeight = 0;
         for (int i = 0; i < s.Length; i++)
         {
             if (s[i].Width != 0 && s[i].Height != 0)
@@ -338,66 +318,48 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }
         }
     }
-    public void GetVideoInfo2(string input)
+
+    public static IWebDriver? SignInGJWStatic(out bool login_success)
     {
-        //  set up the parameters for video info.
-        string @params = string.Format("-i \"{0}\"", input);
-        string output = Run(FFmpegCliPath(), @params);
-
-        //get the video format
-        Regex re = new Regex("(\\d{3,4})x(\\d{3,4})");
-        Match m = re.Match(output);
-        if (m.Success)
-        {
-            videoWidth = 0;
-            videoHeight = 0;
-            int.TryParse(m.Groups[1].Value, out videoWidth);
-            int.TryParse(m.Groups[2].Value, out videoHeight);
-        }
-    }
-
-    private static string Run(string process/*ffmpegFile*/, string parameters)
-    {
-        if (!File.Exists(process))
-            throw new Exception(string.Format("Cannot find {0}.", process));
-
-        //  Create a process info.
-        ProcessStartInfo oInfo = new ProcessStartInfo(process, parameters);
-        oInfo.UseShellExecute = false;
-        oInfo.CreateNoWindow = true;
-        oInfo.RedirectStandardOutput = true;
-        oInfo.RedirectStandardError = true;
-
-        //  Create the output and streamreader to get the output.
-        string output = "";
-        StreamReader? outputStream = null;
-
-        //  Try the process.
+        login_success = false;
+        IWebDriver? driver = null;
         try
         {
-            //  Run the process.
-            Process? proc = System.Diagnostics.Process.Start(oInfo);
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-            proc.WaitForExit();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+            string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW");
+        re_enter:
+            if (email_pass == "close")
+            {
+                return null;
+            }
 
-            outputStream = proc.StandardError;
-            output = outputStream.ReadToEnd();
+            string[] parts = email_pass.Trim().Split(" ");
+            string email = "";
+            string pass = "";
+            if (parts.Length == 2)
+            {
+                email = parts[0];
+                pass = parts[1];
+            }
+            else
+            {
+                email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.",
+                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW");
+                goto re_enter;
+            }
 
-            proc.Close();
+            if (email != "" && pass != "")
+            {
+                driver = Http.SignInGJW(email, pass, out login_success);
+            }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            output = ex.Message;
+
         }
-        finally
-        {
-            //  Close out the streamreader.
-            if (outputStream != null)
-                outputStream.Close();
-        }
-        return output;
+        return driver;
+
     }
+
     public IWebDriver? SignInGJW(out bool login_success)
     {
         login_success = false;
@@ -562,13 +524,18 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                         "Đăng nhập tự động thất bại.",
                         MessageBoxButton.OK,
                         MessageBoxImage.Question);
-
-                    if (confirm == MessageBoxResult.OK)
+                    try
                     {
-                        if (driver != null)
+                        if (confirm == MessageBoxResult.OK)
                         {
-                            driver.Manage().Window.Size = currentSize;
+                            if (driver != null)
+                            {
+                                driver.Manage().Window.Size = currentSize;
+                            }
                         }
+                    }
+                    catch (Exception)
+                    {
                     }
                 }
                 else
@@ -606,13 +573,18 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                 "Lỗi",
                 MessageBoxButton.OK,
                 MessageBoxImage.Question);
-
-            if (confirm == MessageBoxResult.OK)
+            try
             {
-                if (driver != null)
+                if (confirm == MessageBoxResult.OK)
                 {
-                    driver.Manage().Window.Size = currentSize;
+                    if (driver != null)
+                    {
+                        driver.Manage().Window.Size = currentSize;
+                    }
                 }
+            }
+            catch (Exception)
+            {
             }
         }
         finally

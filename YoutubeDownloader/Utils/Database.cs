@@ -8,7 +8,7 @@ namespace YoutubeDownloader.Utils
     public class Database
     {
         //private static Mutex mut = new Mutex();
-        private static Dictionary<string, string>  MostViewedVideo { get; set; } = new Dictionary<string, string>();
+        private static Dictionary<string, string> MostViewedVideo { get; set; } = new Dictionary<string, string>();
         private static string? DirPath;
         private static bool changed = false;
 
@@ -19,52 +19,67 @@ namespace YoutubeDownloader.Utils
             try
             {
                 //mut.WaitOne();
-                if(videoInfo != null)
+                if (videoInfo != null)
                 {
                     // insert
-                    if(!MostViewedVideo.ContainsKey(videoInfo!.Id)){
+                    if (!MostViewedVideo.ContainsKey(videoInfo!.Id))
+                    {
                         videoInfo.Number = MostViewedVideo.Count + 1;
                         MostViewedVideo.Add(videoInfo!.Id, videoInfo.ToString());
                         changed = true;
                     }
-                    else{ // update
+                    else
+                    { // update
                         VideoInfo storedVideoInfo = VideoInfoParser.Parse(MostViewedVideo[videoInfo!.Id]);
-                        if(! storedVideoInfo.DownloadStatus.Equals(videoInfo.DownloadStatus)){
+                        if (!storedVideoInfo.DownloadStatus.Equals(videoInfo.DownloadStatus))
+                        {
                             MostViewedVideo[videoInfo!.Id] = videoInfo.ToString();
                             changed = true;
-                        }else{
+                        }
+                        else
+                        {
                             changed = false;
                         }
                     }
                 }
                 result = true;
             }
-            catch(System.Exception){
-            }finally{
+            catch (System.Exception)
+            {
+            }
+            finally
+            {
                 //mut.ReleaseMutex();
             }
             return result;
         }
 
-        public static int Count(){
+        public static int Count()
+        {
             return MostViewedVideo.Count;
         }
         public static bool Save()
         {
             bool result = true;
             //mut.WaitOne();
-            if(changed){
+            if (changed)
+            {
                 try
                 {
                     string videoTitleList = "";
-                    foreach (var item in MostViewedVideo) {
+                    foreach (var item in MostViewedVideo)
+                    {
                         videoTitleList += item.Value + "\n";
                     }
                     using StreamWriter file = new(DirPath + "/" + YoutubeDownloader.Utils.AppConsts.DatabaseFileName, append: false);
                     file.WriteLine(videoTitleList);
-                }catch(System.Exception){
+                }
+                catch (System.Exception)
+                {
                     result = false;
-                }finally{
+                }
+                finally
+                {
                     //mut.ReleaseMutex();
                 }
                 changed = false;
@@ -78,35 +93,40 @@ namespace YoutubeDownloader.Utils
             //mut.WaitOne();
             try
             {
-                if(MostViewedVideo.Count == 0){
-                    if (!string.IsNullOrWhiteSpace(dirPath))
-                        Directory.CreateDirectory(dirPath);
-                    List<string> lines = File.ReadAllLines(DirPath + "/" + YoutubeDownloader.Utils.AppConsts.DatabaseFileName).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();
-                    for (int i = 0; i < lines.Count; i++)
-                    {
-                        VideoInfo videoInfo = VideoInfoParser.Parse(lines[i]);
-                        MostViewedVideo.Add(videoInfo.Id, lines[i]);
-                    }
-                    MostViewedVideo = MostViewedVideo;
+                MostViewedVideo.Clear();
+                List<string> lines = File.ReadAllLines(DirPath + "/" + YoutubeDownloader.Utils.AppConsts.DatabaseFileName).Where(arg => !string.IsNullOrWhiteSpace(arg)).ToList();
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    VideoInfo videoInfo = VideoInfoParser.Parse(lines[i]);
+                    MostViewedVideo.Add(videoInfo.Id, lines[i]);
                 }
             }
             catch (System.Exception)
             {
-            }finally{
+            }
+            finally
+            {
                 //mut.ReleaseMutex();
             }
         }
-        public static VideoInfo? Find(string? videoID){
+        public static VideoInfo? Find(string? videoID)
+        {
             VideoInfo? videoInfo = null;
             //mut.WaitOne();
-            try{
+            try
+            {
                 string? value;
-                if (videoID != null && MostViewedVideo.TryGetValue(videoID, out value)){
+                if (videoID != null && MostViewedVideo.TryGetValue(videoID, out value))
+                {
                     videoInfo = VideoInfoParser.Parse(value);
                 }
-            }catch(System.Exception){
-            }finally{
-               // mut.ReleaseMutex();
+            }
+            catch (System.Exception)
+            {
+            }
+            finally
+            {
+                // mut.ReleaseMutex();
             }
             return videoInfo;
         }

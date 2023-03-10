@@ -171,12 +171,10 @@
                 Foreground="{DynamicResource MaterialDesignDarkForeground}"
                 Style="{DynamicResource MaterialDesignFlatButton}"
              
-                ToolTip="Tải lên"
-                IsEnabled="{Binding NumberVideoNeedToUpload, RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}">
+                ToolTip="{Binding TextOfUploadOrSignInButton}">
                 <Button.Content>
                     <TextBlock>
-                        <Run Text="TẢI LÊN" />
-                        <Run Text="(" /><Run Text="{Binding NumberVideoNeedToUpload}" /><Run Text=")" />
+                        <Run Text="{Binding TextOfUploadOrSignInButton}" />
                     </TextBlock>
                 </Button.Content>
             </Button>

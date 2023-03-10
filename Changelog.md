@@ -1,3 +1,9 @@
+### v1.9.79 (10-Mar-2023)
+- Fix bug: data of previous download should not saved to [0000]-[Database].dat when downloading to new directory
+- Fix bug: when a dialog show, then browser is closed, if user click to button on dialog to close or show browser again ==> catch exception now
+- When there is no video selected to upload, instead of showing "TẢI LÊN (0)", now showing "ĐĂNG NHẬP GJW"
+- Remove somes unused functions
+
 ### v1.9.78 (09-Mar-2023)
 - Fix bug: cannot upload video on some computer by set maximum the size / scale down browser
 - Correct the way get width & height of short video
