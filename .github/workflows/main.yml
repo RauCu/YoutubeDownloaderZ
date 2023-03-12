@@ -45,6 +45,10 @@ jobs:
         run: Compress-Archive -Path YoutubeDownloaderZ/* -DestinationPath YoutubeDownloaderZ.zip -Force
         shell: pwsh
 
+      - name: Create package preview
+        run: Compress-Archive -Path YoutubeDownloaderZ/* -DestinationPath YoutubeDownloaderZPreview.zip -Force
+        shell: pwsh        
+
       - name: Create release
         uses: softprops/action-gh-release@v1
         env:

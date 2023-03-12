@@ -116,12 +116,12 @@ public static class Http
                 videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
             }
             bool clickVideoTabSuccess = false;
-            int MAX_TRY_VIDEO_TAB = 10;
+            int MAX_TRY_VIDEO_TAB = 15;
             for (int i = 0; i <= MAX_TRY_VIDEO_TAB && clickVideoTabSuccess == false; i++)
             {
                 try
                 {
-                    wait1Second.Until(driver => driver.FindElement(By.XPath(videoTab)));
+                    wait2Second.Until(driver => driver.FindElement(By.XPath(videoTab)));
                     IWebElement elementVideoTab = driver.FindElement(By.XPath(videoTab));
                     elementVideoTab.Click();
                     clickVideoTabSuccess = true;
@@ -174,15 +174,15 @@ public static class Http
             }
 
             bool clickUploadVideoSuccess = false;
-            int MAX_TRY_UPLOAD_VIDEO_BTN = 5;
+            int MAX_TRY_UPLOAD_VIDEO_BTN = 10;
             for (int i = 0; i <= MAX_TRY_UPLOAD_VIDEO_BTN && clickUploadVideoSuccess == false; i++)
             {
                 try
                 {
-                    wait1Second.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
+                    wait2Second.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
                     IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
-                    clickUploadVideoSuccess = true;
                     elementBtnUploadVideo.Click();
+                    clickUploadVideoSuccess = true;
                 }
                 catch (Exception ex)
                 {
@@ -196,7 +196,7 @@ public static class Http
                     }
                 }
             }
-            Thread.Sleep(1000);
+            Thread.Sleep(2000);
 
             string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
             if (isShortVideo)
@@ -217,7 +217,7 @@ public static class Http
                 throw new Exception(first100Chars);//propage this error
             }
             // select video
-            Thread.Sleep(2000);
+            Thread.Sleep(7000);
             InputSimulator sim = new InputSimulator();
             //System.Windows.Clipboard.SetText(path);
             sim.Keyboard.TextEntry(path);
@@ -248,15 +248,15 @@ public static class Http
             {
                 //selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
                 bool uploadThumbnailSuccess = false;
-                int MAX_TRY_THUMBNAIL = 5;
+                int MAX_TRY_THUMBNAIL = 10;
                 for (int i = 0; i <= MAX_TRY_THUMBNAIL && uploadThumbnailSuccess == false; i++)
                 {
                     try
                     {
                         wait2Second.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
                         IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
-                        uploadThumbnailSuccess = true;
                         elementBtnSelectThumnail.Click();
+                        uploadThumbnailSuccess = true;
                     }
                     catch (Exception ex)
                     {
@@ -269,7 +269,7 @@ public static class Http
                         }
                     }
                 }
-                Thread.Sleep(1000);
+                Thread.Sleep(7000);
                 //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
                 sim.Keyboard.TextEntry(Http.RemoveTitle(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg"));
                 //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
@@ -284,12 +284,35 @@ public static class Http
                 titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div";
             }
 
-            wait.Until(driver => driver.FindElement(By.XPath(titleXpath)));
-            IWebElement titleElement = driver.FindElement(By.XPath(titleXpath));
-            titleElement.Click();
-            Thread.Sleep(1000);
+            bool copyTitleSuccess = false;
+            int MAX_TRY_TITLE = 10;
+            for (int i = 0; i <= MAX_TRY_TITLE && copyTitleSuccess == false; i++)
+            {
+                try
+                {
+                    wait2Second.Until(driver => driver.FindElement(By.XPath(titleXpath)));
+                    IWebElement titleElement = driver.FindElement(By.XPath(titleXpath));
+                    titleElement.Click();
+                    copyTitleSuccess = true;
+
+                }
+                catch (Exception ex)
+                {
+                    if (i == MAX_TRY_TITLE)
+                    {
+                        string msgError = "Error on: titleElement: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
+                    }
+                }
+            }
+
+            Thread.Sleep(2000);
             sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_A);
             sim.Keyboard.TextEntry(title.Substring(0, Math.Min(title.Length, 100 /*max 100 characters*/)));
+
+            Thread.Sleep(1000);
 
             if (!isShortVideo)
             {

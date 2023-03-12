@@ -272,13 +272,20 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     {
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
                         System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
-                        if (mDriver != null)
+                        try
                         {
-                            currentSize = mDriver.Manage().Window.Size;
-                            mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                            if (mDriver != null)
+                            {
+                                currentSize = mDriver.Manage().Window.Size;
+                                mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                            }
+                        }
+                        catch (Exception)
+                        {
+
                         }
 
-                        if (!mDriver.PageSource.Contains("Upload Limit Reached")){
+                    if (!mDriver.PageSource.Contains("Upload Limit Reached")){
                             errorOccur = true;
                             // await _dialogManager.ShowDialogAsync(
                             //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)

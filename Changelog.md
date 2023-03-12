@@ -1,3 +1,6 @@
+### v1.9.82 (13-Mar-2023)
+- Fix bug: upload failed
+
 ### v1.9.81 (11-Mar-2023)
 - Fix bug: upload failed
 
