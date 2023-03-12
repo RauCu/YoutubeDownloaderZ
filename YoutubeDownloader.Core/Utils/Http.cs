@@ -96,9 +96,13 @@ public static class Http
 #pragma warning restore CS8603 // Possible null reference return.
     }
 
+    static int count = 0;
+    static bool testEnabled = false;
     public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category)
     {
+        count++;
         bool result = false;
+        int maxLenErrorMsg = 400;
         if (driver != null)
         {
             driver.Manage().Window.Maximize();
@@ -112,7 +116,8 @@ public static class Http
                 videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
             }
             bool clickVideoTabSuccess = false;
-            for (int i = 0; i < 10 && clickVideoTabSuccess == false; i++)
+            int MAX_TRY_VIDEO_TAB = 10;
+            for (int i = 0; i <= MAX_TRY_VIDEO_TAB && clickVideoTabSuccess == false; i++)
             {
                 try
                 {
@@ -121,7 +126,7 @@ public static class Http
                     elementVideoTab.Click();
                     clickVideoTabSuccess = true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
                     if (!isShortVideo)
                     {
@@ -145,6 +150,14 @@ public static class Http
                             videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
                         }
                     }
+
+                    if(i == MAX_TRY_VIDEO_TAB)
+                    {
+                        string msgError = "Error on: elementVideoTab: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
+                    }
                 }
                 Thread.Sleep(1000);
             }
@@ -154,29 +167,32 @@ public static class Http
             {
                 uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div/table/tbody[1]/tr/td[2]/div/button";
             }
-
-            bool clickuploadVideoSuccess = false;
-            int MAX_TRY = 5;
-            for (int i = 0; i < MAX_TRY && clickuploadVideoSuccess == false; i++)
+            
+            if(count == 2 && testEnabled)
             {
-                if (i == MAX_TRY - 1)
-                { // last try
-                    ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.8)';");
-                }
+                uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[300]/div[2]/div/table/tbody[1]/tr/td[2]/div/button";
+            }
+
+            bool clickUploadVideoSuccess = false;
+            int MAX_TRY_UPLOAD_VIDEO_BTN = 5;
+            for (int i = 0; i <= MAX_TRY_UPLOAD_VIDEO_BTN && clickUploadVideoSuccess == false; i++)
+            {
                 try
                 {
                     wait1Second.Until(driver => driver.FindElement(By.XPath(uploadVideoXpath)));
                     IWebElement elementBtnUploadVideo = driver.FindElement(By.XPath(uploadVideoXpath));
+                    clickUploadVideoSuccess = true;
                     elementBtnUploadVideo.Click();
-                    clickuploadVideoSuccess = true;
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    if (i == MAX_TRY - 1)
+                    if (i == MAX_TRY_UPLOAD_VIDEO_BTN)
                     {
                         //sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
-                        Console.WriteLine("Error on: elementBtnSelectThumnail");
-                        throw;//propage this error
+                        string msgError = "Error on: elementBtnUploadVideo: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
                     }
                 }
             }
@@ -187,10 +203,19 @@ public static class Http
             {
                 selectFileBtnXpath = "//button[normalize-space() = 'Select Short']";
             }
-            wait.Until(driver => driver.FindElement(By.XPath(selectFileBtnXpath)));
-            IWebElement elementBtnSelectFile = driver.FindElement(By.XPath(selectFileBtnXpath));
-            elementBtnSelectFile.Click();
-
+            try
+            {
+                wait.Until(driver => driver.FindElement(By.XPath(selectFileBtnXpath)));
+                IWebElement elementBtnSelectVideoFile = driver.FindElement(By.XPath(selectFileBtnXpath));
+                elementBtnSelectVideoFile.Click();
+            }
+            catch (Exception ex)
+            {
+                string msgError = "Error on: elementBtnSelectVideoFile: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                throw new Exception(first100Chars);//propage this error
+            }
             // select video
             Thread.Sleep(2000);
             InputSimulator sim = new InputSimulator();
@@ -200,42 +225,47 @@ public static class Http
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
 
             // select 720
+            string select720BtnXpath = "/html/body/div[4]/div[3]/div/div[3]/button[2]";
             try
             {
-                WebDriverWait wait2 = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
-                string select720BtnXpath = "/html/body/div[4]/div[3]/div/div[3]/button[2]";
-                wait2.Until(driver => driver.FindElement(By.XPath(select720BtnXpath)));
+                wait2Second.Until(driver => driver.FindElement(By.XPath(select720BtnXpath)));
                 IWebElement elementBtnSelect720 = driver.FindElement(By.XPath(select720BtnXpath));
                 elementBtnSelect720.Click();
                 Thread.Sleep(2000);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                string msgError = "Error on: elementBtnSelect720: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                //throw new Exception(first100Chars);//propage this error
             }
 
             // select thumbnail
             string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/div/label/button";
+
             if (!isShortVideo)
             {
                 //selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
                 bool uploadThumbnailSuccess = false;
-                int MAX_TRY_1 = 5;
-                for (int i = 0; i < MAX_TRY_1 && uploadThumbnailSuccess == false; i++)
+                int MAX_TRY_THUMBNAIL = 5;
+                for (int i = 0; i <= MAX_TRY_THUMBNAIL && uploadThumbnailSuccess == false; i++)
                 {
                     try
                     {
                         wait2Second.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
                         IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
-                        elementBtnSelectThumnail.Click();
                         uploadThumbnailSuccess = true;
+                        elementBtnSelectThumnail.Click();
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        if (i == MAX_TRY_1 - 1)
+                        if (i == MAX_TRY_THUMBNAIL)
                         {
-                            //sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
-                            Console.WriteLine("Error on: elementBtnSelectThumnail");
-                            throw;//propage this error
+                            string msgError = "Error on: elementBtnSelectThumnail: " + ex.ToString();
+                            var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                            Console.WriteLine(msgError);
+                            throw new Exception(first100Chars);//propage this error
                         }
                     }
                 }
@@ -277,10 +307,18 @@ public static class Http
             // save button
             Thread.Sleep(1000);
             string selectSaveBtnXpath = "/html/body/div[3]/div[3]/div/div/div[2]/button[2]";
-            wait.Until(driver => driver.FindElement(By.XPath(selectSaveBtnXpath)));
-            IWebElement elementBtnSave = driver.FindElement(By.XPath(selectSaveBtnXpath));
-            elementBtnSave.Click();
-
+            try { 
+                wait.Until(driver => driver.FindElement(By.XPath(selectSaveBtnXpath)));
+                IWebElement elementBtnSave = driver.FindElement(By.XPath(selectSaveBtnXpath));
+                elementBtnSave.Click();
+            }
+            catch (Exception ex)
+            {
+                string msgError = "Error on: elementBtnSave: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                throw new Exception(first100Chars);//propage this error
+            }
             result = true;
         }
         return result;
