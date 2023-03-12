@@ -226,20 +226,27 @@ public static class Http
 
             // select 720
             string select720BtnXpath = "/html/body/div[4]/div[3]/div/div[3]/button[2]";
-            try
-            {
-                wait2Second.Until(driver => driver.FindElement(By.XPath(select720BtnXpath)));
-                IWebElement elementBtnSelect720 = driver.FindElement(By.XPath(select720BtnXpath));
-                elementBtnSelect720.Click();
-                Thread.Sleep(2000);
+
+            bool btn720Success = false;
+            int MAX_TRY_720 = 5;
+            for (int i = 0; i <= MAX_TRY_720 && btn720Success == false; i++)
+{
+                try
+                {
+                    wait1Second.Until(driver => driver.FindElement(By.XPath(select720BtnXpath)));
+                    IWebElement elementBtnSelect720 = driver.FindElement(By.XPath(select720BtnXpath));
+                    elementBtnSelect720.Click();
+                    btn720Success = true;
+                }
+                catch (Exception ex)
+                {
+                    string msgError = "Error on: elementBtnSelect720: " + ex.ToString();
+                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                    Console.WriteLine(msgError);
+                    //throw new Exception(first100Chars);//propage this error	
+                }
             }
-            catch (Exception ex)
-            {
-                string msgError = "Error on: elementBtnSelect720: " + ex.ToString();
-                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
-                Console.WriteLine(msgError);
-                //throw new Exception(first100Chars);//propage this error
-            }
+            Thread.Sleep(1000);
 
             // select thumbnail
             string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/div/label/button";
