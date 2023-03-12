@@ -1,3 +1,6 @@
+### v1.9.80 (11-Mar-2023)
+- Fix bug: upload failed
+
 ### v1.9.79 (10-Mar-2023)
 - Fix bug: data of previous download should not saved to [0000]-[Database].dat when downloading to new directory
 - Fix bug: when a dialog show, then browser is closed, if user click to button on dialog to close or show browser again ==> catch exception now

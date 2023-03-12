@@ -104,6 +104,7 @@ public static class Http
             driver.Manage().Window.Maximize();
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             WebDriverWait wait1Second = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
+            WebDriverWait wait2Second = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
 
             string videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
             if (isShortVideo)
@@ -155,9 +156,10 @@ public static class Http
             }
 
             bool clickuploadVideoSuccess = false;
-            for (int i = 0; i < 10 && clickuploadVideoSuccess == false; i++)
+            int MAX_TRY = 5;
+            for (int i = 0; i < MAX_TRY && clickuploadVideoSuccess == false; i++)
             {
-                if (i == 9)
+                if (i == MAX_TRY - 1)
                 { // last try
                     ((IJavaScriptExecutor)driver).ExecuteScript("document.body.style.transform='scale(0.8)';");
                 }
@@ -170,9 +172,15 @@ public static class Http
                 }
                 catch (Exception)
                 {
+                    if (i == MAX_TRY - 1)
+                    {
+                        //sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
+                        Console.WriteLine("Error on: elementBtnSelectThumnail");
+                        throw;//propage this error
+                    }
                 }
-                Thread.Sleep(1000);
             }
+            Thread.Sleep(1000);
 
             string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
             if (isShortVideo)
@@ -211,20 +219,27 @@ public static class Http
             {
                 //selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
                 bool uploadThumbnailSuccess = false;
-                for (int i = 0; i < 10 && uploadThumbnailSuccess == false; i++)
+                int MAX_TRY_1 = 5;
+                for (int i = 0; i < MAX_TRY_1 && uploadThumbnailSuccess == false; i++)
                 {
                     try
                     {
-                        wait1Second.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
+                        wait2Second.Until(driver => driver.FindElement(By.XPath(selectThumnailBtnXpath)));
                         IWebElement elementBtnSelectThumnail = driver.FindElement(By.XPath(selectThumnailBtnXpath));
                         elementBtnSelectThumnail.Click();
                         uploadThumbnailSuccess = true;
                     }
                     catch (Exception)
                     {
+                        if (i == MAX_TRY_1 - 1)
+                        {
+                            //sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
+                            Console.WriteLine("Error on: elementBtnSelectThumnail");
+                            throw;//propage this error
+                        }
                     }
-                    Thread.Sleep(1000);
                 }
+                Thread.Sleep(1000);
                 //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
                 sim.Keyboard.TextEntry(Http.RemoveTitle(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg"));
                 //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);

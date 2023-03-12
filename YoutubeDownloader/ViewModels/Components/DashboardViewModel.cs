@@ -172,6 +172,25 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         driver.Navigate().GoToUrl(url);
     }
 
+    public bool isBrowserClosed(IWebDriver driver)
+    {
+        bool isClosed = false;
+        if (driver == null)
+        {
+            return true;
+        }
+        try
+        {
+            var title = driver.Title;
+        }
+        catch (Exception)
+        {
+            isClosed = true;
+        }
+
+        return isClosed;
+    }
+
     public async void UploadMultipleVideo()
     {
         IWebDriver? driver = null;
@@ -184,7 +203,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         //
         bool allSuccess = true;
         bool login_success = false;
-        if (driver == null)
+
+#pragma warning disable CS8604 // Possible null reference argument.
+        if (isBrowserClosed(driver))
         {
             driver = DownloadViewModel.SignInGJWStatic(out login_success);
             if (!login_success)
@@ -237,73 +258,76 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             {
                 if (download.CanShowFile && download.SelectedToUpload)
                 {
-                    if (login_success)
+                  
+                    bool errorOccur = false;
+                    try
                     {
-                        bool errorOccur = false;
+#pragma warning disable CS8604 // Possible null reference argument.
+                        download.UploadOnly(driver);
+#pragma warning restore CS8604 // Possible null reference argument.
+                    }
+                    catch (Exception ex)
+                    {
+                        errorOccur = true;
+                        // await _dialogManager.ShowDialogAsync(
+                        //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
+                        // );
+
+                        System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                        if (driver != null)
+                        {
+                            currentSize = driver.Manage().Window.Size;
+                            driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                        }
+
+                        string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileName + "\n\n\nVui lòng làm theo ĐÚNG 4 BƯỚC sau:\n\n" +
+                            "- BƯỚC 1: xóa video đang lỗi này trên trình duyệt.\n" +
+                            "- BƯỚC 2: thu nhỏ trình duyệt (KHÔNG ĐƯỢC TẮT TRÌNH DUYỆT).\n" +
+                            "- BƯỚC 3: quay lại giao diện phần mềm.\n" +
+                            "- BƯỚC 4:tiếp tục đăng các video còn lại bằng bấm nút TẢI LÊN.\n" +
+                            "\n\n\n\nThông tin lỗi chi tiết:\n" + ex.Message;
+
+                        MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                            "Lỗi",
+                            MessageBoxButton.OK,
+                            MessageBoxImage.Question);
                         try
                         {
-#pragma warning disable CS8604 // Possible null reference argument.
-                            download.UploadOnly(driver);
-#pragma warning restore CS8604 // Possible null reference argument.
-                        }
-                        catch (Exception ex)
-                        {
-                            errorOccur = true;
-                            // await _dialogManager.ShowDialogAsync(
-                            //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
-                            // );
-
-                            System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
-                            if (driver != null)
+                            if (confirm == MessageBoxResult.OK)
                             {
-                                currentSize = driver.Manage().Window.Size;
-                                driver.Manage().Window.Size = new System.Drawing.Size(480, 320);
-                            }
-
-                            string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileName + "\n\n\nBạn có thể đăng video bị lỗi này thủ công," +
-                            "\nbằng cách dùng các nút 3-4-5 để sao chép các thông tin như tiêu đề, đường dẫn video, hình, rồi dán vào trình duyệt!\n\n\n" + ex.Message;
-
-                            MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
-                                "Lỗi",
-                                MessageBoxButton.OK,
-                                MessageBoxImage.Question);
-                            try
-                            {
-                                if (confirm == MessageBoxResult.OK)
+                                if (driver != null)
                                 {
-                                    if (driver != null)
-                                    {
-                                        driver.Manage().Window.Size = currentSize;
-                                    }
+                                    driver.Manage().Window.Size = currentSize;
                                 }
                             }
-                            catch (Exception)
-                            {
-
-                            }
-
-                            // stop upload
-                            allSuccess = false;
-                            break;
                         }
-                        finally
+                        catch (Exception)
                         {
-                            if (errorOccur == false)
-                            {
-                                download.UploadDone = true;
-                                download.SelectedToUpload = false;
-                            }
-                            else
-                            {
-                                download.UploadError = true;
-                            }
+
+                        }
+
+                        // stop upload
+                        allSuccess = false;
+                        break;
+                    }
+                    finally
+                    {
+                        if (errorOccur == false)
+                        {
+                            download.UploadDone = true;
+                            download.SelectedToUpload = false;
+                        }
+                        else
+                        {
+                            download.UploadError = true;
                         }
                     }
+                    
                 }
             }
             if (driver != null && allSuccess)
             {
-                Thread.Sleep(7000);
+                Thread.Sleep(10000);
                 while (true)
                 {
                     string pageSrc = driver.PageSource;
