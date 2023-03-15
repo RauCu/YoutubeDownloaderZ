@@ -1,3 +1,6 @@
+### v1.9.84 (15-Mar-2023)
+- Allow downloading video with the length longer than 1 hour
+
 ### v1.9.83 (13-Mar-2023)
 - Fix bug: upload failed
 

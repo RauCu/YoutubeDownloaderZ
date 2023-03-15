@@ -285,7 +285,8 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
                         }
 
-                    if (!mDriver.PageSource.Contains("Upload Limit Reached")){
+                        if (!mDriver.PageSource.Contains("Upload Limit Reached"))
+                        {
                             errorOccur = true;
                             // await _dialogManager.ShowDialogAsync(
                             //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
@@ -576,7 +577,8 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     else if (download.Video!.Duration?.TotalSeconds > 60 * SECONDS_IN_MINUTE)
                     {
                         // longer than 60 minutes
-                        tooLong = true;
+                        // workaround to disable > 60 minute
+                        tooLong = false;
                     }
 
                     bool okLength = !tooShort && !tooLong;
