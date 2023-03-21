@@ -37,6 +37,7 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <!--  Search icon  -->
@@ -65,9 +66,24 @@
                         Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}"
                         VerticalScrollBarVisibility="Auto" TextChanged="QueryTextBox_TextChanged" />
                     
-                    <!--  Delete query button  -->
+                    <!--  Open directory button  -->
                     <Button
                         Grid.Column="2"
+                        Margin="0,6,6,6"
+                        Padding="4"
+                        Command="{s:Action OpenFolder}"
+                        IsDefault="False"
+                        Style="{DynamicResource MaterialDesignFlatButton}"
+                        ToolTip="Mở thư mục chứa tệp MP4 đã tải về">
+                        <materialDesign:PackIcon
+                            Width="24"
+                            Height="24"
+                            Kind="FolderOpen" />
+                    </Button>
+                    
+                    <!--  Delete query button  -->
+                    <Button
+                        Grid.Column="3"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action DeleteQuery}"
@@ -82,7 +98,7 @@
                     </Button>
                      <!--  Paste query button  -->
                     <Button
-                        Grid.Column="3"
+                        Grid.Column="4"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action PasteQuery}"
@@ -96,7 +112,7 @@
                     </Button>                   
                     <!--  Process query button  -->
                     <Button
-                        Grid.Column="4"
+                        Grid.Column="5"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action ProcessQuery}"
@@ -437,7 +453,7 @@
                                                     <DataTrigger Binding="{Binding Status}" Value="{x:Static components:DownloadStatus.Deleted}">
                                                         <Setter Property="Foreground" Value="{DynamicResource FailedBrush}" />
                                                         <Setter Property="Text" Value="⚠ ĐÃ XÓA" />
-                                                        <Setter Property="ToolTip" Value="{Binding ErrorMessage}" />
+                                                        <Setter Property="ToolTip" Value="Tệp mp4 đã từng được tải về nhưng giờ đã bị xóa. Bấm nút số 2 để tải lại!" />
                                                     </DataTrigger>
 
                                                     <!--  Uploaded  -->

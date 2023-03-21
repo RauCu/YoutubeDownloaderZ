@@ -57,12 +57,8 @@ public class DownloadMultipleSetupViewModel : DialogScreen<IReadOnlyList<Downloa
 
     public bool CanConfirm => SelectedVideos!.Any();
 
-    public void Confirm()
+    public void ConfirmPath(String dirPath)
     {
-        var dirPath = _dialogManager.PromptDirectoryPath();
-        if (string.IsNullOrWhiteSpace(dirPath))
-            return;
-
         var downloads = new List<DownloadViewModel>();
         Database.Load(dirPath);
 
@@ -71,10 +67,13 @@ public class DownloadMultipleSetupViewModel : DialogScreen<IReadOnlyList<Downloa
             var video = SelectedVideos[i];
             VideoInfo? videoInfo = Database.Find(video!.Id);
             int number;
-            if(videoInfo == null){
+            if (videoInfo == null)
+            {
                 Database.InsertOrUpdate(new VideoInfo(0, video!.Title, video!.Id, "", ""));
                 number = Database.Count();
-            }else{
+            }
+            else
+            {
                 // already exist, get it
                 number = videoInfo.Number;
             }
@@ -86,7 +85,7 @@ public class DownloadMultipleSetupViewModel : DialogScreen<IReadOnlyList<Downloa
                         video!,
                         SelectedContainer,
                         (number).ToString().PadLeft(YoutubeDownloader.Utils.AppConsts.LenNumber, '0')
-                    ));    
+                    ));
 
             downloads.Add(
                 _viewModelFactory.CreateDownloadViewModel(
@@ -102,6 +101,13 @@ public class DownloadMultipleSetupViewModel : DialogScreen<IReadOnlyList<Downloa
 
         Close(downloads);
         Database.Save();
+    }
+    public void Confirm()
+    {
+        var dirPath = _dialogManager.PromptDirectoryPath();
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return;
+        ConfirmPath(dirPath);
     }
 }
 

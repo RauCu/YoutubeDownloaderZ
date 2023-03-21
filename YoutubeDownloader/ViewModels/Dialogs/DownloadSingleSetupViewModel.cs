@@ -43,19 +43,19 @@ public class DownloadSingleSetupViewModel : DialogScreen<DownloadViewModel>
 
     public void CopyTitle() => Clipboard.SetText(Video!.Title);
 
-    public void Confirm()
+    public void ConfirmPath(String dirPath)
     {
-        var dirPath = _dialogManager.PromptDirectoryPath();
-        if (string.IsNullOrWhiteSpace(dirPath))
-            return;
         var container = SelectedDownloadOption!.Container;
         Database.Load(dirPath);
         VideoInfo? videoInfo = Database.Find(Video!.Id);
         int number;
-        if(videoInfo == null){
-            Database.InsertOrUpdate(new VideoInfo(0, Video!.Title, Video!.Id, "",""));
+        if (videoInfo == null)
+        {
+            Database.InsertOrUpdate(new VideoInfo(0, Video!.Title, Video!.Id, "", ""));
             number = Database.Count();
-        }else{
+        }
+        else
+        {
             // already exist, get it
             number = videoInfo.Number;
         }
@@ -67,7 +67,7 @@ public class DownloadSingleSetupViewModel : DialogScreen<DownloadViewModel>
                     Video!,
                     container,
                     (number).ToString().PadLeft(YoutubeDownloader.Utils.AppConsts.LenNumber, '0')
-                ));   
+                ));
 
         _settingsService.LastContainer = container;
 
@@ -76,7 +76,15 @@ public class DownloadSingleSetupViewModel : DialogScreen<DownloadViewModel>
         );
         Database.Save();
     }
+    public void Confirm()
+    {
+        var dirPath = _dialogManager.PromptDirectoryPath();
+        if (string.IsNullOrWhiteSpace(dirPath))
+            return;
+        ConfirmPath(dirPath);
+    }
 }
+
 
 public static class DownloadSingleSetupViewModelExtensions
 {

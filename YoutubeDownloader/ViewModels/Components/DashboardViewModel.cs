@@ -20,6 +20,9 @@ using YoutubeExplode.Exceptions;
 using System.Diagnostics;
 using System.ComponentModel;
 using System.Windows;
+using YoutubeExplode.Videos;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -27,6 +30,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 {
     private bool allItemsAreChecked;
     public event PropertyChangedEventHandler PropertyChanged;
+    private String selectedFolder;
 
     public bool AllItemsAreChecked
     {
@@ -294,9 +298,10 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
 
                             string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileName + "\n\n\nVui lòng làm theo ĐÚNG 3 BƯỚC sau:\n\n" +
-                                "- BƯỚC 1: trên trình duyệt, XOÁ video đang đăng bị lỗi và các video đang ở trạng thái \"Uploading 0%\" (nếu có).\n" +
+                                "- BƯỚC 1: trên trình duyệt, XOÁ hoặc đăng thủ công (dùng nút 3-4-5) video đang đăng bị lỗi và các video đang ở trạng thái \"Uploading 0%\" (nếu có).\n" +
                                 "- BƯỚC 2: KHÔNG ĐƯỢC TẮT TRÌNH DUYỆT, quay lại giao diện phần mềm.\n" +
                                 "- BƯỚC 3: bấm nút TẢI LÊN để tiếp tục đăng các video chưa được đăng.\n" +
+                                "-       Lưu ý: ở bước 1, nếu đăng thủ công video lỗi thành công, thì nhớ bỏ tích chọn video đó, để không đăng lại nó nữa.\n" +
                                 "\n\n\n\nThông tin lỗi chi tiết (để dành cho kỹ thuật phân tích lỗi):\n" + ex.Message;
 
                             MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
@@ -462,7 +467,8 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     {
                         string status = videoInfo.DownloadStatus;
                         if (status.Equals(DownloadStatus.Completed.ToString()) ||
-                            (status.Equals(DownloadStatus.Completed_Already.ToString())))
+                            status.Equals(DownloadStatus.Completed_Already.ToString())
+                            )
                         {
                             if (!File.Exists(download.FilePath))
                             {
@@ -517,7 +523,32 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     }
                     else
                     {
-                        shouldDownload = true;
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                        if (videoInfo.DownloadStatus == "")
+                        {
+                            if (!File.Exists(download.FilePath))
+                            {
+                                string? path = Path.GetDirectoryName(download.FilePath!);
+                                string[] files = System.IO.Directory.GetFiles(path!, "*" + download.Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+                                if (files.Length == 0)
+                                {
+                                    // video deleted from FileExplorer
+                                    shouldDownload = true;
+                                }
+                                else
+                                {  // renamed
+                                    download.Status = DownloadStatus.Completed_Already;
+                                    shouldDownload = false;
+                                }
+                            }
+                            else
+                            {
+                                download.Status = DownloadStatus.Completed_Already;
+                                shouldDownload = false;
+                            }
+                        }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
                     }
                 }
                 else
@@ -665,7 +696,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         // status changed, then Database need updated
                         videoInfo.DownloadStatus = download.Status.ToString();
                         // make sure only 1 thread can access Database at the same time
-                        mut.WaitOne();
+                        mut.WaitOne(2000);
                         Database.InsertOrUpdate(videoInfo);
                         // just work-around to optimize: if too much videos are deleted, then GUI is very slow
                         if (Database.Count() < 200 || !videoInfo.DownloadStatus.Equals(DownloadStatus.Deleted.ToString()))
@@ -719,7 +750,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         catch (Exception)
                         {
                         }
-                        mut.WaitOne();
+                        //mut.WaitOne();
                         try
                         {
                             if (downloadSuccess)
@@ -736,7 +767,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         }
                         finally
                         {
-                            mut.ReleaseMutex();
+                            //mut.ReleaseMutex();
                         }
                     }
                 }
@@ -782,7 +813,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         {
                             downloadSuccess = false;
                         }
-                        mut.WaitOne();
+                        //mut.WaitOne();
                         try
                         {
                             if (downloadSuccess)
@@ -799,7 +830,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         }
                         finally
                         {
-                            mut.ReleaseMutex();
+                            //mut.ReleaseMutex();
                         }
                     }
                 }
@@ -815,6 +846,67 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         }
     }
 
+    public async void OpenFolder()
+    {
+        if (!IsBusy)
+        {
+            using (var dialog = new System.Windows.Forms.FolderBrowserDialog())
+            {
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    selectedFolder = dialog.SelectedPath;
+                    try
+                    {
+                        string[] files = System.IO.Directory.GetFiles(selectedFolder!, "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+                        string youtubeURL = "https://www.youtube.com/watch?v=";
+                        string queryTxt = "";
+                        if (files.Length > 0)
+                        {
+                            HashSet<string> videoIDSet = new HashSet<string>();
+                            for (int i = 0; i < files.Length; i++)
+                            {
+                                try
+                                {
+                                    VideoInfo videoInfo = VideoInfoParser.Parse(Path.GetFileName(files[i]));
+                                    string videoID = videoInfo.Id.Substring(0, videoInfo.Id.Length - 5);
+                                    videoIDSet.Add(videoID);
+                                }
+                                catch (Exception) { }
+
+                            }
+                            foreach (string videoID in videoIDSet)
+                            {
+                                queryTxt += youtubeURL + videoID + "\n";
+                            }
+                            Query = queryTxt;
+                            ProcessQueryForFolder();
+                        }
+                        else
+                        {
+                            await _dialogManager.ShowDialogAsync(
+                            _viewModelFactory.CreateMessageBoxViewModel(
+                                "Không tìm thấy tệp MP4",
+                                "Không tìm thấy tệp MP4 DO PHẦN MỀM NÀY TẢI VỂ trong thư mục được chọn.\nĐường dẫn thư mục: " + selectedFolder
+                                )
+                            );
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        await _dialogManager.ShowDialogAsync(
+                            _viewModelFactory.CreateMessageBoxViewModel(
+                                "LỖI",
+                                "Mở thư mục bị lỗi!\nĐường dẫn thư mục: " + selectedFolder + "\n\n\n" +
+                                "Mã lỗi chi tiết dành cho kỹ thuật:\n" + ex.ToString()
+                            )
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     public void PasteQuery()
     {
         if (!IsBusy)
@@ -826,8 +918,106 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     }
 
     public bool CanProcessQuery => !IsBusy && !string.IsNullOrWhiteSpace(Query);
+    public async void ProcessQueryForFolder()
+    {
+        if (string.IsNullOrWhiteSpace(Query))
+            return;
+
+        IsBusy = true;
+
+        // Small weight to not offset any existing download operations
+        var progress = _progressMuxer.CreateInput(0.01);
+
+        try
+        {
+            var result = await _queryResolver.ResolveAsync(
+                Query.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
+                progress
+            );
+
+            // Single video
+            if (result.Videos.Count == 1)
+            {
+                var video = result.Videos.Single();
+                var downloadOptions = await _videoDownloader.GetDownloadOptionsAsync(video.Id);
+
+                //var download = await _dialogManager.ShowDialogAsync(
+                //    _viewModelFactory.CreateDownloadSingleSetupViewModel(video, downloadOptions)
+                //);
+                var viewModel = _viewModelFactory.CreateDownloadSingleSetupViewModel();
+
+                viewModel.Video = video;
+                viewModel.AvailableDownloadOptions = downloadOptions;
+                viewModel.OnViewLoaded();
+                viewModel.ConfirmPath(selectedFolder);
+                var download = viewModel.DialogResult;
+                if (download is null)
+                    return;
+
+                EnqueueDownload(download);
+            }
+            // Multiple videos
+            else if (result.Videos.Count > 1)
+            {
+                /*var downloads = await _dialogManager.ShowDialogAsync(
+                    _viewModelFactory.CreateDownloadMultipleSetupViewModel(
+                        result.Title,
+                        result.Videos,
+                        // Pre-select videos if they come from a single query and not from search
+                        result.Kind is not QueryResultKind.Search
+                    )
+                );*/
+
+                var viewModel = _viewModelFactory.CreateDownloadMultipleSetupViewModel();
+                viewModel.Title = result.Title;
+                viewModel.AvailableVideos = result.Videos;
+                viewModel.SelectedVideos = result.Kind is not QueryResultKind.Search
+                    ? viewModel.AvailableVideos
+                    : Array.Empty<IVideo>();
+
+                viewModel.ConfirmPath(selectedFolder);
+                var downloads = viewModel.DialogResult;
+                if (downloads is null)
+                    return;
+
+                foreach (var download in downloads)
+                    EnqueueDownload(download);
+            }
+            // No videos found
+            else
+            {
+                await _dialogManager.ShowDialogAsync(
+                    _viewModelFactory.CreateMessageBoxViewModel(
+                        "Không tìm thấy",
+                        "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp"
+                    )
+                );
+            }
+        }
+        catch (Exception ex)
+        {
+
+            await _dialogManager.ShowDialogAsync(
+                _viewModelFactory.CreateMessageBoxViewModel(
+                    "Lỗi",
+                    // Short error message for YouTube-related errors, full for others
+                    ex is YoutubeExplodeException
+                        ? ex.Message
+                        : ex.ToString()
+                )
+            );
+        }
+        finally
+        {
+            progress.ReportCompletion();
+            IsBusy = false;
+        }
+    }
+
     public async void ProcessQuery()
     {
+        bool needRetry = false;
+    RetrySearching:
         if (string.IsNullOrWhiteSpace(Query))
             return;
 
@@ -889,7 +1079,26 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         }
         catch (Exception ex)
         {
-            await _dialogManager.ShowDialogAsync(
+            //Video 'RyTpqBNPRdo' is not available.
+            if (ex.Message.Contains("is not available."))
+            {
+                // skip deleted video, e.g: https://www.youtube.com/watch?v=RyTpqBNPRdo
+                String videoID = ex.Message.Replace("' is not available.", "").Replace("Video '", "");
+
+                String lineToDelete = "https://www.youtube.com/watch?v=" + videoID;
+                Query = Query.Replace(lineToDelete, "").Trim();
+                if (Query.Contains("https://www.youtube.com/watch?v="))
+                {
+                    needRetry = true;
+                }
+                else
+                {
+                    needRetry = false;
+                }
+            }
+            else
+            {
+                await _dialogManager.ShowDialogAsync(
                 _viewModelFactory.CreateMessageBoxViewModel(
                     "Lỗi",
                     // Short error message for YouTube-related errors, full for others
@@ -897,12 +1106,18 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         ? ex.Message
                         : ex.ToString()
                 )
-            );
+                );
+            }
+
         }
         finally
         {
             progress.ReportCompletion();
             IsBusy = false;
+        }
+        if (needRetry)
+        {
+            goto RetrySearching;
         }
     }
 

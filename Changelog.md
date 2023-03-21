@@ -1,3 +1,7 @@
+### v1.9.86 (22-Mar-2023)
+- Cho phép chọn thư mục chứa file mp4 đã tải về
+- Bỏ qua video bị xóa trên Youtube
+
 ### v1.9.85 (21-Mar-2023)
 - Fixed cannot press add video button for short video
 
