@@ -45,16 +45,28 @@ jobs:
         run: Compress-Archive -Path YoutubeDownloaderZ/* -DestinationPath YoutubeDownloaderZ.zip -Force
         shell: pwsh
 
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: YoutubeDownloader
+          path: YoutubeDownloaderZPreview
+
       - name: Create package preview
-        run: Compress-Archive -Path YoutubeDownloaderZ/* -DestinationPath YoutubeDownloaderZPreview.zip -Force
+        run: Compress-Archive -Path YoutubeDownloaderZPreview/* -DestinationPath YoutubeDownloaderZPreview.zip -Force
         shell: pwsh        
+
+      - name: Get release version
+        id: get_version
+        uses: dawidd6/action-get-tag@v1
 
       - name: Create release
         uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          files: YoutubeDownloaderZ.zip
+          files: |
+            YoutubeDownloaderZ.zip
+            YoutubeDownloaderZPreview.zip
           body: |
             [Changelog](https://github.com/RauCu/YoutubeDownloaderZ/blob/${{ steps.get_version.outputs.tag }}/Changelog.md)
 
