@@ -879,15 +879,27 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             {
                                 queryTxt += youtubeURL + videoID + "\n";
                             }
-                            Query = queryTxt;
-                            ProcessQueryForFolder();
+                            if (videoIDSet.Count > 0)
+                            {
+                                Query = queryTxt;
+                                ProcessQueryForFolder();
+                            }
+                            else
+                            {
+                                await _dialogManager.ShowDialogAsync(
+                                _viewModelFactory.CreateMessageBoxViewModel(
+                                    "Không tìm thấy tệp MP4",
+                                    "Không tìm thấy tệp MP4 DO PHẦN MỀM NÀY TẢI VỀ trong thư mục được chọn.\nĐường dẫn thư mục: " + selectedFolder
+                                    )
+                                );
+                            }
                         }
                         else
                         {
                             await _dialogManager.ShowDialogAsync(
                             _viewModelFactory.CreateMessageBoxViewModel(
                                 "Không tìm thấy tệp MP4",
-                                "Không tìm thấy tệp MP4 DO PHẦN MỀM NÀY TẢI VỂ trong thư mục được chọn.\nĐường dẫn thư mục: " + selectedFolder
+                                "Không tìm thấy tệp MP4 nào trong thư mục được chọn.\nĐường dẫn thư mục: " + selectedFolder
                                 )
                             );
                         }
