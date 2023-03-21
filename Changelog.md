@@ -1,3 +1,6 @@
+### v1.9.85 (21-Mar-2023)
+- Fixed cannot press add video button for short video
+
 ### v1.9.84 (15-Mar-2023)
 - Allow downloading video with the length longer than 1 hour
 
