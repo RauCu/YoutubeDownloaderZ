@@ -1,3 +1,6 @@
+### v1.9.87 (13-April-2023)
+- Fix lỗi ko up video lên được do thay đổi giao diện ở mục tiêu đề
+
 ### v1.9.86 (22-Mar-2023)
 - Cho phép chọn thư mục chứa file mp4 đã tải về
 - Bỏ qua video bị xóa trên Youtube

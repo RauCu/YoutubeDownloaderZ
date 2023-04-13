@@ -286,6 +286,7 @@ public static class Http
             // title
             Thread.Sleep(1000);
             string titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div/input";
+                   titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div[1]";
             if (isShortVideo)
             {
                 titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div";
