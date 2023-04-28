@@ -11,6 +11,8 @@ using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.ClosedCaptions;
 using YoutubeExplode.Common;
 using System.Net;
+using System.Collections;
+using YoutubeDownloader.Core.Models;
 
 namespace YoutubeDownloader.Core.Downloading;
 
@@ -111,7 +113,7 @@ public class VideoDownloader
             }
         }
 
-        await _youtube.Videos.DownloadAsync(
+/*       await _youtube.Videos.DownloadAsync(
             downloadOption.StreamInfos,
             trackInfos,
             new ConversionRequestBuilder(filePath)
@@ -120,6 +122,12 @@ public class VideoDownloader
                 .Build(),
             progress?.ToDoubleBased(),
             cancellationToken
-        );
+        );*/
+
+#pragma warning disable CS8604 // Possible null reference argument.
+        Download download = new(video.Id, filePath, progress?.ToDoubleBased(),
+            cancellationToken);
+#pragma warning restore CS8604 // Possible null reference argument.
+        await download.Start().ConfigureAwait(false);
     }
 }

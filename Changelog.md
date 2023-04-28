@@ -1,3 +1,6 @@
+### v1.9.88 (29-April-2023)
+- Fix lỗi ko tải được video ""Response status code does not indicate success: 403 (Forbidden)
+
 ### v1.9.87 (13-April-2023)
 - Fix lỗi ko up video lên được do thay đổi giao diện ở mục tiêu đề
 

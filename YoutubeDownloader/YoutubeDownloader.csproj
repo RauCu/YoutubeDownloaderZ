@@ -50,6 +50,7 @@
     <PackageReference Include="Stylet" Version="1.3.6" />
     <PackageReference Include="Tyrrrz.Settings" Version="1.3.4" />
     <PackageReference Include="PropertyChanged.Fody" Version="4.1.0" PrivateAssets="all" />
+    <PackageReference Include="YoutubeDLSharp" Version="0.4.3" />
   </ItemGroup>
 
   <ItemGroup>
@@ -67,4 +68,14 @@
     <Copy SourceFiles="$(ProjectDir)/ffmpeg.exe" DestinationFiles="$(PublishDir)/ffmpeg.exe" />
   </Target>
 
+  <!-- This downloads yt-dlp and copies it to output directory-->
+  <Target Name="Download yt-dlp before build" BeforeTargets="PreBuildEvent">
+    <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(ProjectDir)/DownloadYtdlp.ps1&quot;" />
+    <Copy SourceFiles="$(ProjectDir)/yt-dlp.exe" DestinationFiles="$(OutDir)/yt-dlp.exe" />
+  </Target>
+
+  <Target Name="Download yt-dlp before publish" BeforeTargets="PrepareForPublish">
+    <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(ProjectDir)/DownloadYtdlp.ps1&quot;" />
+    <Copy SourceFiles="$(ProjectDir)/yt-dlp.exe" DestinationFiles="$(PublishDir)/yt-dlp.exe" />
+  </Target>
 </Project>
