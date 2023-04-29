@@ -128,6 +128,7 @@ public class VideoDownloader
         Download download = new(video.Id, filePath, progress?.ToDoubleBased(),
             cancellationToken);
 #pragma warning restore CS8604 // Possible null reference argument.
+
         await download.Start().ConfigureAwait(false);
     }
 }

@@ -74,13 +74,40 @@ namespace YoutubeDownloader.Core.Downloading
                     IgnoreDownloadErrors = true
                 };
 
+                int MAX_TRY = 3;
+                int FetchVideoInfoAsyncCount = 0;
+
+            RetryFetchVideoInfoAsync:
+
                 YtdlpVideoData? videoData = await FetchVideoInfoAsync(ytdl, optionSet);
-                if (null == videoData) return;
+                if (null == videoData)
+                {
+                    FetchVideoInfoAsyncCount++;
+                    if (FetchVideoInfoAsyncCount < MAX_TRY)
+                    {
+                        goto RetryFetchVideoInfoAsync;
+                    }
+                    else {
+                        throw new Exception("Failed to get video information!");
+                    }
+                }
 
                 //outputFilePath = "[" + videoData?.Title + "]" + "-[" + videoData?.Id + "].mp4";
-
-                bool downloadSuccess = await DownloadVideoAsync(ytdl, optionSet);
-                if (!downloadSuccess) return;
+                int DownloadVideoAsyncCount = 0;
+            RetryDownloadVideoAsync:
+                String errorMsg = await DownloadVideoAsync(ytdl, optionSet);
+                if (errorMsg != "")
+                {
+                    DownloadVideoAsyncCount++;
+                    if (DownloadVideoAsyncCount < MAX_TRY)
+                    {
+                        goto RetryDownloadVideoAsync;
+                    }
+                    else
+                    {
+                        throw new Exception(errorMsg);
+                    }
+                }
 
                 if (end == 0)
                 {
@@ -97,6 +124,7 @@ namespace YoutubeDownloader.Core.Downloading
                 Log.Error("vvvvvvv");
                 Log.Error(e.Message);
                 Log.Error("^^^^^^^");
+                throw;
             }
             finally
             {
@@ -180,7 +208,7 @@ namespace YoutubeDownloader.Core.Downloading
         /// <param name="ytdl"></param>
         /// <param name="optionSet"></param>
         /// <returns></returns>
-        private async Task<bool> DownloadVideoAsync(YoutubeDL ytdl, OptionSet optionSet)
+        private async Task<String> DownloadVideoAsync(YoutubeDL ytdl, OptionSet optionSet)
         {
             Log.Information("Start downloading video...");
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -197,15 +225,17 @@ namespace YoutubeDownloader.Core.Downloading
 
             if (!result_string.Success)
             {
+                String errorMsg = "Failed to download video! Please try again later.";
                 Log.Error("Failed to download video! Please try again later.");
                 foreach (var str in result_string.ErrorOutput)
                 {
                     Log.Information(str);
+                    errorMsg += "\n" + str;
                 }
-                return false;
+                return errorMsg;
             }
             Log.Information("Video downloaded.");
-            return true;
+            return "";
         }
     }
 
