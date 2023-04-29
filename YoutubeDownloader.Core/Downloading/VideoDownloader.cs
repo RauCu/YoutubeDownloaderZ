@@ -113,22 +113,27 @@ public class VideoDownloader
             }
         }
 
-/*       await _youtube.Videos.DownloadAsync(
-            downloadOption.StreamInfos,
-            trackInfos,
-            new ConversionRequestBuilder(filePath)
-                .SetContainer(downloadOption.Container)
-                .SetPreset(ConversionPreset.Medium)
-                .Build(),
-            progress?.ToDoubleBased(),
-            cancellationToken
-        );*/
-
+        try
+        {
+            await _youtube.Videos.DownloadAsync(
+                 downloadOption.StreamInfos,
+                 trackInfos,
+                 new ConversionRequestBuilder(filePath)
+                     .SetContainer(downloadOption.Container)
+                     .SetPreset(ConversionPreset.Medium)
+                     .Build(),
+                 progress?.ToDoubleBased(),
+                 cancellationToken
+             );
+        }
+        catch (Exception)
+        {
 #pragma warning disable CS8604 // Possible null reference argument.
-        Download download = new(video.Id, filePath, progress?.ToDoubleBased(),
-            cancellationToken);
+            Download download = new(video.Id, filePath, progress?.ToDoubleBased(),
+                cancellationToken);
 #pragma warning restore CS8604 // Possible null reference argument.
 
-        await download.Start().ConfigureAwait(false);
+            await download.Start().ConfigureAwait(false);
+        }
     }
 }

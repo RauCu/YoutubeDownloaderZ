@@ -1,3 +1,7 @@
+### v1.9.90 (29-April-2023)
+- Fix lỗi không tải được video https://www.youtube.com/watch?v=HxjFpyzwkjo
+- Sử dụng logic tải về như trước, khi có lỗi thì mới dùng yt-dl
+
 ### v1.9.89 (29-April-2023)
 - Fix lỗi thông báo sai: không tải được những vẫn báo là tải thành công
 

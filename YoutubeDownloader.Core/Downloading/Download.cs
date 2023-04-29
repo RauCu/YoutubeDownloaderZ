@@ -75,7 +75,7 @@ namespace YoutubeDownloader.Core.Downloading
                 };
 
                 int MAX_TRY = 3;
-                int FetchVideoInfoAsyncCount = 0;
+/*                int FetchVideoInfoAsyncCount = 0;
 
             RetryFetchVideoInfoAsync:
 
@@ -90,7 +90,7 @@ namespace YoutubeDownloader.Core.Downloading
                     else {
                         throw new Exception("Failed to get video information!");
                     }
-                }
+                }*/
 
                 //outputFilePath = "[" + videoData?.Title + "]" + "-[" + videoData?.Id + "].mp4";
                 int DownloadVideoAsyncCount = 0;
