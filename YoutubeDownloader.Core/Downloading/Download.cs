@@ -1,5 +1,7 @@
-﻿using Gress;
+﻿using AngleSharp.Io;
+using Gress;
 using Serilog;
+using SharpCompress.Common;
 using System;
 using System.IO;
 using System.Threading;
@@ -54,11 +56,17 @@ namespace YoutubeDownloader.Core.Downloading
             successed = false;
             finished = false;
 
-            string tempFilePath1 = Path.ChangeExtension(Path.GetTempFileName(), ".mp4");
-            string tempFilePath2 = Path.ChangeExtension(Path.GetTempFileName(), ".mp4");
+            string? downloadDir = Path.GetDirectoryName(outputFilePath);
+#pragma warning disable CS8604 // Possible null reference argument.
+            string tmpDir = Path.Combine(downloadDir, "tmp");
+#pragma warning restore CS8604 // Possible null reference argument.
+            Directory.CreateDirectory(tmpDir);
+            string videoFileName = System.IO.Path.GetFileNameWithoutExtension(outputFilePath) + ".mp4";
+            string tempFilePath1 = Path.Combine(tmpDir, videoFileName);
+            //string tempFilePath2 = Path.ChangeExtension(Path.GetTempFileName(), ".mp4");
             Log.Debug("Create temporary files:");
             Log.Debug("{TempFilePath}", tempFilePath1);
-            Log.Debug("{TempFilePath}", tempFilePath2);
+            //Log.Debug("{TempFilePath}", tempFilePath2);
 
             try
             {
@@ -129,9 +137,9 @@ namespace YoutubeDownloader.Core.Downloading
             finally
             {
                 File.Delete(tempFilePath1);
-                File.Delete(tempFilePath2);
+                //File.Delete(tempFilePath2);
                 File.Delete(Path.ChangeExtension(tempFilePath1, "tmp"));
-                File.Delete(Path.ChangeExtension(tempFilePath2, "tmp"));
+                //File.Delete(Path.ChangeExtension(tempFilePath2, "tmp"));
                 Log.Information("Clean up temporary files.");
                 Log.Information("Process ends.");
                 finished = true;

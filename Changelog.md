@@ -1,3 +1,6 @@
+### v1.9.92 (30-April-2023)
+- thay đổi thư mục temp từ C:\Users\ADMIN\AppData\Local\Temp sang "DownloadVideoFolder/tmp"
+
 ### v1.9.91 (29-April-2023)
 - Fix lỗi không tải được video https://www.youtube.com/watch?v=HxjFpyzwkjo do phần mềm lưu 
 ở đường dẫn có khoảng trắng
