@@ -1,3 +1,6 @@
+### v1.9.94 (30-April-2023)
+- Fix lỗi các file trong thư mục "DownloadVideoFolder/tmp" không được xóa toàn bộ khi tải xong
+
 ### v1.9.93 (30-April-2023)
 - hiện thông báo khi có bản mới lâu hơn (10 phút thay vì 5 giây như trước đây)
 

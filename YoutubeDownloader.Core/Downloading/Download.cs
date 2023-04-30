@@ -61,8 +61,8 @@ namespace YoutubeDownloader.Core.Downloading
             string tmpDir = Path.Combine(downloadDir, "tmp");
 #pragma warning restore CS8604 // Possible null reference argument.
             Directory.CreateDirectory(tmpDir);
-            string videoFileName = System.IO.Path.GetFileNameWithoutExtension(outputFilePath) + ".mp4";
-            string tempFilePath1 = Path.Combine(tmpDir, videoFileName);
+            string videoFileName = System.IO.Path.GetFileNameWithoutExtension(outputFilePath);
+            string tempFilePath1 = Path.Combine(tmpDir, videoFileName + ".mp4");
             //string tempFilePath2 = Path.ChangeExtension(Path.GetTempFileName(), ".mp4");
             Log.Debug("Create temporary files:");
             Log.Debug("{TempFilePath}", tempFilePath1);
@@ -136,9 +136,14 @@ namespace YoutubeDownloader.Core.Downloading
             }
             finally
             {
-                File.Delete(tempFilePath1);
+                //File.Delete(tempFilePath1);
                 //File.Delete(tempFilePath2);
-                File.Delete(Path.ChangeExtension(tempFilePath1, "tmp"));
+                //File.Delete(Path.ChangeExtension(tempFilePath1, "tmp"));
+                var dir = new DirectoryInfo(tmpDir);
+                foreach (var file in dir.EnumerateFiles(videoFileName + "*"))
+                {
+                    file.Delete();
+                }
                 //File.Delete(Path.ChangeExtension(tempFilePath2, "tmp"));
                 Log.Information("Clean up temporary files.");
                 Log.Information("Process ends.");

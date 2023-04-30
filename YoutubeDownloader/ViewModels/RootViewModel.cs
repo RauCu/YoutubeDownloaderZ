@@ -15,7 +15,7 @@ public class RootViewModel : Screen
     private readonly SettingsService _settingsService;
     private readonly UpdateService _updateService;
 
-    public SnackbarMessageQueue Notifications { get; } = new(TimeSpan.FromSeconds(600));
+    public SnackbarMessageQueue Notifications { get; } = new(TimeSpan.FromSeconds(900));
 
     public DashboardViewModel Dashboard { get; }
 
@@ -46,7 +46,7 @@ public class RootViewModel : Screen
             await _updateService.PrepareUpdateAsync(updateVersion);
             Notifications.Clear();
             Notifications.Enqueue(
-                "PHIÊN BẢN MỚI ĐÃ ĐƯỢC TẢI XONG!",
+                "ĐÃ TẢI XONG!",
                 " ==> BẤM VÀO ĐÂY ĐỂ CẬP NHẬT NGAY <==", () =>
                 {
                     _updateService.FinalizeUpdate(true);
@@ -57,6 +57,7 @@ public class RootViewModel : Screen
         catch
         {
             // Failure to update shouldn't crash the application
+            Notifications.Clear();
             Notifications.Enqueue("Cập nhật thất bại");
         }
     }

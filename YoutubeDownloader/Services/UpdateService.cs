@@ -38,6 +38,7 @@ public class UpdateService : IDisposable
             return null;
         _updateManager = _settingsService.UsePreviewVersion ? _updateManagerPreview : _updateManagerRelease;
         var check = await _updateManager.CheckForUpdatesAsync();
+
         return check.CanUpdate ? check.LastVersion : null;
     }
 
