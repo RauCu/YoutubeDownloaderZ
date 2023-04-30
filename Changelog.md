@@ -1,3 +1,6 @@
+### v1.9.93 (30-April-2023)
+- hiện thông báo khi có bản mới lâu hơn (10 phút thay vì 5 giây như trước đây)
+
 ### v1.9.92 (30-April-2023)
 - thay đổi thư mục temp từ C:\Users\ADMIN\AppData\Local\Temp sang "DownloadVideoFolder/tmp"
 

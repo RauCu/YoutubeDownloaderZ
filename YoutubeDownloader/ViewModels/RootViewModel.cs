@@ -15,7 +15,7 @@ public class RootViewModel : Screen
     private readonly SettingsService _settingsService;
     private readonly UpdateService _updateService;
 
-    public SnackbarMessageQueue Notifications { get; } = new(TimeSpan.FromSeconds(5));
+    public SnackbarMessageQueue Notifications { get; } = new(TimeSpan.FromSeconds(600));
 
     public DashboardViewModel Dashboard { get; }
 
@@ -42,12 +42,12 @@ public class RootViewModel : Screen
             if (updateVersion is null)
                 return;
 
-            Notifications.Enqueue($"Đang tải bản mới v{updateVersion}...");
+            Notifications.Enqueue($"ĐANG TẢI PHIÊN BẢN MỚI v{updateVersion}\n             NHẪN 1 CHÚT NHÉ ...");
             await _updateService.PrepareUpdateAsync(updateVersion);
-
+            Notifications.Clear();
             Notifications.Enqueue(
-                "Bản mới đã tải xong và sẽ được cài khi đóng ứng dụng",
-                "CÀI ĐẶT NGAY", () =>
+                "PHIÊN BẢN MỚI ĐÃ ĐƯỢC TẢI XONG!",
+                " ==> BẤM VÀO ĐÂY ĐỂ CẬP NHẬT NGAY <==", () =>
                 {
                     _updateService.FinalizeUpdate(true);
                     RequestClose();
