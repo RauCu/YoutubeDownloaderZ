@@ -1,3 +1,7 @@
+### v1.9.91 (29-April-2023)
+- Fix lỗi không tải được video https://www.youtube.com/watch?v=HxjFpyzwkjo do phần mềm lưu 
+ở đường dẫn có khoảng trắng
+
 ### v1.9.90 (29-April-2023)
 - Fix lỗi không tải được video https://www.youtube.com/watch?v=HxjFpyzwkjo
 - Sử dụng logic tải về như trước, khi có lỗi thì mới dùng yt-dl

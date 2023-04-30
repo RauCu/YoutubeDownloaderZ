@@ -66,8 +66,8 @@ namespace YoutubeDownloader.Core.Downloading
 
                 YoutubeDL? ytdl = new()
                 {
-                    YoutubeDLPath = Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe"),
-                    FFmpegPath = Path.Combine(Environment.CurrentDirectory, "ffmpeg.exe"),
+                    YoutubeDLPath = "\"" +Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe") +"\"",
+                    FFmpegPath = "\"" + Path.Combine(Environment.CurrentDirectory, "ffmpeg.exe") + "\"",
                     //OutputFolder = outputDirectory.FullName,
                     OutputFileTemplate = tempFilePath1,
                     OverwriteFiles = true,
