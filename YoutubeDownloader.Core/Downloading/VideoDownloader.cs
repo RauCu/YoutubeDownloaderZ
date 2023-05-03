@@ -13,6 +13,9 @@ using YoutubeExplode.Common;
 using System.Net;
 using System.Collections;
 using YoutubeDownloader.Core.Models;
+using System.Linq;
+using CliWrap;
+using AngleSharp.Io;
 
 namespace YoutubeDownloader.Core.Downloading;
 
@@ -47,25 +50,8 @@ public class VideoDownloader
         IProgress<Percentage>? progress = null,
         CancellationToken cancellationToken = default)
     {
-        int? quality = downloadOption.VideoQuality?.MaxHeight;
-        /*
-        Console.WriteLine("---------------------");
-        Console.WriteLine("["+ quality + "]" + video.Title );
-        string filePathWithQuality="";
-        string[] tokens = filePath.Split("]-");
-        if (tokens.Length == 2){
-            filePathWithQuality += tokens[0] +"]-["+ quality+"]- " + tokens[1];
-        }else{
-            filePathWithQuality = filePath;
-        }
-        Console.WriteLine(filePathWithQuality);
-        */
-        File.Delete(filePath);
-        // If the target container supports subtitles, embed them in the video too
-        var trackInfos = !downloadOption.Container.IsAudioOnly
-            ? (await _youtube.Videos.ClosedCaptions.GetManifestAsync(video.Id, cancellationToken)).Tracks
-            : Array.Empty<ClosedCaptionTrackInfo>();
 
+        File.Delete(filePath);
         var dirPath = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrWhiteSpace(dirPath))
             Directory.CreateDirectory(dirPath);
@@ -82,6 +68,10 @@ public class VideoDownloader
                 bool downloadSuccess = true;
                 bestQualityThumbnail = qualityThumbnails[i];
                 thumbnailURL = "https://img.youtube.com/vi/" + video.Id + "/" + bestQualityThumbnail;
+                if(Http.isOtherVideo(video))
+                {
+                    thumbnailURL = video.Thumbnails.ElementAt(0).Url;
+                }
                 //Console.WriteLine(thumbnailURL);
                 byte[] dataArr = new byte[1];
 
@@ -105,35 +95,82 @@ public class VideoDownloader
                 if (downloadSuccess)
                 {
                     //save file to local
-                    String thumbnailPath = Http.RemoveTitle(System.IO.Path.GetFileNameWithoutExtension(filePath) + ".jpg");
-                    File.WriteAllBytes(dirPath + "/" + thumbnailPath, dataArr);
+                    string thumbnailFileName = Http.RemoveTitle(System.IO.Path.GetFileNameWithoutExtension(filePath) + ".jpg");
+                    string thumbnailFileName_2 = Http.RemoveTitle(System.IO.Path.GetFileNameWithoutExtension(filePath) + "_2.jpg");
+                    string thumbnailPath = dirPath + "/" + thumbnailFileName ;
+                    string thumbnailPath_2 = dirPath + "/" + thumbnailFileName_2;
+                    File.WriteAllBytes(thumbnailPath, dataArr);
+                    if (Http.isOtherVideo(video))
+                    {
+                        
+                        // fix lỗi hình ảnh tải về của 1 số trang khi đăng lên GJW không được,
+                        // vi 1 lý do nào đó, nên dùng ffmpeg để convert lại:
+                        //  ./ffmpeg.exe -i .\hinh-goc.jpg hinh-up-len-gjw-ok.jpg
+                        string appPath = "\"" + Path.Combine(Environment.CurrentDirectory, "ffmpeg.exe") + "\"";
+                        string arguments = "-i " + "\"" + thumbnailPath + "\"" + " " + "\"" + thumbnailPath_2 + "\"";
+                        var result = await Cli.Wrap(appPath).WithArguments(arguments).WithValidation(CommandResultValidation.None).ExecuteAsync();
+
+                        if (File.Exists(thumbnailPath_2))
+                        {
+                            Thread.Sleep(1000);
+                            try
+                            {
+                                File.Delete(thumbnailPath);
+                                File.Move(thumbnailPath_2, thumbnailPath);
+                            }catch(Exception ex) { }
+                        }
+
+
+                    }
                     //Console.WriteLine(thumbnailURL);
                     break;
                 }
             }
         }
-
-        try
+        if (Http.isOtherVideo(video))
         {
-            await _youtube.Videos.DownloadAsync(
-                 downloadOption.StreamInfos,
-                 trackInfos,
-                 new ConversionRequestBuilder(filePath)
-                     .SetContainer(downloadOption.Container)
-                     .SetPreset(ConversionPreset.Medium)
-                     .Build(),
-                 progress?.ToDoubleBased(),
-                 cancellationToken
-             );
-        }
-        catch (Exception)
-        {
+            OtherVideo otherVideo = (OtherVideo)video;
 #pragma warning disable CS8604 // Possible null reference argument.
-            Download download = new(video.Id, filePath, progress?.ToDoubleBased(),
+            Download download = new Download(otherVideo.Url, otherVideo.Duration, filePath, progress?.ToDoubleBased(),
                 cancellationToken);
 #pragma warning restore CS8604 // Possible null reference argument.
 
             await download.Start().ConfigureAwait(false);
         }
+        else
+        {
+            int? quality = downloadOption.VideoQuality?.MaxHeight;
+
+            // If the target container supports subtitles, embed them in the video too
+            var trackInfos = !downloadOption.Container.IsAudioOnly
+                ? (await _youtube.Videos.ClosedCaptions.GetManifestAsync(video.Id, cancellationToken)).Tracks
+                : Array.Empty<ClosedCaptionTrackInfo>();
+
+            try
+            {
+                await _youtube.Videos.DownloadAsync(
+                     downloadOption.StreamInfos,
+                     trackInfos,
+                     new ConversionRequestBuilder(filePath)
+                         .SetContainer(downloadOption.Container)
+                         .SetPreset(ConversionPreset.Medium)
+                         .Build(),
+                     progress?.ToDoubleBased(),
+                     cancellationToken
+                 );
+            }
+            catch (Exception)
+            {
+#pragma warning disable CS8604 // Possible null reference argument.
+#pragma warning disable IDE0090 // Use 'new(...)'
+                Download download = new Download (video.Url, video.Duration, filePath, progress?.ToDoubleBased(),
+                    cancellationToken);
+#pragma warning restore IDE0090 // Use 'new(...)'
+#pragma warning restore CS8604 // Possible null reference argument.
+
+                await download.Start().ConfigureAwait(false);
+            }
+        }
+
     }
 }

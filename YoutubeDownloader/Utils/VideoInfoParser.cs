@@ -17,15 +17,18 @@ namespace YoutubeDownloader.Utils
             this.Title = "";
             this.DownloadStatus = "";
             this.ContentStatus = "";
+            this.URL = "";
         }
 
-        public VideoInfo(int num, string title, string id, string downloadStatus, string contentStatus)
+        public VideoInfo(int num, string title, string id, string downloadStatus, string contentStatus, string URL)
         {
             this.Number = num;
             this.Title = title;
             this.Id = id;
             this.DownloadStatus = downloadStatus;
             this.ContentStatus = contentStatus;
+            this.URL = URL;
+
         }
 
 
@@ -36,10 +39,11 @@ namespace YoutubeDownloader.Utils
         public string DownloadStatus { get; set; }
         public string ContentStatus { get; set; }
 
+        public string URL { get; set; }
         public override string ToString()
         {
             return "[" + (Number).ToString().PadLeft(YoutubeDownloader.Utils.AppConsts.LenNumber, '0') + "]-[" +
-                Title + "]-[" + Id + "]-[" + DownloadStatus + "]-[" + ContentStatus + "]";
+                Title + "]-[" + Id + "]-[" + DownloadStatus + "]-[" + ContentStatus  + "]-[" + URL + "]";
         }
     }
 
@@ -47,7 +51,7 @@ namespace YoutubeDownloader.Utils
     {
         public static VideoInfo Parse(string line)
         {
-            //line = "[2875]-[Celebrity Impressions - Melissa Villasenor - America's Got Talent Audition - Season 6]-[vuQoQMzfG48]-[Deleted]-[New]";
+            //line = "[2875]-[Celebrity Impressions - Melissa Villasenor - America's Got Talent Audition - Season 6]-[vuQoQMzfG48]-[Deleted]-[New]-[URL]";
             string[] parts = line.Trim().Split("]-[");
 
             string[] parsedParts = { "", "", "", "", "", "", "", "", "", "", "" };
@@ -77,7 +81,8 @@ namespace YoutubeDownloader.Utils
             catch
             {
             }
-            return new VideoInfo(number, parsedParts[1], parsedParts[2], parsedParts[3], parsedParts[4]);
+            return new VideoInfo(number, parsedParts[1], parsedParts[2], parsedParts[3], 
+                parsedParts[4], parsedParts[5]);
         }
     }
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using YoutubeDownloader.Core.Downloading;
+using YoutubeDownloader.Core.Utils;
 using YoutubeDownloader.Services;
 using YoutubeDownloader.Utils;
 using YoutubeDownloader.ViewModels.Components;
@@ -65,11 +66,11 @@ public class DownloadMultipleSetupViewModel : DialogScreen<IReadOnlyList<Downloa
         for (var i = 0; i < SelectedVideos!.Count; i++)
         {
             var video = SelectedVideos[i];
-            VideoInfo? videoInfo = Database.Find(video!.Id);
+            VideoInfo? videoInfo = Database.Find(Http.getVideoID(video));
             int number;
             if (videoInfo == null)
             {
-                Database.InsertOrUpdate(new VideoInfo(0, video!.Title, video!.Id, "", ""));
+                Database.InsertOrUpdate(new VideoInfo(0, video!.Title, Http.getVideoID(video), "", "", video!.Url));
                 number = Database.Count();
             }
             else

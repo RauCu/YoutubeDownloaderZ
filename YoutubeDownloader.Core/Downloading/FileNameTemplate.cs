@@ -15,8 +15,7 @@ public class FileNameTemplate
             template
                 .Replace("$num", number is not null ? $"{number}" : "xx")
                 .Replace("$title", video.Title)
-                .Replace("$id", video.Id)
-                .Replace("$author", video.Author.ChannelTitle)
+                .Replace("$id", Http.getVideoID(video))
                 .Replace("$uploadDate", (video as Video)?.UploadDate.ToString("yyyy-MM-dd") ?? "")
                 .Trim() + '.' + container.Name
         );

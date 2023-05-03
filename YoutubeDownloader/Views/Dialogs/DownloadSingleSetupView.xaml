@@ -101,7 +101,7 @@
             </Grid.ColumnDefinitions>
 
             <!--  Download option  -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal">
+            <StackPanel Grid.Column="0" Orientation="Horizontal"  Visibility="Hidden">
                 <TextBlock VerticalAlignment="Center" Text="Định dạng:" />
                 <ComboBox
                     Width="150"

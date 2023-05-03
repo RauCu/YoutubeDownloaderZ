@@ -118,7 +118,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         try
         {
             // Navigate to the file in Windows Explorer
-            ProcessEx.Start("explorer", new[] { "/select,", FilePath! });
+            ProcessEx.Start("explorer", new[] { "/select,",  FilePath! });
         }
         catch (Exception ex)
         {
@@ -301,21 +301,34 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     int videoWidth = 0; int videoHeight = 0;
 
-    public void GetVideoInfo(string input)
+    public void GetVideoInfo(string videoPath)
     {
-        var ffProbe = new NReco.VideoInfo.FFProbe();
-        var videoInfo = ffProbe.GetMediaInfo(input);
-        MediaInfo.StreamInfo[] s = videoInfo.Streams;
         videoWidth = 0;
         videoHeight = 0;
-        for (int i = 0; i < s.Length; i++)
+        try
         {
-            if (s[i].Width != 0 && s[i].Height != 0)
+            var ffProbe = new NReco.VideoInfo.FFProbe();
+            var videoInfo = ffProbe.GetMediaInfo(videoPath);
+            NReco.VideoInfo.MediaInfo.StreamInfo[] s = videoInfo.Streams;
+
+            for (int i = 0; i < s.Length; i++)
             {
-                videoWidth = s[i].Width;
-                videoHeight = s[i].Height;
-                break;
+                if (s[i].Width != 0 && s[i].Height != 0)
+                {
+                    videoWidth = s[i].Width;
+                    videoHeight = s[i].Height;
+                    break;
+                }
             }
+        }
+        catch (Exception)
+        {
+           /* var media = new MediaInfoWrapper(videoPath, new Logger<DownloadViewModel>(new NullLoggerFactory()));
+            if (media.Success)
+            {
+                videoWidth = media.Width;
+                videoHeight = media.Height;
+            }*/
         }
     }
 
@@ -371,7 +384,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             string? path = Path.GetDirectoryName(FilePath!);
             string videoPath = FilePath!;
-            string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+            string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(Video) + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
             if (files.Length > 0)
             {
                 for (int i = 0; i < files.Length; i++)
@@ -422,7 +435,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
         string? path = Path.GetDirectoryName(FilePath!);
         string videoPath = FilePath!;
-        string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+        string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(Video) + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
         if (files.Length > 0)
         {
             for (int i = 0; i < files.Length; i++)
@@ -469,7 +482,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             string? path = Path.GetDirectoryName(FilePath!);
             string videoPath = FilePath!;
-            string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+            string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(Video) + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
             if (files.Length > 0)
             {
                 for (int i = 0; i < files.Length; i++)
@@ -608,6 +621,10 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
         // {
         string url = "https://www.youtube.com/watch?v=" + Video!.Id;
+        if(!Video!.Url.Contains("youtube.com"))
+        {
+            url = Video!.Url;
+        }
         // System.Diagnostics.Process.Start(url);
         Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
         // IWebDriver? driver = null;
@@ -668,7 +685,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         try
         {
             string? path = Path.GetDirectoryName(FilePath!);
-            string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+            string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(Video) + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
             if (files.Length > 0)
             {
                 ProcessEx.StartShellExecute(files[0]);
@@ -686,7 +703,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
     private void DeleteFileInternal()
     {
         string? path = Path.GetDirectoryName(FilePath!);
-        string[] files = System.IO.Directory.GetFiles(path!, "*" + Video!.Id + "*.*", System.IO.SearchOption.TopDirectoryOnly);
+        string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(Video) + "*.*", System.IO.SearchOption.TopDirectoryOnly);
         if (files.Length > 0)
         {
             for (int i = 0; i < files.Length; i++)

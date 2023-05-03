@@ -1,3 +1,9 @@
+### v1.9.95 (3-May-2023)
+- Cập nhật lên YoutubeExplode v6.2.14 để sửa lỗi "Response status code does not indicate success: 403 (Forbidden)",
+Closed https://github.com/Tyrrrz/YoutubeDownloader/issues/333
+- Hỗ trợ tải video từ Facebook, Tiktok, pinterest, .... 
+Danh sách đấy đủ các trang được hỗ trợ: https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md
+
 ### v1.9.94 (30-April-2023)
 - Fix lỗi các file trong thư mục "DownloadVideoFolder/tmp" không được xóa toàn bộ khi tải xong
 

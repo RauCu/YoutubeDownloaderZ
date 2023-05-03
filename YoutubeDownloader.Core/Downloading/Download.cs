@@ -1,9 +1,15 @@
 ﻿using AngleSharp.Io;
+using CliWrap;
+using CliWrap.Buffered;
 using Gress;
 using Serilog;
 using SharpCompress.Common;
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using YoutubeDLSharp;
@@ -15,6 +21,7 @@ namespace YoutubeDownloader.Core.Downloading
     internal class Download
     {
         private readonly string id;
+        private readonly TimeSpan? duration;
         private string link
         {
             get => id.Contains('/')
@@ -31,7 +38,7 @@ namespace YoutubeDownloader.Core.Downloading
         IProgress<double>? _progress = null;
         CancellationToken cancellationToken;
 
-        public Download(string id,
+        public Download(string id, TimeSpan? duration,
             string outputFilePath,
             IProgress<double> progress,
             CancellationToken cancellationToken = default,
@@ -41,6 +48,7 @@ namespace YoutubeDownloader.Core.Downloading
                         string browser = "")
         {
             this.id = id;
+            this.duration = duration;
             this.outputFilePath = outputFilePath;
             this._progress = progress;
             this.cancellationToken = cancellationToken;
@@ -48,6 +56,12 @@ namespace YoutubeDownloader.Core.Downloading
             this.end = end;
             this.format = format;
             this.browser = browser;
+        }
+
+        public static int TimeSpanToSecond(TimeSpan? timespan)
+        {
+            if (timespan == null) return 0;
+            return (int)timespan.Value.TotalSeconds;
         }
 
         public async Task Start()
@@ -155,7 +169,8 @@ namespace YoutubeDownloader.Core.Downloading
         {
             OptionSet optionSet = new()
             {
-                NoCheckCertificate = true
+                NoCheckCertificate = true,
+                EmbedThumbnail = true
             };
             optionSet.AddCustomOption("--extractor-args", "youtube:skip=dash");
 
@@ -174,10 +189,10 @@ namespace YoutubeDownloader.Core.Downloading
                 optionSet.AddCustomOption("--cookies-from-browser", browser);
             }
 
-            if (end != 0)
+            if (link.Contains("tiktok"))
             {
                 optionSet.ExternalDownloader = "ffmpeg";
-                optionSet.ExternalDownloaderArgs = $"ffmpeg_i:-ss {start} -to {end}";
+                //optionSet.ExternalDownloaderArgs = $"ffmpeg_i:-ss {start} -to {end}";
             }
 
             return optionSet;
@@ -188,30 +203,81 @@ namespace YoutubeDownloader.Core.Downloading
         /// </summary>
         /// <param name="ytdl"></param>
         /// <returns></returns>
-        private async Task<YtdlpVideoData?> FetchVideoInfoAsync(YoutubeDL ytdl, OptionSet optionSet)
+        public static async Task<string> FetchVideoInfoAsync2(string link)
         {
             Log.Information("Start getting video information...");
-            RunResult<YtdlpVideoData> result_VideoData = await ytdl.RunVideoDataFetch_Alt(link, overrideOptions: optionSet);
 
-            if (!result_VideoData.Success)
+            /*        //
+                    // Set up the process with the ProcessStartInfo class.
+                    //
+                    var stdOutBuffer = new StringBuilder();
+                    var stdErrBuffer = new StringBuilder();
+
+                    string appPath = "\"" + Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe") + "\"";
+                    string arguments = "--print id --print title --print duration --print thumbnail " + link;
+
+                    var result = await Cli.Wrap("cmd").WithArguments($"/c chcp 65001 > null && {appPath} {arguments}").WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer)).WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer)).ExecuteAsync();
+
+                    // Access stdout & stderr buffered in-memory as strings
+                    var stdOut = stdOutBuffer.ToString();
+                    var stdErr = stdErrBuffer.ToString();*/
+
+            string result;
+            string appPath = "\"" + Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe") + "\"";
+            string arguments = "--print title --print id --print thumbnail --print duration --encoding utf8 " + link;
+
+            //var result = await Cli.Wrap("cmd").WithArguments($"/c chcp 65001 > null && {appPath} 
+
+
+    ProcessStartInfo start = new ProcessStartInfo
             {
-                Log.Error("Failed to get video information! VideoId: {id}", id);
-                Log.Error("Please make sure your network is working and you have permission to access the video.");
-                return null;
-            }
-
-            float duration = result_VideoData.Data.Duration ?? 0;
-
-            Log.Information("{title}", result_VideoData.Data.Title);
-            Log.Information("{duration}", duration);
-
-            if (result_VideoData.Data.Duration < start)
+        //FileName = "\"" + Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe") + "\"",
+                FileName = "cmd.exe",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardInput = true,
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                StandardErrorEncoding = Encoding.UTF8,
+                StandardOutputEncoding = Encoding.UTF8,
+                Arguments = $"/C chcp 65001 >nul 2>&1 && {appPath} {arguments}"
+            };
+            //
+            // Start the process.
+            //
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            using (Process process = Process.Start(start))
             {
-                Log.Error("Segment input invalid!");
-                Log.Error("Start, End time should be smaller then video duration.");
-                return null;
-            }
 
+                //
+                // Read in all the text from the process with the StreamReader.
+                //
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                //process.StandardInput.WriteLine("chcp 65001");
+                //process.StandardInput.Flush();
+                //process.Close();
+                using (StreamReader reader = process.StandardOutput)
+                {
+                    result = reader.ReadToEnd();
+                   
+                }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                //process.WaitForExit();
+                await process.WaitForExitAsync().ConfigureAwait(false);
+            }
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+            return result;
+        }
+
+        public static async Task<string> FetchVideoInfoAsync3(string link)
+        {
+            Log.Information("Start getting video information...");
+            YoutubeDL? ytdl = new()
+            {
+                YoutubeDLPath = "\"" + Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe") + "\""
+            };
+            RunResult<string> result_VideoData = await ytdl.RunVideoDataFetch_Alt(link);
             return result_VideoData.Data;
         }
 

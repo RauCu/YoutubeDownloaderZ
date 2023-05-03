@@ -158,7 +158,7 @@
             Margin="16"
             LastChildFill="False">
             <!--  Container preference  -->
-            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+            <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" Visibility="Hidden">
                 <TextBlock VerticalAlignment="Center" Text="Định dạng:" />
                 <ComboBox
                     Width="150"
@@ -171,6 +171,7 @@
 
             <!--  Video quality preference  -->
             <StackPanel
+                Visibility="Hidden"
                 DockPanel.Dock="Right"
                 IsEnabled="{Binding SelectedContainer.IsAudioOnly, Converter={x:Static converters:InverseBoolConverter.Instance}}"
                 Orientation="Horizontal">

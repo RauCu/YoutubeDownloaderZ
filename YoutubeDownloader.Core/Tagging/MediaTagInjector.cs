@@ -23,11 +23,7 @@ public class MediaTagInjector
             Environment.NewLine +
             $"Video: {video.Title}" +
             Environment.NewLine +
-            $"Video URL: {video.Url}" +
-            Environment.NewLine +
-            $"Channel: {video.Author.ChannelTitle}" +
-            Environment.NewLine +
-            $"Channel URL: {video.Author.ChannelUrl}"
+            $"Video URL: {video.Url}"
         );
     }
 
@@ -91,7 +87,7 @@ public class MediaTagInjector
         using var mediaFile = MediaFile.Create(filePath);
 
         InjectMiscMetadata(mediaFile, video);
-        await InjectMusicMetadataAsync(mediaFile, video, cancellationToken);
+        //await InjectMusicMetadataAsync(mediaFile, video, cancellationToken);
         await InjectThumbnailAsync(mediaFile, video, cancellationToken);
     }
 }

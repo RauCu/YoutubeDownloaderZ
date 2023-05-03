@@ -23,6 +23,10 @@ using System.Windows;
 using YoutubeExplode.Videos;
 using System.Collections.Generic;
 using System.Net.Http.Headers;
+using YoutubeDownloader.Core.Models;
+using SharpCompress.Common;
+using AngleSharp.Text;
+using System.Text.RegularExpressions;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -430,6 +434,11 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 break;
             }
         }
+        //
+        if(text.Contains("begins in"))
+        {
+            result = true;
+        }
         return result;
     }
 
@@ -460,7 +469,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             {
                 using var access = await _downloadSemaphore.AcquireAsync(download.CancellationToken);
                 // get status of video from cache
-                videoInfo = Database.Find(download.Video!.Id);
+                videoInfo = Database.Find(Http.getVideoID(download.Video));
                 if (!download.ForceDownload)
                 {
                     if (videoInfo != null && videoInfo.DownloadStatus != "")
@@ -473,7 +482,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             if (!File.Exists(download.FilePath))
                             {
                                 string? path = Path.GetDirectoryName(download.FilePath!);
-                                string[] files = System.IO.Directory.GetFiles(path!, "*" + download.Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+                                string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(download.Video) + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
                                 if (files.Length == 0)
                                 {
                                     // video deleted from FileExplorer
@@ -529,7 +538,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             if (!File.Exists(download.FilePath))
                             {
                                 string? path = Path.GetDirectoryName(download.FilePath!);
-                                string[] files = System.IO.Directory.GetFiles(path!, "*" + download.Video!.Id + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
+                                string[] files = System.IO.Directory.GetFiles(path!, "*" + Http.getVideoID(download.Video) + "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
                                 if (files.Length == 0)
                                 {
                                     // video deleted from FileExplorer
@@ -558,74 +567,114 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
                 if (shouldDownload)
                 {
+
                     // continue checking
                     shouldDownload = false;
                     download.Status = DownloadStatus.Started;
-                    var downloadOption = download.DownloadOption is not null ?
-                        download.DownloadOption :
-                        await _videoDownloader.GetBestDownloadOptionAsync(
-                            download.Video!.Id,
-                            download.DownloadPreference!,
-                            download.CancellationToken
-                        );
-                    int? quality = downloadOption.VideoQuality?.MaxHeight;
-                    bool hightQualityVideoDownloaded = false;
-                    bool tooShort = false;
-                    bool tooLong = false;
-                    if (download.DownloadPreference is null || ((downloadOption.Container == YoutubeExplode.Videos.Streams.Container.WebM ||
-                        downloadOption.Container == YoutubeExplode.Videos.Streams.Container.Mp4) &&
-                        (download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.Highest ||
-                        download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo1080p) &&
-                        quality >= 720))
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+                    VideoDownloadOption downloadOption = download.DownloadOption;
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+                    if (!Http.isOtherVideo(download.Video))
                     {
-                        hightQualityVideoDownloaded = true;
-                    }
+                        downloadOption = download.DownloadOption is not null ?
+                            download.DownloadOption :
+                            await _videoDownloader.GetBestDownloadOptionAsync(
+                                download.Video!.Id,
+                                download.DownloadPreference!,
+                                download.CancellationToken
+                            );
+                        int? quality = downloadOption.VideoQuality?.MaxHeight;
+                        bool hightQualityVideoDownloaded = false;
+                        bool tooShort = false;
+                        bool tooLong = false;
+                        if (download.DownloadPreference is null || ((downloadOption.Container == YoutubeExplode.Videos.Streams.Container.WebM ||
+                            downloadOption.Container == YoutubeExplode.Videos.Streams.Container.Mp4) &&
+                            (download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.Highest ||
+                            download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo1080p) &&
+                            quality >= 720))
+                        {
+                            hightQualityVideoDownloaded = true;
+                        }
 
-                    bool lowQualityVideoDownloaded = false;
-                    if (download.DownloadPreference is null || ((downloadOption.Container == YoutubeExplode.Videos.Streams.Container.WebM ||
-                        downloadOption.Container == YoutubeExplode.Videos.Streams.Container.Mp4) &&
-                        (download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo720p ||
-                        download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo480p)))
+                        bool lowQualityVideoDownloaded = false;
+                        if (download.DownloadPreference is null || ((downloadOption.Container == YoutubeExplode.Videos.Streams.Container.WebM ||
+                            downloadOption.Container == YoutubeExplode.Videos.Streams.Container.Mp4) &&
+                            (download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo720p ||
+                            download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo480p)))
+                        {
+                            lowQualityVideoDownloaded = true;
+                        }
+
+                        bool audioDownloaded = false;
+                        if (downloadOption.Container.Name == YoutubeExplode.Videos.Streams.Container.Mp3.Name ||
+                            downloadOption.Container.Name == "ogg" ||
+                            downloadOption.Container.Name == "m4a")
+                        {
+                            audioDownloaded = true;
+                        }
+                        int SECONDS_IN_MINUTE = 60;
+
+                        if (download.Video!.Duration?.TotalSeconds <= SECONDS_IN_MINUTE)
+                        {
+                            //shorter than 1 minute
+                            // workaround to disable < 1 minute
+                            tooShort = false;
+                        }
+                        else if (download.Video!.Duration?.TotalSeconds > 60 * SECONDS_IN_MINUTE)
+                        {
+                            // longer than 60 minutes
+                            // workaround to disable > 60 minute
+                            tooLong = false;
+                        }
+
+                        bool okLength = !tooShort && !tooLong;
+
+                        shouldDownload = (hightQualityVideoDownloaded && okLength) || (lowQualityVideoDownloaded && okLength) || (audioDownloaded && okLength) || download.ForceDownload;
+                    }
+                    else
                     {
-                        lowQualityVideoDownloaded = true;
+                        shouldDownload = true;
+                        download.Status = DownloadStatus.Started;
                     }
-
-                    bool audioDownloaded = false;
-                    if (downloadOption.Container.Name == YoutubeExplode.Videos.Streams.Container.Mp3.Name ||
-                        downloadOption.Container.Name == "ogg" ||
-                        downloadOption.Container.Name == "m4a")
-                    {
-                        audioDownloaded = true;
-                    }
-                    int SECONDS_IN_MINUTE = 60;
-
-                    if (download.Video!.Duration?.TotalSeconds <= SECONDS_IN_MINUTE)
-                    {
-                        //shorter than 1 minute
-                        // workaround to disable < 1 minute
-                        tooShort = false;
-                    }
-                    else if (download.Video!.Duration?.TotalSeconds > 60 * SECONDS_IN_MINUTE)
-                    {
-                        // longer than 60 minutes
-                        // workaround to disable > 60 minute
-                        tooLong = false;
-                    }
-
-                    bool okLength = !tooShort && !tooLong;
-
-                    shouldDownload = (hightQualityVideoDownloaded && okLength) || (lowQualityVideoDownloaded && okLength) || (audioDownloaded && okLength) || download.ForceDownload;
-
+                  
                     if (shouldDownload)
                     {
                         Console.WriteLine("Accepted!");
                         //
                         DirectoryEx.CreateDirectoryForFile(download.FilePath!);
-                        File.WriteAllBytes(download.FilePath!, Array.Empty<byte>());
+                        try
+                        {
+                            File.WriteAllBytes(download.FilePath!, Array.Empty<byte>());
+                        }
+                        catch (Exception)
+                        {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                            string fileName = System.IO.Path.GetFileNameWithoutExtension(download.FilePath!);
+                            fileName = fileName.Replace("....", "");
+                            fileName = fileName.Replace("...", "");
+                            fileName = fileName.Replace("..", "");
+                            fileName = Regex.Replace(fileName, @"\s+", " ");
+                            fileName = fileName.Replace(" ", "_");
+                            fileName = fileName.Replace(",", "_");
+
+                            fileName = Regex.Replace(fileName, @"[^\u0020-\u007E]", string.Empty);
+                            fileName = fileName.Substring(0, 150) +"]";
+                            download.FilePath = Path.GetDirectoryName(download.FilePath!) + "\\" + fileName + ".mp4";
+                            try {
+                                File.WriteAllBytes(download.FilePath!, Array.Empty<byte>());
+                            }catch (Exception)
+                            {
+                                download.FilePath = Path.GetDirectoryName(download.FilePath!) + "\\" + Http.ReplaceTitleByID(System.IO.Path.GetFileNameWithoutExtension(download.FilePath) + ".mp4");
+                                File.WriteAllBytes(download.FilePath!, Array.Empty<byte>());
+                            }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+
+                        }
+          
                         await _videoDownloader.DownloadVideoAsync(
                             download.FilePath!,
                             download.Video!,
-                            downloadOption,
+                            downloadOption!,
                             download.Progress.Merge(progress),
                             download.CancellationToken
                         );
@@ -654,7 +703,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     }
                     else
                     {
-                        if (okLength)
+                        /*if (okLength)
                         {
                             Console.WriteLine("Canceled_low_quality");
                             //throw new Exception("Canceled_low_quality");
@@ -671,7 +720,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             Console.WriteLine("Canceled_too_long");
                             //throw new Exception("Canceled_too_long");
                             download.Status = DownloadStatus.Canceled_too_long;
-                        }
+                        }*/
                     }
                 }
             }
@@ -858,33 +907,67 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     selectedFolder = dialog.SelectedPath;
                     try
                     {
+                        Database.Load(selectedFolder);
                         string[] files = System.IO.Directory.GetFiles(selectedFolder!, "*.mp4", System.IO.SearchOption.TopDirectoryOnly);
-                        string youtubeURL = "https://www.youtube.com/watch?v=";
+                        string youtubeURLBase = "https://www.youtube.com/watch?v=";
                         string queryTxt = "";
                         if (files.Length > 0)
                         {
-                            HashSet<string> videoIDSet = new HashSet<string>();
+                            HashSet<string> youtubeURLs = new HashSet<string>();
+                            HashSet<string> otherURLs = new HashSet<string>();
                             for (int i = 0; i < files.Length; i++)
                             {
                                 try
                                 {
                                     VideoInfo videoInfo = VideoInfoParser.Parse(Path.GetFileName(files[i]));
                                     string videoID = videoInfo.Id.Substring(0, videoInfo.Id.Length - 5);
-                                    videoIDSet.Add(videoID);
+
+                                    VideoInfo? videoInfoDB = Database.Find(videoID);
+                                    if(videoInfoDB != null)
+                                    {
+                                        if((videoInfoDB.URL == "" || videoInfoDB.URL.Contains("youtube.com")))
+                                        {
+                                            youtubeURLs.Add(videoInfoDB.URL == "" ? (youtubeURLBase + videoID) : videoInfoDB.URL);
+                                        
+                                        }
+                                        else
+                                        {
+                                            otherURLs.Add(videoInfoDB.URL);
+                                        }
+                                    }
+                                    
                                 }
                                 catch (Exception) { }
 
                             }
-                            foreach (string videoID in videoIDSet)
+
+                            bool hasVideo = false;
+                            // other sites
+                            queryTxt = "";
+                            foreach (string otherURL in otherURLs)
                             {
-                                queryTxt += youtubeURL + videoID + "\n";
+                                queryTxt += otherURL + "\n";
                             }
-                            if (videoIDSet.Count > 0)
+                            if (queryTxt != "")
                             {
+                                hasVideo = true;
                                 Query = queryTxt;
                                 ProcessQueryForFolder();
                             }
-                            else
+
+                            // youtube only, check first
+                            foreach (string youtubeURL in youtubeURLs)
+                            {
+                                queryTxt += youtubeURL + "\n";
+                            }
+                            if (queryTxt != "")
+                            {
+                                hasVideo = true;
+                                Query = queryTxt;
+                                ProcessQueryForFolder();
+                            }
+
+                            if (hasVideo == false)
                             {
                                 await _dialogManager.ShowDialogAsync(
                                 _viewModelFactory.CreateMessageBoxViewModel(
@@ -1040,54 +1123,106 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
         try
         {
+
             var result = await _queryResolver.ResolveAsync(
                 Query.Split("\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
                 progress
             );
 
-            // Single video
-            if (result.Videos.Count == 1)
+            if(result.Kind == QueryResultKind.Other)
             {
-                var video = result.Videos.Single();
-                var downloadOptions = await _videoDownloader.GetDownloadOptionsAsync(video.Id);
+                // Single video
+                if (result.Videos.Count == 1)
+                {
+                    var video = result.Videos.Single();
+#pragma warning disable CS8625 // Cannot convert null literal to non-nullable reference type.
+                    var download = await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateDownloadSingleSetupViewModel(video, null)
+                    );
+#pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
-                var download = await _dialogManager.ShowDialogAsync(
-                    _viewModelFactory.CreateDownloadSingleSetupViewModel(video, downloadOptions)
-                );
+                    if (download is null)
+                        return;
 
-                if (download is null)
-                    return;
-
-                EnqueueDownload(download);
-            }
-            // Multiple videos
-            else if (result.Videos.Count > 1)
-            {
-                var downloads = await _dialogManager.ShowDialogAsync(
-                    _viewModelFactory.CreateDownloadMultipleSetupViewModel(
-                        result.Title,
-                        result.Videos,
-                        // Pre-select videos if they come from a single query and not from search
-                        result.Kind is not QueryResultKind.Search
-                    )
-                );
-
-                if (downloads is null)
-                    return;
-
-                foreach (var download in downloads)
                     EnqueueDownload(download);
+                }
+                // Multiple videos
+                else if (result.Videos.Count > 1)
+                {
+                    var downloads = await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateDownloadMultipleSetupViewModel(
+                            result.Title,
+                            result.Videos,
+                            // Pre-select videos if they come from a single query and not from search
+                            result.Kind is not QueryResultKind.Search
+                        )
+                    );
+
+                    if (downloads is null)
+                        return;
+
+                    foreach (var download in downloads)
+                        EnqueueDownload(download);
+                }
+                // No videos found
+                else
+                {
+                    await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateMessageBoxViewModel(
+                            "Không tìm thấy",
+                            "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp"
+                        )
+                    );
+                }
+
             }
-            // No videos found
             else
             {
-                await _dialogManager.ShowDialogAsync(
-                    _viewModelFactory.CreateMessageBoxViewModel(
-                        "Không tìm thấy",
-                        "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp"
-                    )
-                );
+                // Single video
+                if (result.Videos.Count == 1)
+                {
+                    var video = result.Videos.Single();
+                    var downloadOptions = await _videoDownloader.GetDownloadOptionsAsync(video.Id);
+
+                    var download = await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateDownloadSingleSetupViewModel(video, downloadOptions)
+                    );
+
+                    if (download is null)
+                        return;
+
+                    EnqueueDownload(download);
+                }
+                // Multiple videos
+                else if (result.Videos.Count > 1)
+                {
+                    var downloads = await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateDownloadMultipleSetupViewModel(
+                            result.Title,
+                            result.Videos,
+                            // Pre-select videos if they come from a single query and not from search
+                            result.Kind is not QueryResultKind.Search
+                        )
+                    );
+
+                    if (downloads is null)
+                        return;
+
+                    foreach (var download in downloads)
+                        EnqueueDownload(download);
+                }
+                // No videos found
+                else
+                {
+                    await _dialogManager.ShowDialogAsync(
+                        _viewModelFactory.CreateMessageBoxViewModel(
+                            "Không tìm thấy",
+                            "Không tìm thấy video nào từ đường link hoặc từ khóa bạn cung cấp"
+                        )
+                    );
+                }
             }
+        
         }
         catch (Exception ex)
         {

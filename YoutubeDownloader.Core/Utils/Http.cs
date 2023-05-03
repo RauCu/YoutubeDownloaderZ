@@ -15,16 +15,62 @@ using WebDriverManager.DriverConfigs.Impl;
 using WebDriverManager.Helpers;
 using WindowsInput;
 using WindowsInput.Native;
+using YoutubeDownloader.Core.Downloading;
+using YoutubeExplode.Videos;
 
 namespace YoutubeDownloader.Core.Utils;
 
 public static class Http
 {
-    public static string RemoveTitle(String input)
+
+    public static string getVideoID(IVideo? video)
     {
-        int start = input.IndexOf("]-[") + "]-[".Length;
-        int end = input.LastIndexOf("]-[");
-        return input.Remove(start - 2, end - start + 3);
+        if (video == null) { return ""; }
+        try
+        {
+            OtherVideo otherVideo = (OtherVideo)video;
+            Console.WriteLine("Conversion succeeded.");
+            return otherVideo.otherId;
+        }
+        catch (InvalidCastException)
+        {
+            Console.WriteLine("Conversion failed.");
+            return video.Id.Value;
+        }
+    }
+
+    public static bool isOtherVideo(IVideo? video)
+    {
+        if (video == null) { return false; }
+        try
+        {
+            OtherVideo otherVideo = (OtherVideo)video;
+            Console.WriteLine("Conversion succeeded.");
+            return true;
+        }
+        catch (InvalidCastException)
+        {
+            Console.WriteLine("Conversion failed.");
+            return false;
+        }
+    }
+
+    public static string RemoveTitle(String fileName)
+    {
+        int start = fileName.IndexOf("]-[") + "]-[".Length;
+        int end = fileName.LastIndexOf("]-[");
+        return fileName.Remove(start - 2, end - start + 3);
+    }
+
+    public static string ReplaceTitleByID(String fileName)
+    {
+        int start = fileName.IndexOf("]-[") + "]-[".Length;
+        int end = fileName.LastIndexOf("]-[");
+        string titleRmoved = fileName.Remove(start - 2, end - start + 3);
+
+        string[] parts = titleRmoved.Split("]-[");
+        string fileNameWithID = parts[0] + "]-[" + "GJW" + "]-[" + parts[1];
+        return fileNameWithID;
     }
     public static HttpClient Client { get; } = new()
     {
@@ -217,7 +263,7 @@ public static class Http
                 throw new Exception(first100Chars);//propage this error
             }
             // select video
-            Thread.Sleep(7000);
+            Thread.Sleep(4000);
             InputSimulator sim = new InputSimulator();
             //System.Windows.Clipboard.SetText(path);
             sim.Keyboard.TextEntry(path);
@@ -276,7 +322,7 @@ public static class Http
                         }
                     }
                 }
-                Thread.Sleep(7000);
+                Thread.Sleep(4000);
                 //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
                 sim.Keyboard.TextEntry(Http.RemoveTitle(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg"));
                 //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
@@ -318,9 +364,44 @@ public static class Http
 
             Thread.Sleep(2000);
             sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_A);
-            sim.Keyboard.TextEntry(title.Substring(0, Math.Min(title.Length, 100 /*max 100 characters*/)));
+            string newtitle = title.Substring(0, Math.Min(title.Length, 100 /*max 100 characters*/));
+            /*newtitle = newtitle.Trim();
+            string[] parts = newtitle.Split(" ");
+            parts[parts.Length - 1] = parts[parts.Length - 1].Replace("#", "_");
+            newtitle = String.Join(" ", parts);*/
+            sim.Keyboard.TextEntry(newtitle);
+
+
+            // description; 
+            // cần click vào ô description để ẩn đi khung gợi ý hashtag nếu có
+            //Thread.Sleep(1000);
+
+            string descriptionXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[2]/div/div/div[1]";
+            if (isShortVideo)
+            {
+                descriptionXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[2]/div/div/div[1]";
+            }
+       
+            try
+            {
+                wait2Second.Until(driver => driver.FindElement(By.XPath(descriptionXpath)));
+                IWebElement descriptionElement = driver.FindElement(By.XPath(descriptionXpath));
+                Thread.Sleep(3000);
+                descriptionElement.Click();
+                    
+            }
+            catch (Exception ex)
+            {
+                string msgError = "Error on: descriptionElement: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                //throw new Exception(first100Chars);//propage this error
+            }
+            
 
             Thread.Sleep(1000);
+
+           
 
             if (!isShortVideo)
             {
@@ -341,7 +422,8 @@ public static class Http
             try { 
                 wait.Until(driver => driver.FindElement(By.XPath(selectSaveBtnXpath)));
                 IWebElement elementBtnSave = driver.FindElement(By.XPath(selectSaveBtnXpath));
-                elementBtnSave.Click();
+                Thread.Sleep(1000);
+                elementBtnSave.Click();    
             }
             catch (Exception ex)
             {

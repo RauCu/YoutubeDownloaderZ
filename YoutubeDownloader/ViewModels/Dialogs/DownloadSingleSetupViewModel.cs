@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Windows;
 using YoutubeDownloader.Core.Downloading;
+using YoutubeDownloader.Core.Utils;
 using YoutubeDownloader.Services;
 using YoutubeDownloader.Utils;
 using YoutubeDownloader.ViewModels.Components;
 using YoutubeDownloader.ViewModels.Framework;
 using YoutubeExplode.Videos;
+using YoutubeExplode.Videos.Streams;
 
 namespace YoutubeDownloader.ViewModels.Dialogs;
 
@@ -45,13 +47,14 @@ public class DownloadSingleSetupViewModel : DialogScreen<DownloadViewModel>
 
     public void ConfirmPath(String dirPath)
     {
-        var container = SelectedDownloadOption!.Container;
+        var container  = Container.Mp4;
+
         Database.Load(dirPath);
-        VideoInfo? videoInfo = Database.Find(Video!.Id);
+        VideoInfo? videoInfo = Database.Find(Http.getVideoID(Video));
         int number;
         if (videoInfo == null)
         {
-            Database.InsertOrUpdate(new VideoInfo(0, Video!.Title, Video!.Id, "", ""));
+            Database.InsertOrUpdate(new VideoInfo(0, Video!.Title, Http.getVideoID(Video), "", "", Video!.Url));
             number = Database.Count();
         }
         else

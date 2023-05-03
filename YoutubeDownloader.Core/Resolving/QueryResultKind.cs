@@ -6,5 +6,6 @@ public enum QueryResultKind
     Playlist,
     Channel,
     Search,
-    Aggregate
+    Aggregate,
+    Other
 }

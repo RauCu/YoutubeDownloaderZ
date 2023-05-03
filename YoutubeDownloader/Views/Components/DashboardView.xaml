@@ -294,7 +294,7 @@
                                 <Image
                                 Width="120"
                                 Height="90"
-                                Stretch="None"
+                                Stretch="Fill"
                                 VerticalAlignment="Center"
                                 Source="{Binding Video, Converter={x:Static converters:VideoToLowestQualityThumbnailUrlConverter.Instance}}" >
                                 </Image>
@@ -319,7 +319,7 @@
                                     Foreground="{DynamicResource MaterialDesignBody}"
                                     Text="{Binding FileNameShort}"
                                     TextTrimming="CharacterEllipsis"
-                                    ToolTip="Xem trên Youtube" >
+                                    ToolTip="{Binding Video.Url}" >
                                     <TextBlock.InputBindings>
                                         <MouseBinding Gesture="LeftClick" s:View.ActionTarget="{Binding}" Command="{s:Action WathOnYoutube}" />
                                     </TextBlock.InputBindings>
