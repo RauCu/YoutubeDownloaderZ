@@ -596,7 +596,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             hightQualityVideoDownloaded = true;
                         }
 
-                        bool lowQualityVideoDownloaded = false;
+                        bool lowQualityVideoDownloaded = false; // disable check low qualiy
                         if (download.DownloadPreference is null || ((downloadOption.Container == YoutubeExplode.Videos.Streams.Container.WebM ||
                             downloadOption.Container == YoutubeExplode.Videos.Streams.Container.Mp4) &&
                             (download.DownloadPreference!.PreferredVideoQuality == VideoQualityPreference.UpTo720p ||
@@ -658,7 +658,8 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             fileName = fileName.Replace(",", "_");
 
                             fileName = Regex.Replace(fileName, @"[^\u0020-\u007E]", string.Empty);
-                            fileName = fileName.Substring(0, 150) +"]";
+                            fileName = fileName.Substring(0, 150) +"]-[" + Http.getVideoID(download.Video) +"]";
+                            fileName = fileName.Replace("]]", "]");
                             download.FilePath = Path.GetDirectoryName(download.FilePath!) + "\\" + fileName + ".mp4";
                             try {
                                 File.WriteAllBytes(download.FilePath!, Array.Empty<byte>());
@@ -703,12 +704,13 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     }
                     else
                     {
-                        /*if (okLength)
+                        //if (okLength)
                         {
                             Console.WriteLine("Canceled_low_quality");
                             //throw new Exception("Canceled_low_quality");
                             download.Status = DownloadStatus.Canceled_low_quality;
                         }
+                        /*
                         else if (tooShort)
                         {
                             Console.WriteLine("Canceled_too_short");
@@ -956,6 +958,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             }
 
                             // youtube only, check first
+                            queryTxt = "";
                             foreach (string youtubeURL in youtubeURLs)
                             {
                                 queryTxt += youtubeURL + "\n";

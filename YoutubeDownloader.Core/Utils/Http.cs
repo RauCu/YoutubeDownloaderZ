@@ -395,6 +395,9 @@ public static class Http
                 string msgError = "Error on: descriptionElement: " + ex.ToString();
                 var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
                 Console.WriteLine(msgError);
+
+                //
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                 //throw new Exception(first100Chars);//propage this error
             }
             

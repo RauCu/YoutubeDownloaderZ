@@ -1,3 +1,6 @@
+### v1.9.97 (4-May-2023)
+- Sửa một số lỗi nhỏ
+
 ### v1.9.96 (4-May-2023)
 - Không dùng tùy chọn EmbedThumbnail, vì nếu dùng thì sẽ cần file ffprobe.exe, nặng 77MB
 

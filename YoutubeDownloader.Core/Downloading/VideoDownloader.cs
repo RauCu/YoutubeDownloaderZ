@@ -11,11 +11,8 @@ using YoutubeExplode.Videos;
 using YoutubeExplode.Videos.ClosedCaptions;
 using YoutubeExplode.Common;
 using System.Net;
-using System.Collections;
-using YoutubeDownloader.Core.Models;
 using System.Linq;
 using CliWrap;
-using AngleSharp.Io;
 
 namespace YoutubeDownloader.Core.Downloading;
 
