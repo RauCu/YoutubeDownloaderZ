@@ -169,8 +169,8 @@ namespace YoutubeDownloader.Core.Downloading
         {
             OptionSet optionSet = new()
             {
-                NoCheckCertificate = true,
-                EmbedThumbnail = true
+                NoCheckCertificate = true/*,
+                EmbedThumbnail = true*/
             };
             optionSet.AddCustomOption("--extractor-args", "youtube:skip=dash");
 

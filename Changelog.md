@@ -1,3 +1,6 @@
+### v1.9.96 (4-May-2023)
+- Không dùng tùy chọn EmbedThumbnail, vì nếu dùng thì sẽ cần file ffprobe.exe, nặng 77MB
+
 ### v1.9.95 (3-May-2023)
 - Cập nhật lên YoutubeExplode v6.2.14 để sửa lỗi "Response status code does not indicate success: 403 (Forbidden)",
 Closed https://github.com/Tyrrrz/YoutubeDownloader/issues/333
