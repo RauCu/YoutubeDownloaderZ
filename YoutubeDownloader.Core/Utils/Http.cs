@@ -142,6 +142,65 @@ public static class Http
 #pragma warning restore CS8603 // Possible null reference return.
     }
 
+    public static void openVideoTab(IWebDriver driver, bool isShortVideo)
+    {
+        int maxLenErrorMsg = 400;
+        if (driver != null)
+        {   
+            WebDriverWait wait2Second = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
+
+            string videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
+          
+            bool clickVideoTabSuccess = false;
+            int MAX_TRY_VIDEO_TAB = 15;
+            for (int i = 0; i <= MAX_TRY_VIDEO_TAB && clickVideoTabSuccess == false; i++)
+            {
+                try
+                {
+                    wait2Second.Until(driver => driver.FindElement(By.XPath(videoTab)));
+                    IWebElement elementVideoTab = driver.FindElement(By.XPath(videoTab));
+                    elementVideoTab.Click();
+                    clickVideoTabSuccess = true;
+                }
+                catch (Exception ex)
+                {
+                    if (!isShortVideo)
+                    {
+                        if (i % 2 != 0)
+                        {
+                            videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[1]";
+                        }
+                        else
+                        {
+                            videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
+                        }
+                    }
+                    else
+                    {
+                        if (i % 2 != 0)
+                        {
+                            videoTab = "/html/body/div[2]/div[2]/div/div[1]/div/div/div/button[1]";
+                        }
+                        else
+                        {
+                            videoTab = "/html/body/div[2]/div[3]/div/div[1]/div/div/div/button[2]";
+                        }
+                    }
+
+                    if (i == MAX_TRY_VIDEO_TAB)
+                    {
+                        string msgError = "Error on: elementVideoTab: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
+                    }
+                }
+                Thread.Sleep(1000);
+            }
+        }
+    }
+
+
     static int count = 0;
     static bool testEnabled = false;
     public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category)

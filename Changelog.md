@@ -1,3 +1,7 @@
+### v1.9.98 (5-May-2023)
+- Đảm bảo là đang ở tab Video chứ không phải ở tab Short thì mới có thể thấy là đang Uploading hay đang Transcoding
+- Bỏ bước notify khỏi CI pipeline
+
 ### v1.9.97 (4-May-2023)
 - Sửa một số lỗi nhỏ
 

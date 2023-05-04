@@ -22,10 +22,6 @@ using System.ComponentModel;
 using System.Windows;
 using YoutubeExplode.Videos;
 using System.Collections.Generic;
-using System.Net.Http.Headers;
-using YoutubeDownloader.Core.Models;
-using SharpCompress.Common;
-using AngleSharp.Text;
 using System.Text.RegularExpressions;
 
 namespace YoutubeDownloader.ViewModels.Components;
@@ -379,6 +375,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             }
             if (mDriver != null && allSuccess)
             {
+                // Đảm bảo là đang ở tab Video chứ không phải ở tab Short thì mới có thể thấy là đang Uploading hay đang Transcoding
+                Http.openVideoTab(mDriver, false);
+
                 Thread.Sleep(waitingTime);
                 while (true)
                 {
