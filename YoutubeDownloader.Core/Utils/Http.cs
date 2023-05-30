@@ -465,9 +465,28 @@ public static class Http
             Thread.Sleep(1000);
 
 
-
             if (!isShortVideo)
             {
+                string descriptionLabelXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[2]/div/label";
+                try
+                {
+                    wait2Second.Until(driver => driver.FindElement(By.XPath(descriptionLabelXpath)));
+                    IWebElement descriptionLabelElement = driver.FindElement(By.XPath(descriptionLabelXpath));
+                    Thread.Sleep(3000);
+                    descriptionLabelElement.Click();
+                    sim.Keyboard.KeyPress(VirtualKeyCode.END);
+
+                }
+                catch (Exception ex)
+                {
+                    string msgError = "Error on: descriptionLabelElement: " + ex.ToString();
+                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                    Console.WriteLine(msgError);
+
+                    //
+                    sim.Keyboard.KeyPress(VirtualKeyCode.END);
+                    //throw new Exception(first100Chars);//propage this error
+                }
                 // category
                 Thread.Sleep(1000);
                 //string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/input";

@@ -1,3 +1,6 @@
+### v1.9.100 (31-May-2023)
+- Sửa lỗi không tự động đăng video ở trên máy tính có màn hình nhỏ
+
 ### v1.9.99 (30-May-2023)
 - Cập nhật logic upload video vì GJW thay đổi giao diện
 
