@@ -1,3 +1,6 @@
+### v1.9.99 (30-May-2023)
+- Cập nhật logic upload video vì GJW thay đổi giao diện
+
 ### v1.9.98 (5-May-2023)
 - Đảm bảo là đang ở tab Video chứ không phải ở tab Short thì mới có thể thấy là đang Uploading hay đang Transcoding
 - Bỏ bước notify khỏi CI pipeline
