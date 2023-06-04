@@ -1,3 +1,6 @@
+### v1.9.101 (04-Jun-2023)
+- Sửa lỗi thỉnh thoảng tiêu đề video bị sai
+
 ### v1.9.100 (31-May-2023)
 - Sửa lỗi không tự động đăng video ở trên máy tính có màn hình nhỏ
 

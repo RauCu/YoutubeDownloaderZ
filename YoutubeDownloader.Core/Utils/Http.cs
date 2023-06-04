@@ -428,7 +428,9 @@ public static class Http
             string[] parts = newtitle.Split(" ");
             parts[parts.Length - 1] = parts[parts.Length - 1].Replace("#", "_");
             newtitle = String.Join(" ", parts);*/
-            sim.Keyboard.TextEntry(newtitle);
+            WindowsClipboard.SetText(newtitle);
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
+            //sim.Keyboard.TextEntry(newtitle);
 
 
             // description; 
