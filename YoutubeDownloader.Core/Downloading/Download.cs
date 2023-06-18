@@ -281,6 +281,17 @@ namespace YoutubeDownloader.Core.Downloading
             return result_VideoData.Data;
         }
 
+        public static async Task<string> FetchVideoTitleInstalgram(string link)
+        {
+            Log.Information("Start getting video title for Instagram ...");
+            YoutubeDL? ytdl = new()
+            {
+                YoutubeDLPath = "\"" + Path.Combine(Environment.CurrentDirectory, "yt-dlp.exe") + "\""
+            };
+            RunResult<string> result_VideoData = await ytdl.RunVideoDataFetch_VideoInstagramTitle(link);
+            return result_VideoData.Data;
+        }
+
         /// <summary>
         /// 下載影片
         /// </summary>

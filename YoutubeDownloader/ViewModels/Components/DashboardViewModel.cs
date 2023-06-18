@@ -260,7 +260,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         int waitingTime = 10000;
         if (NumberVideoNeedToUpload > 0 && login_success)
         {
-            foreach (var download in Downloads.ToArray())
+            foreach (var download in Downloads.ToArray().Reverse())
             {
                 if (download.CanShowFile && download.SelectedToUpload)
                 {

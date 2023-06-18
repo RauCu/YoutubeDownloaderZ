@@ -99,6 +99,11 @@ public class QueryResolver
                     for (int i = 0; i < list.Count /4; i++)
                     {
                         string title = list[4*i + 0];
+                        if (link[i].Contains("instagram.com"))
+                        {
+                            title = await Download.FetchVideoTitleInstalgram(link[i]);
+                        }
+
                         string id = list[4 * i + 1];
                         string thumbnail = list[4 * i + 2];
                         string duration = list[4 * i + 3];

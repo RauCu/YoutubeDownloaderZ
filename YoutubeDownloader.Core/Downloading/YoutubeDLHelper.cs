@@ -113,6 +113,49 @@ internal static partial class YoutubeDLExtension
     }
 #nullable enable
 
+
+
+#pragma warning disable CA1068 // CancellationToken 參數必須位於最後
+#pragma warning disable CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+    public static async Task<RunResult<string>> RunVideoDataFetch_VideoInstagramTitle(this YoutubeDLSharp.YoutubeDL ytdl, string url, CancellationToken ct = default, bool flat = true, OptionSet? overrideOptions = null)
+#pragma warning restore CS8632 // The annotation for nullable reference types should only be used in code within a '#nullable' annotations context.
+#pragma warning restore CA1068 // CancellationToken 參數必須位於最後
+    {
+        OptionSet optionSet = new()
+        {
+            GetDescription = true,
+            Encoding = "utf8"
+
+        };
+        if (overrideOptions != null)
+        {
+            optionSet = optionSet.OverrideOptions(overrideOptions);
+        }
+
+        string videoData = "";
+        YoutubeDLProcess youtubeDLProcess = new(ytdl.YoutubeDLPath);
+        youtubeDLProcess.UseWindowsEncodingWorkaround = true;
+        youtubeDLProcess.OutputReceived += (o, e) =>
+        {
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            if (videoData == "")
+            {
+                videoData += e.Data;
+            }
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+        };
+        List<string> link = new List<string>(
+                          url.Split(new string[] { " " },
+                          StringSplitOptions.RemoveEmptyEntries));
+#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+        FieldInfo fieldInfo = typeof(YoutubeDLSharp.YoutubeDL).GetField("runner", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.GetField | BindingFlags.SetField);
+#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+        (int code, string[] errors) = await (fieldInfo.GetValue(ytdl) as ProcessRunner).RunThrottled(youtubeDLProcess, link.ToArray(), optionSet, ct);
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        return new RunResult<string>(code == 0, errors, videoData);
+    }
+#nullable enable
     /* [GeneratedRegex("(?:[\\s:\\[\\{\\(])'([^'\\r\\n\\s]*)'(?:\\s,]}\\))")]
      private static partial Regex ChangeJsonStringSingleQuotesToDoubleQuotes();*/
 }

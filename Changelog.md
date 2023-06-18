@@ -1,3 +1,6 @@
+### v1.9.102 (18-Jun-2023)
+- sửa lồi lấy sai tiêu đề của video instagram, đảo ngược thứ tự up video, bây giờ, video nào được tải trước thì sẽ được up trước
+
 ### v1.9.101 (04-Jun-2023)
 - Sửa lỗi thỉnh thoảng tiêu đề video bị sai
 
