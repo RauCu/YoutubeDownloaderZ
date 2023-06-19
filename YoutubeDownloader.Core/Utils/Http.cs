@@ -93,7 +93,7 @@ public static class Http
         if (driver != null)
         {
             driver.Navigate().GoToUrl("https://studio.ganjing.com");
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(100));
             driver.SwitchTo().Frame("gjw_sso_page");
             string emailCSSSelector = "input[placeholder='Email address*']";
             // wait maximum 10 seconds

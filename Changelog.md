@@ -1,3 +1,6 @@
+### v1.9.103 (19-Jun-2023)
+- tăng thời gian chờ khi login
+
 ### v1.9.102 (18-Jun-2023)
 - sửa lồi lấy sai tiêu đề của video instagram, đảo ngược thứ tự up video, bây giờ, video nào được tải trước thì sẽ được up trước
 
