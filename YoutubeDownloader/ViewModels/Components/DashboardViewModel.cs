@@ -23,6 +23,11 @@ using System.Windows;
 using YoutubeExplode.Videos;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using CliWrap;
+using static System.Windows.Forms.LinkLabel;
+using System.Text;
+using System.Windows.Threading;
+using System.Windows.Forms;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -893,6 +898,46 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         if (!IsBusy && !string.IsNullOrWhiteSpace(Query))
         {
             Query = "";
+        }
+    }
+
+    public async void GetListVideoYTChannel()
+    {
+        if (!IsBusy)
+        {
+            var stdOutBuffer = new StringBuilder();
+            var stdErrBuffer = new StringBuilder();
+
+            string appPath = "\"" + Path.Combine(Environment.CurrentDirectory, "LayDanhSachVideoKenhYT.exe") + "\"";
+
+            try
+            {
+
+                //var result = await Cli.Wrap("cmd").WithArguments($"/c chcp 65001 > null && {appPath}").WithStandardOutputPipe(PipeTarget.ToStringBuilder(stdOutBuffer)).WithStandardErrorPipe(PipeTarget.ToStringBuilder(stdErrBuffer)).ExecuteAsync();
+
+                //Showing the loader  
+                
+                Spinner spinner = new Spinner();
+                Form frm = new Form();
+                frm.Size = new System.Drawing.Size((int)(spinner.Width * 1.8), (int)(spinner.Height * 1.8));
+                spinner.Location = new System.Drawing.Point(frm.Width/2 - spinner.Width/2 -10, frm.Height / 2 - spinner.Height / 2 - 20);
+
+                frm.StartPosition = FormStartPosition.CenterScreen;
+                frm.Controls.Add(spinner);
+                frm.Show();
+
+                await Cli.Wrap(appPath).ExecuteAsync().ConfigureAwait(true);
+
+                frm.Close();
+                frm.Hide();
+                frm.Dispose();
+            }
+            catch
+            {
+
+            }
+
+
         }
     }
 

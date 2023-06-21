@@ -1,3 +1,7 @@
+### v1.9.104 (21-Jun-2023)
+- thêm chức năng lấy danh sách video của 1 kênh Youtube
+- thêm đường dẫn đến trang lấy hình avatar và banner của 1 kênh Youtube (https://imageyoutube.com/?)
+
 ### v1.9.103 (19-Jun-2023)
 - tăng thời gian chờ khi login
 

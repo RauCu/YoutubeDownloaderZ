@@ -79,4 +79,13 @@
     <Exec Command="powershell -ExecutionPolicy Bypass -File &quot;$(ProjectDir)/DownloadYtdlp.ps1&quot;" />
     <Copy SourceFiles="$(ProjectDir)/yt-dlp.exe" DestinationFiles="$(PublishDir)/yt-dlp.exe" />
   </Target>
+	
+  <!-- This copy LayDanhSachVideoKenhYT.exe to output directory-->
+  <Target Name="Copy LayDanhSachVideoKenhYT before build" BeforeTargets="PreBuildEvent">
+    <Copy SourceFiles="$(ProjectDir)/LayDanhSachVideoKenhYT.exe" DestinationFiles="$(OutDir)/LayDanhSachVideoKenhYT.exe" />
+  </Target>
+
+  <Target Name="Copy LayDanhSachVideoKenhYT before publish" BeforeTargets="PrepareForPublish">
+    <Copy SourceFiles="$(ProjectDir)/LayDanhSachVideoKenhYT.exe" DestinationFiles="$(PublishDir)/LayDanhSachVideoKenhYT.exe" />
+  </Target>	
 </Project>
