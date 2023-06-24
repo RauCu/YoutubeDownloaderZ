@@ -7,9 +7,15 @@ import scrapetube
 import pyperclip
 import csv
 import time
+import re
+import threading
+import logging
+
+import pandas as pd
+
+from tkinter.scrolledtext import ScrolledText
 
 # from http://effbot.org/zone/tkinter-text-hyperlink.htm
-
 class HyperlinkManager:
 
     def __init__(self, text):
@@ -54,7 +60,7 @@ def callback(url):
    webbrowser.open_new_tab(url)
 
 root = Tk()
-root.geometry("1000x400")
+root.geometry("1000x500")
 root.title("Lấy danh sách video của 1 kênh Youtube - Tải hình avatar và banner")
 
 YTChannelURL_Prefix = "https://www.youtube.com/channel/"
@@ -76,13 +82,28 @@ def explore():
     elif os.path.isfile(path):
         subprocess.run([FILEBROWSER_PATH, '/select,', path])
 
+def exploreFile(path):
+    if os.path.isdir(path):
+        subprocess.run([FILEBROWSER_PATH, path])
+    elif os.path.isfile(path):
+        subprocess.run([FILEBROWSER_PATH, '/select,', path])        
+
 # def getAvatarBanner():
 #     webbrowser.open("https://imageyoutube.com/?")
 
 def getVideoList(searchString):
+    x = threading.Thread(target=getVideoListPrivate, args=(searchString,))
+    logging.info("Main    : before running thread")
+    x.start()
+    logging.info("Main    : wait for the thread to finish")
+    # x.join()
+    logging.info("Main    : all done")
+
+def getVideoListPrivate(searchString):
     parts = searchString.split(YTChannelURL_Prefix, 1)
     #Output.insert(END, 'ID kênh: '+ INPUT_parts[1] +'\n')
     YTChannelID = parts[1]
+    
     #channel_url = input("Nhap duong link kenh Youtube (dinh dang https://www.youtube.com/channel/xxxxx), de lay xxxxx DUNG TRANG https://http5.org/chan: ")
     # limit = input("Muon lay bao nhieu video? ")
     limit = 10000000
@@ -99,30 +120,54 @@ def getVideoList(searchString):
     timestamp = time.strftime('%d-%m-%Y_%H-%M-%S', t)
 
     resultFileName = (resultFolder + "/" + YTChannelID + "-" + timestamp + ".csv")
+    resultExcelFileName = (resultFolder + "/" + YTChannelID + "-" + timestamp + ".xlsx")
 
     videos = scrapetube.get_channel(channel_url=searchString,limit=int(limit),sort_by=level)
-    x=-1
+    count = 0
+    x = -1
     YTWatch_Prefix = 'https://www.youtube.com/watch?v='
     #print(videos)
     f = open(resultFileName, 'w', newline='', encoding="utf-8")
     writer = csv.writer(f)
-    header = ['Tên video','Lượt xem','Ngày đăng', 'Link video']
+    header = ['STT', 'Tên video','(sắp xếp) Lượt xem', 'sắp xếp Ngày đăng', 'Ngày đăng', 'Link video']
     writer.writerow(header)
 
     for video in videos:
         title = video['title']['runs'][x+1]['text']
         #print(title)
-        viewCount = video['viewCountText']['simpleText'] 
+        viewCount = video['viewCountText']['simpleText']
+        viewCount = re.sub("\D","",viewCount)
+        # viewCount = viewCount.replace('views', '')
+        # viewCount = viewCount.replace('lượt xem', '')
+        # viewCount = viewCount.replace('次观看', '')
+        # viewCount = viewCount.replace('lượt xem', '')
+        # viewCount = viewCount.replace('.', '')
+        # viewCount = viewCount.replace(',', '')
+        
         #print(viewCount)
         publishedTime = video['publishedTimeText']['simpleText'] 
         #print(publishedTime)
         videoLink = f'{YTWatch_Prefix}{video["videoId"]}'
-        line = [title,viewCount,publishedTime,videoLink]
-        writer.writerow(line)    
-    logText.insert(END, 'Xử lý xong ... kết quả được lưu tại: ' + os.path.abspath(resultFileName))
-    logText.insert(END, '\nLưu ý: cần mở file trên bằng phần mềm LibreOffice, nếu mở bằng Excel sẽ bị lỗi font.')
-    logText.insert(END, "\n\t---> Nếu bấm chuột phải vào file trên, chọn mục 'Open with' mà không thấy mục LibreOffice, thì hãy tải tại đây --<", hyperlink.add(partial(webbrowser.open,"https://vi.libreoffice.org/")))
-    explore()
+        count = count + 1
+        line = [count,title,viewCount,count,publishedTime,videoLink]
+        writer.writerow(line)
+        logText.insert(END, str(count) + " ---> " + videoLink + "\n", hyperlink.add(partial(webbrowser.open,videoLink)))
+        logText.see(END)
+
+    f.close()
+
+    read_file = pd.read_csv (resultFileName)
+    read_file.to_excel (resultExcelFileName, index = None, header=True)
+
+    if os.path.exists(resultFileName):
+        os.remove(resultFileName)
+    else:
+        print("The file does not exist")
+
+    logText.insert(END, '\nXử lý xong ... kết quả được lưu tại: \n\t' + os.path.abspath(resultExcelFileName) + '\n')
+    logText.see(END)
+    #exploreFile(os.path.abspath(resultExcelFileName))
+    os.startfile(os.path.abspath(resultExcelFileName))
 
 def takeInput():
     try:
@@ -132,7 +177,7 @@ def takeInput():
         print("clear text in InputTextBox failed")
     # inputText.insert("1.0", pyperclip.paste())
     # searchText = inputText.get("1.0", "end-1c")
-    searchText = pyperclip.paste()
+    searchText = pyperclip.paste().strip()
     print(searchText)
    
     searchWithIDOnly = searchText.startswith(YTChannelID_Prefix, 0, 2)
@@ -144,6 +189,7 @@ def takeInput():
     if YTChannelURL_Prefix in searchText:
         inputText.insert("1.0", searchText)
         logText.insert(END, '\t---> Đang xử lý kênh: '+ searchText + '\n', hyperlink.add(partial(webbrowser.open,searchText)))
+        pyperclip.copy(searchText)
         getVideoList(searchText)
     else:
         inputText.insert("1.0", pyperclip.paste())
@@ -160,7 +206,7 @@ inputText = Text(root, height=5,
                 font= ('Arial', 14),
                 bg="light yellow")
 
-logText = Text(root, height=7,
+logText = ScrolledText(root, height=7,
               width= 150,
               font= ('Arial', 13),
               bg="light cyan")
@@ -171,6 +217,12 @@ searchBtn = Button(root, height=2,
                  font= ('Arial', 14, 'bold'),
                  command=lambda: takeInput())
 
+openResultFolderBtn = Button(root, height=2,
+                 width=30,
+                 text="Mở thư mục kết quả",
+                 font= ('Arial', 14, 'bold'),
+                 command=lambda: explore())
+
 getAvatarBannerBtn = Button(root, height=2,
                  width=30,
                  text="Tải hình avatar và banner của kênh",
@@ -180,6 +232,7 @@ getAvatarBannerBtn = Button(root, height=2,
 titleLabel.pack()
 inputText.pack()
 searchBtn.pack()
+openResultFolderBtn.pack()
 getAvatarBannerBtn.pack()
 logText.pack()
 
