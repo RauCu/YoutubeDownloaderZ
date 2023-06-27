@@ -93,18 +93,34 @@ public static class Http
         if (driver != null)
         {
             driver.Navigate().GoToUrl("https://studio.ganjing.com");
-            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(100));
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             driver.SwitchTo().Frame("gjw_sso_page");
-            string emailCSSSelector = "input[placeholder='Email address*']";
-            // wait maximum 10 seconds
-            wait.Until(driver => driver.FindElement(By.CssSelector(emailCSSSelector)));
+            driver.Manage().Window.Maximize();
+            try
+            {
+                string emailCSSSelector = "input[placeholder='Email address*']";
+                // wait maximum 10 seconds
+                wait.Until(driver => driver.FindElement(By.CssSelector(emailCSSSelector)));
 
-            IWebElement elementTxtBoxEmail = driver.FindElement(By.CssSelector(emailCSSSelector));
-            elementTxtBoxEmail.SendKeys(email);
+                IWebElement elementTxtBoxEmail = driver.FindElement(By.CssSelector(emailCSSSelector));
+                elementTxtBoxEmail.SendKeys(email);
 
-            IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[placeholder='Password*']"));
-            elementTxtBoxPass.SendKeys(pass);
-            elementTxtBoxPass.Submit();
+                IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[placeholder='Password*']"));
+                elementTxtBoxPass.SendKeys(pass);
+                elementTxtBoxPass.Submit();
+            }catch(Exception)
+            {
+                string emailCSSSelector = "//*[@id=\"__next\"]/main/div/div[2]/div/div[1]/form/div[1]/div/input";
+                // wait maximum 10 seconds
+                wait.Until(driver => driver.FindElement(By.XPath(emailCSSSelector)));
+
+                IWebElement elementTxtBoxEmail = driver.FindElement(By.XPath(emailCSSSelector));
+                elementTxtBoxEmail.SendKeys(email);
+
+                IWebElement elementTxtBoxPass = driver.FindElement(By.XPath("//*[@id=\"__next\"]/main/div/div[2]/div/div[1]/form/div[2]/div/input"));
+                elementTxtBoxPass.SendKeys(pass);
+                elementTxtBoxPass.Submit();
+            }
 
             int MAX_RETRY = 15;
             int retry_count = 0;

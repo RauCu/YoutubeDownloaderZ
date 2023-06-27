@@ -1,3 +1,7 @@
+### v1.9.106 (27-Jun-2023)
+- sửa lỗi không tự động đăng nhập GJW ở một số máy
+- giảm kích thước của file YoutubeDownloader/LayDanhSachVideoKenhYT.exe
+
 ### v1.9.105 (24-Jun-2023)
 bây giờ sau khi lấy danh sách video của 1 kênh Youtube thì:
 - có thể mở file kết quả trực tiếp bằng Excel (không cần cài LibreOffice nữa)

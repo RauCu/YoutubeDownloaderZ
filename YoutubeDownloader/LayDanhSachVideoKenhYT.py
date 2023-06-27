@@ -9,9 +9,9 @@ import csv
 import time
 import re
 import threading
-import logging
 
-import pandas as pd
+import openpyxl
+from openpyxl.utils import get_column_letter
 
 from tkinter.scrolledtext import ScrolledText
 
@@ -93,11 +93,8 @@ def exploreFile(path):
 
 def getVideoList(searchString):
     x = threading.Thread(target=getVideoListPrivate, args=(searchString,))
-    logging.info("Main    : before running thread")
     x.start()
-    logging.info("Main    : wait for the thread to finish")
     # x.join()
-    logging.info("Main    : all done")
 
 def getVideoListPrivate(searchString):
     parts = searchString.split(YTChannelURL_Prefix, 1)
@@ -117,7 +114,7 @@ def getVideoListPrivate(searchString):
     level="popular"
 
     t = time.localtime()
-    timestamp = time.strftime('%d-%m-%Y_%H-%M-%S', t)
+    timestamp = time.strftime('%Y-%m-%d_%H-%M-%S', t)
 
     resultFileName = (resultFolder + "/" + YTChannelID + "-" + timestamp + ".csv")
     resultExcelFileName = (resultFolder + "/" + YTChannelID + "-" + timestamp + ".xlsx")
@@ -129,7 +126,7 @@ def getVideoListPrivate(searchString):
     #print(videos)
     f = open(resultFileName, 'w', newline='', encoding="utf-8")
     writer = csv.writer(f)
-    header = ['STT', 'Tên video','(sắp xếp) Lượt xem', 'sắp xếp Ngày đăng', 'Ngày đăng', 'Link video']
+    header = ['STT', 'Tên video','Lượt xem', 'sắp xếp Ngày đăng', 'Ngày đăng', 'Link video']
     writer.writerow(header)
 
     for video in videos:
@@ -137,12 +134,6 @@ def getVideoListPrivate(searchString):
         #print(title)
         viewCount = video['viewCountText']['simpleText']
         viewCount = re.sub("\D","",viewCount)
-        # viewCount = viewCount.replace('views', '')
-        # viewCount = viewCount.replace('lượt xem', '')
-        # viewCount = viewCount.replace('次观看', '')
-        # viewCount = viewCount.replace('lượt xem', '')
-        # viewCount = viewCount.replace('.', '')
-        # viewCount = viewCount.replace(',', '')
         
         #print(viewCount)
         publishedTime = video['publishedTimeText']['simpleText'] 
@@ -156,8 +147,55 @@ def getVideoListPrivate(searchString):
 
     f.close()
 
-    read_file = pd.read_csv (resultFileName)
-    read_file.to_excel (resultExcelFileName, index = None, header=True)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    floats = [0, 2, 3]
+
+    with open(os.path.abspath(resultFileName), encoding='utf-8') as f1:
+        reader = csv.reader(f1, delimiter=',')
+
+        # fix error: writing csv to excel gives 'number formatted as text'
+        # https://stackoverflow.com/a/45255614
+        for row_index, row in enumerate(reader):
+            for column_index, cell in enumerate(row):
+
+                column_letter = get_column_letter((column_index + 1))
+
+                if column_index in floats:
+                    s = cell
+                    #Handles heading row or non floats
+                    try:
+                        s = float(s)
+                        ws[('%s%s'%(column_letter, (row_index + 1)))].value = s
+
+                    except ValueError:
+                        ws[('%s%s'%(column_letter, (row_index + 1)))].value = s
+
+                elif column_index not in floats:
+                    #Handles openpyxl 'illigal chars'
+                    try:
+                        ws[('%s%s'%(column_letter, (row_index + 1)))].value = cell
+                    except:
+                        ws[('%s%s'%(column_letter, (row_index + 1)))].value = 'illigal char'
+        f1.close()
+
+    # Automatically adjust width of an excel file's columns
+    # https://stackoverflow.com/a/39530676
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter # Get the column name
+        for cell in col:
+            try: # Necessary to avoid error on empty cells
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2)
+        if adjusted_width > 50:
+            adjusted_width = 50
+        ws.column_dimensions[column].width = adjusted_width
+
+    wb.save(os.path.abspath(resultExcelFileName))
 
     if os.path.exists(resultFileName):
         os.remove(resultFileName)

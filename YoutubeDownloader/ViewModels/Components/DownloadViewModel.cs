@@ -231,6 +231,11 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     }
 
+    private static string RemoveEmptyLines(string lines)
+    {
+        return Regex.Replace(lines, @"^\s*$\n|\r", string.Empty, RegexOptions.Multiline).TrimEnd();
+    }
+
     public static string ShowDialog(string text, string error, string caption)
     {
         System.Windows.Forms.Form prompt = new System.Windows.Forms.Form()
@@ -280,6 +285,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         string email_passText = "";
         if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
+            email_passTextBox.Text = RemoveEmptyLines(email_passTextBox.Text);
             if (email_passTextBox.Lines.Length >= 2)
             {
                 email_passTextBox.Text = email_passTextBox.Lines[0] + Environment.NewLine + email_passTextBox.Lines[1];
