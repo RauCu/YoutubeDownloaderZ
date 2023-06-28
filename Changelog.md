@@ -1,3 +1,6 @@
+### v1.9.107 (28-Jun-2023)
+- hỗ trợ lấy danh sách video kênh Youtube cho Windows 7
+
 ### v1.9.106 (27-Jun-2023)
 - sửa lỗi không tự động đăng nhập GJW ở một số máy
 - giảm kích thước của file YoutubeDownloader/LayDanhSachVideoKenhYT.exe

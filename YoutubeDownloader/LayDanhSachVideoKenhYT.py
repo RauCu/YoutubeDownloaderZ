@@ -15,6 +15,17 @@ from openpyxl.utils import get_column_letter
 
 from tkinter.scrolledtext import ScrolledText
 
+# How to:
+# https://www.python.org/ftp/python/3.8.6/python-3.8.6.exe
+
+# pip install pyinstaller
+# pip install openpyxl
+
+# pip install pyperclip
+# pip install scrapetube
+
+# pyinstaller --onefile .\LayDanhSachVideoKenhYT.py
+
 # from http://effbot.org/zone/tkinter-text-hyperlink.htm
 class HyperlinkManager:
 
