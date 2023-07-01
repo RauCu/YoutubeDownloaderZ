@@ -9,9 +9,12 @@ import csv
 import time
 import re
 import threading
+import requests
 
 import openpyxl
 from openpyxl.utils import get_column_letter
+from openpyxl.styles import PatternFill
+from openpyxl.styles import Font
 
 from tkinter.scrolledtext import ScrolledText
 
@@ -19,10 +22,9 @@ from tkinter.scrolledtext import ScrolledText
 # https://www.python.org/ftp/python/3.8.6/python-3.8.6.exe
 
 # pip install pyinstaller
-# pip install openpyxl
-
-# pip install pyperclip
 # pip install scrapetube
+# pip install pyperclip
+# pip install openpyxl
 
 # pyinstaller --onefile .\LayDanhSachVideoKenhYT.py
 
@@ -137,11 +139,12 @@ def getVideoListPrivate(searchString):
     #print(videos)
     f = open(resultFileName, 'w', newline='', encoding="utf-8")
     writer = csv.writer(f)
-    header = ['STT', 'Tên video','Lượt xem', 'sắp xếp Ngày đăng', 'Ngày đăng', 'Link video']
+    header = ['STT', 'Là video short?', 'Tên video','Lượt xem', 'sắp xếp Ngày đăng', 'Ngày đăng', '(sắp xếp) Thời lượng (giây)', 'Thời lượng','Link video']
     writer.writerow(header)
 
     for video in videos:
         title = video['title']['runs'][x+1]['text']
+        isShort = "ko phải"
         #print(title)
         viewCount = video['viewCountText']['simpleText']
         viewCount = re.sub("\D","",viewCount)
@@ -150,17 +153,75 @@ def getVideoListPrivate(searchString):
         publishedTime = video['publishedTimeText']['simpleText'] 
         #print(publishedTime)
         videoLink = f'{YTWatch_Prefix}{video["videoId"]}'
+        lengthText = video['lengthText']['simpleText']
+        lengthSeconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(lengthText.split(':'))))
         count = count + 1
-        line = [count,title,viewCount,count,publishedTime,videoLink]
+        line = [count,isShort,title,viewCount,count,publishedTime,lengthSeconds, lengthText, videoLink]
         writer.writerow(line)
         logText.insert(END, str(count) + " ---> " + videoLink + "\n", hyperlink.add(partial(webbrowser.open,videoLink)))
         logText.see(END)
+    
+    #
+    PAGE_TOKEN = ""
+    page = 1
+    while 1:
+        try:
+            if PAGE_TOKEN == "":
+                short_url = "https://yt.lemnoslife.com/channels?part=shorts&id=" + YTChannelID
+            else:
+                short_url = "https://yt.lemnoslife.com/channels?part=shorts&id=" + YTChannelID + "&pageToken=" + PAGE_TOKEN
+            logText.insert(END, "\t---> Đang lấy danh sách video short (" +str(page) +"): "  + short_url + "\n\n", hyperlink.add(partial(webbrowser.open,short_url)))
+            page = page + 1
+            response = requests.get(short_url)
+            PAGE_TOKEN = ""
+            response.raise_for_status()
+            if response.status_code == 200:
+                jsonRes = response.json()
+                #jsonRes = json.loads(response.text)
+                #print(jsonRes)
+                short_videos = jsonRes['items'][0]['shorts']
+                for video in short_videos:
+                    isShort = "đúng"
+                    title = video['title']
+                    #print(title)
+                    viewCount = video['viewCount']
+                    viewCount = re.sub("\D","", str(viewCount))
+                    
+                    #print(viewCount)
+                    publishedTime = "không biết"
+                    #print(publishedTime)
+                    videoLink = f'{YTWatch_Prefix}{video["videoId"]}'
+                    if video['duration'] == "1 minute, 1 second":
+                        lengthSeconds = "61"
+                        lengthText = "01:01"
+                    elif video['duration'] == "1 minute":
+                        lengthSeconds = "60"
+                        lengthText = "01:00"
+                    else:
+                        lengthSeconds = re.sub(" seconds", "", str(video['duration']))
+                        lengthText = "00:" + lengthSeconds
+                    count = count + 1
+                    line = [count,isShort,title,viewCount,count,publishedTime,lengthSeconds, lengthText, videoLink]
+                    writer.writerow(line)
+                    logText.insert(END, str(count) + " ---> " + videoLink + "\n", hyperlink.add(partial(webbrowser.open,videoLink)))
+                    logText.see(END)
+                if "nextPageToken" in response.text:
+                    PAGE_TOKEN = jsonRes['items'][0]['nextPageToken']
+
+        except Exception as err:
+            print(f'Other error occurred: {err}')
+            logText.insert(END, " ---> Có lỗi xảy ra: " + f'{err}' + "\n")
+            logText.see(END)
+            PAGE_TOKEN = ""
+        
+        if PAGE_TOKEN == "":
+            break
 
     f.close()
 
     wb = openpyxl.Workbook()
     ws = wb.active
-    floats = [0, 2, 3]
+    floats = [0, 3, 4, 6]
 
     with open(os.path.abspath(resultFileName), encoding='utf-8') as f1:
         reader = csv.reader(f1, delimiter=',')
@@ -188,11 +249,19 @@ def getVideoListPrivate(searchString):
                         ws[('%s%s'%(column_letter, (row_index + 1)))].value = cell
                     except:
                         ws[('%s%s'%(column_letter, (row_index + 1)))].value = 'illigal char'
+
+            for rows in ws.iter_rows(min_row=1, max_row=1, min_col=1):
+                for cell in rows:
+                    cell.font = Font(color="FFFFFF", bold=True)
+                    cell.fill = PatternFill(bgColor="5badeb", fill_type = "mediumGray")
         f1.close()
 
     # Automatically adjust width of an excel file's columns
     # https://stackoverflow.com/a/39530676
+
+    col_index = -1
     for col in ws.columns:
+        col_index = col_index + 1
         max_length = 0
         column = col[0].column_letter # Get the column name
         for cell in col:
@@ -201,9 +270,10 @@ def getVideoListPrivate(searchString):
                     max_length = len(str(cell.value))
             except:
                 pass
-        adjusted_width = (max_length + 2)
+        adjusted_width = (max_length + 1)
         if adjusted_width > 50:
             adjusted_width = 50
+        
         ws.column_dimensions[column].width = adjusted_width
 
     wb.save(os.path.abspath(resultExcelFileName))
