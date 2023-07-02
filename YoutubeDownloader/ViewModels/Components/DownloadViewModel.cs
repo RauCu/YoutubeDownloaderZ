@@ -9,7 +9,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Gress;
-using NReco.VideoInfo;
 using OpenQA.Selenium;
 using Stylet;
 using YoutubeDownloader.Core.Downloading;
@@ -58,6 +57,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
      DownloadStatus.Failed or
      DownloadStatus.Deleted;
 
+    public static bool ScheduleEnabled { get; set; } = false;
     public bool SelectedToUpload { get; set; } = false;
     public bool UploadDone { get; set; } = false;
     public bool AlreadyUploaded { get; set; } = false;
@@ -265,6 +265,23 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         email_passTextBox.Font = LargeFont;
 
 
+        System.Windows.Forms.CheckBox checkBoxScheduleEnable = new System.Windows.Forms.CheckBox()
+        {
+            AutoSize = false,
+            Text = "HẸN 24 TIẾNG SAU\nMỚI ĐĂNG",
+            Left = 50,
+            Top = 190,
+            Width = 350,
+            Height = 40 + 30 + 30,
+            Font = LargeFont,
+            ForeColor = Color.Red,
+            Size = new System.Drawing.Size(225, 50)
+        };
+
+        ScheduleEnabled = false;
+        checkBoxScheduleEnable.Checked = ScheduleEnabled;
+        checkBoxScheduleEnable.Click += (sender, e) => { ScheduleEnabled = checkBoxScheduleEnable.CheckState == System.Windows.Forms.CheckState.Checked ? true : false; };
+
         System.Windows.Forms.Button confirmation = new System.Windows.Forms.Button()
         {
             Text = "DÁN VÀ ĐĂNG NHẬP",
@@ -279,6 +296,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         prompt.Controls.Add(email_passLabel);
         prompt.Controls.Add(email_passLabelError);
         prompt.Controls.Add(email_passTextBox);
+        prompt.Controls.Add(checkBoxScheduleEnable);
         prompt.Controls.Add(confirmation);
         prompt.AcceptButton = confirmation;
 
@@ -466,7 +484,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
         UploadDone = false;
         UploadError = false;
-        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
+        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled);
     }
 
 
@@ -569,7 +587,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                             isShortVideo = true;
                         }
                     }
-                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category);
+                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled);
                 }
             }
         }

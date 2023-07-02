@@ -219,7 +219,7 @@ public static class Http
 
     static int count = 0;
     static bool testEnabled = false;
-    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category)
+    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category, bool scheduleEnabled)
     {
         count++;
         bool result = false;
@@ -444,9 +444,9 @@ public static class Http
             string[] parts = newtitle.Split(" ");
             parts[parts.Length - 1] = parts[parts.Length - 1].Replace("#", "_");
             newtitle = String.Join(" ", parts);*/
-            WindowsClipboard.SetText(newtitle);
-            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
-            //sim.Keyboard.TextEntry(newtitle);
+            //WindowsClipboard.SetText(newtitle);
+            //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
+            sim.Keyboard.TextEntry(newtitle);
 
 
             // description; 
@@ -549,6 +549,44 @@ public static class Http
                     var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
                     Console.WriteLine(msgError);
                     throw new Exception(first100Chars);//propage this error
+                }
+                //
+                
+                if (scheduleEnabled)
+                {
+                    
+                    Thread.Sleep(1000);
+                    string scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/span/span[1]/input";
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(scheduleEnabledBtnXpath)));
+                        IWebElement elementBtnScheduleEnabled = driver.FindElement(By.XPath(scheduleEnabledBtnXpath));
+                        Thread.Sleep(1000);
+                        elementBtnScheduleEnabled.Click();
+                    }
+                    catch (Exception ex)
+                    {
+                        string msgError = "Error on: scheduleEnabledBtnXpath: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
+                    }
+                    //
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(300);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
+                    Thread.Sleep(300);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    /*for (int i = 0; i < 11; i++) // 11 giờ sau mới đăng
+                    {
+                        
+                        sim.Keyboard.KeyPress(VirtualKeyCode.UP);
+                        sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                        Thread.Sleep(200);
+                    }*/
+
                 }
                 // Done button
                 Thread.Sleep(1000);

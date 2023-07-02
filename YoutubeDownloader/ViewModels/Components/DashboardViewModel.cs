@@ -228,6 +228,10 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     currentSize = mDriver.Manage().Window.Size;
                     mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
                 }
+                else
+                {
+                    return;
+                }
 
                 string msg = "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!";
 
