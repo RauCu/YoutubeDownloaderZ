@@ -1,3 +1,9 @@
+### v1.9.108 (02-Jul-2023)
+1. Khi lấy danh sách video của 1 kênh Youtube thì:
+	- lấy thêm được các video ngắn (short)
+	- lấy thêm được thời lượng video, hiện thị dưới dạng giờ:phút:giây, hoặc tổng giây (có thể sắp xếp theo cột thời lượng tính bằng giây)
+2. Thêm tính năng hẹn 24 giờ sau mới đăng (dành cho video thường, còn video ngắn thì GJW ko hỗ trợ chức năng hẹn giờ đăng)
+
 ### v1.9.107 (28-Jun-2023)
 - hỗ trợ lấy danh sách video kênh Youtube cho Windows 7
 
