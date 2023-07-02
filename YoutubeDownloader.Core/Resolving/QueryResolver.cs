@@ -1,18 +1,10 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
-using AngleSharp.Common;
 using Gress;
-using SharpCompress.Common;
-using YoutubeDLSharp;
 using YoutubeDownloader.Core.Downloading;
-using YoutubeDownloader.Core.Models;
 using YoutubeDownloader.Core.Utils;
 using YoutubeExplode;
 using YoutubeExplode.Channels;
@@ -34,19 +26,19 @@ public class QueryResolver
         // All other queries should be treated as search queries.
         var isUrl = Uri.IsWellFormedUriString(query, UriKind.Absolute);
 
+        // Video
+        if (isUrl && VideoId.TryParse(query) is { } videoId)
+        {
+            var video = await _youtube.Videos.GetAsync(videoId, cancellationToken);
+            return new QueryResult(QueryResultKind.Video, video.Title, new[] { video });
+        }
+
         // Playlist
         if (isUrl && PlaylistId.TryParse(query) is { } playlistId)
         {
             var playlist = await _youtube.Playlists.GetAsync(playlistId, cancellationToken);
             var videos = await _youtube.Playlists.GetVideosAsync(playlistId, cancellationToken);
             return new QueryResult(QueryResultKind.Playlist, $"Danh sách phát: {playlist.Title}", videos);
-        }
-
-        // Video
-        if (isUrl && VideoId.TryParse(query) is { } videoId)
-        {
-            var video = await _youtube.Videos.GetAsync(videoId, cancellationToken);
-            return new QueryResult(QueryResultKind.Video, video.Title, new[] { video });
         }
 
         // Channel
