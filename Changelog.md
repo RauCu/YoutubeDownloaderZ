@@ -1,3 +1,6 @@
+### v1.9.109 (21-Jul-2023)
+Sửa lỗi không tự động đăng video được
+
 ### v1.9.108 (02-Jul-2023)
 1. Khi lấy danh sách video của 1 kênh Youtube thì:
 	- lấy thêm được các video ngắn (short)

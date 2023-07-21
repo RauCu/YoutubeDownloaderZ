@@ -663,50 +663,77 @@ public static class Http
                 // default
                 edgeInstalled = true;
             }
+            bool success = false;
 
             EdgeDriverService? edgeDriverService = null;
             ChromeDriverService? chromeDriverService = null;
             InternetExplorerDriverService? internetExplorerDriverService = null;
-            if (chromeInstalled)
-            {
-                // https://www.nuget.org/packages/WebDriverManager/
-                new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
+            try {
+                if (chromeInstalled)
+                {
+                    // https://www.nuget.org/packages/WebDriverManager/
+                    new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
 
-                // hide black windows
-                chromeDriverService = ChromeDriverService.CreateDefaultService();
-                chromeDriverService.HideCommandPromptWindow = true;
-                //
-                ChromeOptions options = new ChromeOptions();
-                options.AddArgument("--ignore-certificate-errors");
-                // Open Chrome
-                driver = new ChromeDriver(chromeDriverService, options);
+                    // hide black windows
+                    chromeDriverService = ChromeDriverService.CreateDefaultService();
+                    chromeDriverService.HideCommandPromptWindow = true;
+                    //
+                    ChromeOptions options = new ChromeOptions();
+                    options.AddArgument("--ignore-certificate-errors");
+                    // Open Chrome
+                    driver = new ChromeDriver(chromeDriverService, options);
+                    success = true;
+                }
             }
-            else if (edgeInstalled)
+            catch (Exception)
             {
-                // https://www.nuget.org/packages/WebDriverManager/
-                new DriverManager().SetUpDriver(new EdgeConfig(), VersionResolveStrategy.MatchingBrowser);
 
-                // hide black windows
-                edgeDriverService = EdgeDriverService.CreateDefaultService();
-                edgeDriverService.HideCommandPromptWindow = true;
-                //
-                EdgeOptions options = new EdgeOptions();
-                options.AddArgument("--ignore-certificate-errors");
-
-                // Open MS Edge
-                driver = new EdgeDriver(edgeDriverService, options);
+                success = false;
             }
-            else if (internetExplorerInstalled)
+            try
             {
-                // https://www.nuget.org/packages/WebDriverManager/
-                new DriverManager().SetUpDriver(new InternetExplorerConfig(), VersionResolveStrategy.MatchingBrowser);
 
-                // hide black windows
-                internetExplorerDriverService = InternetExplorerDriverService.CreateDefaultService();
-                internetExplorerDriverService.HideCommandPromptWindow = true;
+                if (!success && edgeInstalled)
+                {
+                    // https://www.nuget.org/packages/WebDriverManager/
+                    new DriverManager().SetUpDriver(new EdgeConfig(), VersionResolveStrategy.MatchingBrowser);
 
-                // Open InternetExplorer
-                driver = new InternetExplorerDriver(internetExplorerDriverService);
+                    // hide black windows
+                    edgeDriverService = EdgeDriverService.CreateDefaultService();
+                    edgeDriverService.HideCommandPromptWindow = true;
+                    //
+                    EdgeOptions options = new EdgeOptions();
+                    options.AddArgument("--ignore-certificate-errors");
+
+                    // Open MS Edge
+                    driver = new EdgeDriver(edgeDriverService, options);
+                    success = true;
+                }
+            }
+            catch (Exception)
+            {
+
+                success = false;
+            }
+            try
+            {
+                if (!success && internetExplorerInstalled)
+                {
+                    // https://www.nuget.org/packages/WebDriverManager/
+                    new DriverManager().SetUpDriver(new InternetExplorerConfig(), VersionResolveStrategy.MatchingBrowser);
+
+                    // hide black windows
+                    internetExplorerDriverService = InternetExplorerDriverService.CreateDefaultService();
+                    internetExplorerDriverService.HideCommandPromptWindow = true;
+
+                    // Open InternetExplorer
+                    driver = new InternetExplorerDriver(internetExplorerDriverService);
+                    success = true;
+                }
+            }
+            catch (Exception)
+            {
+                success = false;
             }
         }
 
