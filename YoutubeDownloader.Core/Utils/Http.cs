@@ -233,7 +233,9 @@ public static class Http
             sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.NUMPAD0);
             Thread.Sleep(1000);
             sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.SUBTRACT);
-            Thread.Sleep(1000);
+            Thread.Sleep(5000);
+            sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
+            Thread.Sleep(2000);
             sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));

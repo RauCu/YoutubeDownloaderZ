@@ -1,3 +1,6 @@
+### v1.9.111 (21-Jul-2023)
+Sửa lỗi không tự động đăng video được (lần 3)
+
 ### v1.9.110 (21-Jul-2023)
 Sửa lỗi không tự động đăng video được, do trên Edge cần phải zoom nhỏ lại thì mới thấy nút đăng video
 
