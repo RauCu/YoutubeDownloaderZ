@@ -9,6 +9,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.IE;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
@@ -227,6 +228,14 @@ public static class Http
         if (driver != null)
         {
             driver.Manage().Window.Maximize();
+            Thread.Sleep(1000);
+            InputSimulator sim = new InputSimulator();
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.NUMPAD0);
+            Thread.Sleep(1000);
+            sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.SUBTRACT);
+            Thread.Sleep(1000);
+            sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
+
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
             WebDriverWait wait1Second = new WebDriverWait(driver, TimeSpan.FromSeconds(1));
             WebDriverWait wait2Second = new WebDriverWait(driver, TimeSpan.FromSeconds(2));
@@ -284,6 +293,7 @@ public static class Http
             }
 
             string uploadVideoXpath = "//*[@id=\"table-videos\"]/table/tbody[1]/tr/td[2]/div/button";
+            //uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[2]/div[3]/div/table/tbody[1]/tr/td[2]/div/button";
 
             if (isShortVideo)
             {
@@ -339,7 +349,6 @@ public static class Http
             }
             // select video
             Thread.Sleep(4000);
-            InputSimulator sim = new InputSimulator();
             //System.Windows.Clipboard.SetText(path);
             sim.Keyboard.TextEntry(path);
             //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
