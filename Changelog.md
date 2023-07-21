@@ -1,3 +1,8 @@
+### v1.9.112 (22-Jul-2023)
+Sửa lỗi không tự động đăng video được (lần 4): 
+WebDriverManager.Net not working with new chromedriver endpoints for Chrome since version 115
+https://github.com/rosolko/WebDriverManager.Net/issues/253
+
 ### v1.9.111 (21-Jul-2023)
 Sửa lỗi không tự động đăng video được (lần 3)
 

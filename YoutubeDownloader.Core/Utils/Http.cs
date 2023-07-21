@@ -9,7 +9,6 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.IE;
-using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
@@ -233,9 +232,7 @@ public static class Http
             sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.NUMPAD0);
             Thread.Sleep(1000);
             sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.SUBTRACT);
-            Thread.Sleep(5000);
-            sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
-            Thread.Sleep(2000);
+            Thread.Sleep(1000);
             sim.Keyboard.KeyPress(VirtualKeyCode.ESCAPE);
 
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
@@ -683,7 +680,7 @@ public static class Http
                 if (chromeInstalled)
                 {
                     // https://www.nuget.org/packages/WebDriverManager/
-                    new DriverManager().SetUpDriver(new ChromeConfig(), VersionResolveStrategy.MatchingBrowser);
+                    new DriverManager().SetUpDriver(new ChromeConfigOverride(), VersionResolveStrategy.MatchingBrowser);
 
                     // hide black windows
                     chromeDriverService = ChromeDriverService.CreateDefaultService();
