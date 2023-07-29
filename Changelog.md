@@ -1,3 +1,6 @@
+### v1.9.113 (29-Jul-2023)
+Sửa lỗi không tự động đăng đăng nhập được do GJW thay đổi logic
+
 ### v1.9.112 (22-Jul-2023)
 Sửa lỗi không tự động đăng video được (lần 4): 
 WebDriverManager.Net not working with new chromedriver endpoints for Chrome since version 115

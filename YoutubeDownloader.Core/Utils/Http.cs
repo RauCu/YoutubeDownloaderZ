@@ -92,10 +92,41 @@ public static class Http
         IWebDriver? driver = GetDriver();
         if (driver != null)
         {
-            driver.Navigate().GoToUrl("https://studio.ganjing.com");
+            driver.Navigate().GoToUrl("https://www.ganjingworld.com/");
             WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-            driver.SwitchTo().Frame("gjw_sso_page");
+
             driver.Manage().Window.Maximize();
+
+            //
+            int maxLenErrorMsg = 400;
+            string signInBtn = "/html/body/div[1]/div/header/div/div[1]/div/button[2]/span";
+
+            bool clickSignInBtnSuccess = false;
+            int MAX_TRY_SIGNIN_BTN = 15;
+            for (int i = 0; i <= MAX_TRY_SIGNIN_BTN && clickSignInBtnSuccess == false; i++)
+            {
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(signInBtn)));
+                    IWebElement elementSignInBtn = driver.FindElement(By.XPath(signInBtn));
+                    elementSignInBtn.Click();
+                    clickSignInBtnSuccess = true;
+                }
+                catch (Exception ex)
+                {
+                    if (i == MAX_TRY_SIGNIN_BTN)
+                    {
+                        string msgError = "Error on: signInBtn: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
+                    }
+                }
+                Thread.Sleep(1000);
+
+            }
+            //
+
             try
             {
                 string emailCSSSelector = "input[placeholder='Email address*']";
@@ -122,15 +153,18 @@ public static class Http
                 elementTxtBoxPass.Submit();
             }
 
+            driver.Navigate().GoToUrl("https://studio.ganjing.com");
+            Thread.Sleep(5000);
+
             int MAX_RETRY = 15;
             int retry_count = 0;
 
             while (true)
             {
-                if (!driver.PageSource.Contains("Don't have an account?"))
+                if (!driver.PageSource.Contains("Sign in"))
                 {
                     login_success = true;
-                    driver.SwitchTo().DefaultContent();
+                    driver.Navigate().GoToUrl("https://studio.ganjing.com");
                     break;
                 }
                 else if (driver.PageSource.Contains("Email or password is incorrect."))
