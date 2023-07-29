@@ -153,7 +153,7 @@ public static class Http
                 elementTxtBoxPass.Submit();
             }
 
-            driver.Navigate().GoToUrl("https://studio.ganjing.com");
+            //driver.Navigate().GoToUrl("https://studio.ganjing.com");
             Thread.Sleep(5000);
 
             int MAX_RETRY = 15;
@@ -161,13 +161,15 @@ public static class Http
 
             while (true)
             {
-                if (!driver.PageSource.Contains("Sign in"))
+                if (driver.PageSource.Contains("Good Evening,") ||
+                    driver.PageSource.Contains("Good Morning,") ||
+                    driver.PageSource.Contains("Good Afternoon,"))
                 {
                     login_success = true;
                     driver.Navigate().GoToUrl("https://studio.ganjing.com");
                     break;
                 }
-                else if (driver.PageSource.Contains("Email or password is incorrect."))
+                else if (driver.PageSource.Contains("Sign in to your account"))
                 {
                     login_success = false;
                     break;
