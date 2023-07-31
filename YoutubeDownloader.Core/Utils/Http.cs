@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.NetworkInformation;
 using System.Threading;
+using AngleSharp.Text;
 using Microsoft.Win32;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.IE;
+using OpenQA.Selenium.Internal;
 using OpenQA.Selenium.Support.UI;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
@@ -17,6 +21,7 @@ using WindowsInput;
 using WindowsInput.Native;
 using YoutubeDownloader.Core.Downloading;
 using YoutubeExplode.Videos;
+using YoutubeExplode.Videos.ClosedCaptions;
 
 namespace YoutubeDownloader.Core.Utils;
 
@@ -86,6 +91,81 @@ public static class Http
             }
         }
     };
+
+    public static string language = "";
+    public static string GetLangluageChannell(IWebDriver driver)
+    {
+        string language = "";
+        if (driver != null)
+        {
+            WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+            int maxLenErrorMsg = 400;
+
+            // Channel Settings menu
+            string channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[6]/div[2]";
+
+            bool clickChannelSettingMenuBtnSuccess = false;
+            int MAX_TRY_CLICK_BTN = 15;
+            for (int i = 0; i <= MAX_TRY_CLICK_BTN && clickChannelSettingMenuBtnSuccess == false; i++)
+            {
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(channelSettingMenuBtn)));
+                    IWebElement elementChannelSettingMenuBtn = driver.FindElement(By.XPath(channelSettingMenuBtn));
+                    elementChannelSettingMenuBtn.Click();
+                    clickChannelSettingMenuBtnSuccess = true;
+                }
+                catch (Exception ex)
+                {
+                    if (i == MAX_TRY_CLICK_BTN)
+                    {
+                        string msgError = "Error on: elementChannelSettingMenuBtn: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        //throw new Exception(first100Chars);//propage this error
+                    }
+                }
+                Thread.Sleep(1000);
+            }
+            //
+
+            if (clickChannelSettingMenuBtnSuccess)
+            {
+
+                // Language TextField
+                string languageTextField = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div[1]/div[2]/div[3]/div/div";
+
+                bool languageTextFieldFound= false;
+
+                for (int i = 0; i <= MAX_TRY_CLICK_BTN && languageTextFieldFound == false; i++)
+                {
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(languageTextField)));
+                        IWebElement elementLanguageTextField = driver.FindElement(By.XPath(languageTextField));
+                        language = elementLanguageTextField.GetAttribute("innerHTML");
+                        languageTextFieldFound = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (i == MAX_TRY_CLICK_BTN)
+                        {
+                            string msgError = "Error on: elementLanguageTextField: " + ex.ToString();
+                            var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                            Console.WriteLine(msgError);
+                            //throw new Exception(first100Chars);//propage this error
+                        }
+                    }
+                    Thread.Sleep(1000);
+                }
+
+            }
+
+        }
+
+        return language;
+    }
+
     public static IWebDriver SignInGJW(string email, string pass, out bool login_success)
     {
         login_success = false;
@@ -167,10 +247,15 @@ public static class Http
                 {
                     login_success = true;
                     driver.Navigate().GoToUrl("https://studio.ganjing.com");
+                    Http.language = "";
+                    Http.language = GetLangluageChannell(driver);
+
+                    driver.Navigate().GoToUrl("https://studio.ganjing.com");
                     break;
                 }
                 else if (driver.PageSource.Contains("Sign in to your account"))
                 {
+                    language = "";
                     login_success = false;
                     break;
                 }
@@ -178,6 +263,7 @@ public static class Http
                 {
                     if (retry_count >= MAX_RETRY)
                     {
+                        language = "";
                         login_success = false;
                         break;
                     }
@@ -255,7 +341,7 @@ public static class Http
 
     static int count = 0;
     static bool testEnabled = false;
-    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category, bool scheduleEnabled)
+    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category, bool scheduleEnabled, string language)
     {
         count++;
         bool result = false;
@@ -552,14 +638,19 @@ public static class Http
                 // category
                 Thread.Sleep(1000);
                 //string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/input";
-                string categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[3]/div/div[1]/div/input";
+/*                string categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[3]/div/div/div";
+                                       
                 wait.Until(driver => driver.FindElement(By.XPath(categoryXpath)));
                 IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
-                string selectedCategory = categoryElement.GetAttribute("value");
+                string selectedCategory = categoryElement.GetAttribute("innerHTML");
                 if (selectedCategory.Equals(""))
                 {
                     categoryElement.SendKeys(category);
-                }
+                }*/
+
+                // Language
+                selectLanguage(driver, sim, wait, isShortVideo);
+
                 // next button
                 Thread.Sleep(1000);
                 string selectNextBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[3]/button[2]";
@@ -652,9 +743,13 @@ public static class Http
             }
             else
             {
+                // Language
+                selectLanguage(driver, sim, wait, isShortVideo);
+
                 // Publish button
                 Thread.Sleep(1000);
-                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div[2]/button[2]";
+                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[2]";
+
                 try
                 {
                     wait.Until(driver => driver.FindElement(By.XPath(selectPublishBtnXpath)));
@@ -673,6 +768,60 @@ public static class Http
             result = true;
         }
         return result;
+
+        static void selectLanguage(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
+        {
+            // language
+            Thread.Sleep(1000);
+            string[] supportedLanguages = {
+                    "English",
+                    "中文",
+                    "Français",
+                    "Deutsch",
+                    "Italiano",
+                    "日本",
+                    "Русский",
+                    "한국어",
+                    "Tiếng Việt",
+                    "Español",
+                    "Others"
+                };
+
+            //string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/input";
+            string languageXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[2]/div/div/div";
+            if (!isShortVideo)
+            {
+                languageXpath = "//*[@id=\"lang\"]/div";
+               
+            }
+            wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
+            IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
+            string selectedLanguage = languageElement.GetAttribute("innerHTML");
+            if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Select</div>") ||
+                (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
+            {
+                languageElement.Click();
+                int languageIndex = 0;
+                for (int i = 0; i < supportedLanguages.Length; i++)
+                {
+                    if (string.Equals(supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                    {
+                        languageIndex = i;
+                        break;
+                    }
+                }
+                //
+                for (int i = 0; i < languageIndex; i++)
+                {
+                    sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                    Thread.Sleep(200);
+                }
+                Thread.Sleep(200);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+            }
+            sim.Keyboard.KeyPress(VirtualKeyCode.END);
+        }
     }
     public static IWebDriver GetDriver()
     {

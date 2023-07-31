@@ -200,6 +200,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 
     IWebDriver? mDriver = null;
     bool login_success = false;
+    string language = "";
     public async void UploadMultipleVideo()
     {
 

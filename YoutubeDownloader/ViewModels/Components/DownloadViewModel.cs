@@ -484,7 +484,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
         UploadDone = false;
         UploadError = false;
-        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled);
+        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled, Http.language);
     }
 
 
@@ -587,7 +587,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                             isShortVideo = true;
                         }
                     }
-                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled);
+                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled, Http.language);
                 }
             }
         }
