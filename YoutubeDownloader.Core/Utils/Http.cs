@@ -637,16 +637,9 @@ public static class Http
                 }
                 // category
                 Thread.Sleep(1000);
-                //string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/input";
-/*                string categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[3]/div/div/div";
-                                       
-                wait.Until(driver => driver.FindElement(By.XPath(categoryXpath)));
-                IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
-                string selectedCategory = categoryElement.GetAttribute("innerHTML");
-                if (selectedCategory.Equals(""))
-                {
-                    categoryElement.SendKeys(category);
-                }*/
+
+                // Category
+                selectCategory(driver, sim, wait, isShortVideo);
 
                 // Language
                 selectLanguage(driver, sim, wait, isShortVideo);
@@ -743,8 +736,12 @@ public static class Http
             }
             else
             {
+
                 // Language
                 selectLanguage(driver, sim, wait, isShortVideo);
+
+                //Category
+                selectCategory(driver, sim, wait, isShortVideo);
 
                 // Publish button
                 Thread.Sleep(1000);
@@ -821,6 +818,38 @@ public static class Http
 
             }
             sim.Keyboard.KeyPress(VirtualKeyCode.END);
+        }
+
+        static void selectCategory(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
+        {
+            // language
+            Thread.Sleep(1000);
+            int maxLenErrorMsg = 400;
+            string categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[3]/div/div/div";
+            if (!isShortVideo)
+            {
+                categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[3]/div/div[1]/div";
+                //"//*[@id=\"dialog_1691141263158\"]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[3]/div/div[1]/div";              
+            }
+            try
+            {
+                wait.Until(driver => driver.FindElement(By.XPath(categoryXpath)));
+                IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
+
+                categoryElement.Click();
+                sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+
+                Thread.Sleep(200);
+                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+            }
+            catch (Exception ex)
+            {
+                string msgError = "Error on: categoryElement: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                throw new Exception(first100Chars);//propage this error
+            }
+            
         }
     }
     public static IWebDriver GetDriver()

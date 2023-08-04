@@ -1,3 +1,8 @@
+### v1.9.116 (04-Aug-2023)
+Sửa lỗi không tự động đăng video được do GJW thay đổi logic liên quan đến mục Category.
+Lưu ý: sau khi phần mềm đăng video xong, cần tự sửa lại mục Category cho đúng, vì phần 
+mềm không tự biết video có Category là gì.
+
 ### v1.9.115 (31-Jul-2023)
 Sửa lỗi không tự động đăng video được do GJW thay đổi logic
 
