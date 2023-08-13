@@ -469,7 +469,7 @@ public static class Http
                 throw new Exception(first100Chars);//propage this error
             }
             // select video
-            Thread.Sleep(4000);
+            Thread.Sleep(5000);
             //System.Windows.Clipboard.SetText(path);
             sim.Keyboard.TextEntry(path);
             //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
@@ -527,7 +527,7 @@ public static class Http
                         }
                     }
                 }
-                Thread.Sleep(4000);
+                Thread.Sleep(5000);
                 //System.Windows.Clipboard.SetText(System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg");
                 sim.Keyboard.TextEntry(Http.RemoveTitle(System.IO.Path.GetDirectoryName(path) + "\\" + System.IO.Path.GetFileNameWithoutExtension(path) + ".jpg"));
                 //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
@@ -642,11 +642,13 @@ public static class Http
                 selectCategory(driver, sim, wait, isShortVideo);
 
                 // Language
-                selectLanguage(driver, sim, wait, isShortVideo);
+                selectLanguage(driver, sim, wait2Second, isShortVideo);
+                sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                 // next button
                 Thread.Sleep(1000);
                 string selectNextBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[3]/button[2]";
+
                 try
                 {
                     wait.Until(driver => driver.FindElement(By.XPath(selectNextBtnXpath)));
@@ -719,47 +721,68 @@ public static class Http
                 // Done button
                 Thread.Sleep(1000);
                 string selectDoneBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[3]/button[2]";
-                try
+
+                bool clickDoneBtnSuccess = false;
+                int MAX_TRY_DONE = 3;
+                for (int i = 0; i <= MAX_TRY_DONE && clickDoneBtnSuccess == false; i++)
                 {
-                    wait.Until(driver => driver.FindElement(By.XPath(selectDoneBtnXpath)));
-                    IWebElement elementBtnDone = driver.FindElement(By.XPath(selectDoneBtnXpath));
-                    Thread.Sleep(1000);
-                    elementBtnDone.Click();
-                }
-                catch (Exception ex)
-                {
-                    string msgError = "Error on: elementBtnDone: " + ex.ToString();
-                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
-                    Console.WriteLine(msgError);
-                    throw new Exception(first100Chars);//propage this error
+
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(selectDoneBtnXpath)));
+                        IWebElement elementBtnDone = driver.FindElement(By.XPath(selectDoneBtnXpath));
+                        Thread.Sleep(1000);
+                        elementBtnDone.Click();
+                        clickDoneBtnSuccess = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (i == MAX_TRY_DONE)
+                        {
+                            string msgError = "Error on: elementBtnDone: " + ex.ToString();
+                            var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                            Console.WriteLine(msgError);
+                            throw new Exception(first100Chars);//propage this error
+                        }
+                    }
                 }
             }
             else
             {
 
                 // Language
-                selectLanguage(driver, sim, wait, isShortVideo);
+                selectLanguage(driver, sim, wait2Second, isShortVideo);
 
                 //Category
                 selectCategory(driver, sim, wait, isShortVideo);
+                sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                 // Publish button
                 Thread.Sleep(1000);
-                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[2]";
+                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[2]"; // PUBLISH 
+                selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[1]"; // CANCEL
 
-                try
+                bool clickDoneBtnSuccess = false;
+                int MAX_TRY_DONE = 1;
+                for (int i = 0; i <= MAX_TRY_DONE && clickDoneBtnSuccess == false; i++)
                 {
-                    wait.Until(driver => driver.FindElement(By.XPath(selectPublishBtnXpath)));
-                    IWebElement elementBtnPublish = driver.FindElement(By.XPath(selectPublishBtnXpath));
-                    Thread.Sleep(1000);
-                    elementBtnPublish.Click();
-                }
-                catch (Exception ex)
-                {
-                    string msgError = "Error on: elementBtnPublish: " + ex.ToString();
-                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
-                    Console.WriteLine(msgError);
-                    throw new Exception(first100Chars);//propage this error
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(selectPublishBtnXpath)));
+                        IWebElement elementBtnPublish = driver.FindElement(By.XPath(selectPublishBtnXpath));
+                        Thread.Sleep(1000);
+                        elementBtnPublish.Click();
+                        clickDoneBtnSuccess = true;
+                    }
+                    catch (Exception ex)
+                    {
+                        if (i == MAX_TRY_DONE) {
+                            string msgError = "Error on: elementBtnPublish: " + ex.ToString();
+                            var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                            Console.WriteLine(msgError);
+                            throw new Exception(first100Chars);//propage this error
+                        }
+                    }
                 }
             }
             result = true;
@@ -791,33 +814,44 @@ public static class Http
                 languageXpath = "//*[@id=\"lang\"]/div";
                
             }
-            wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
-            IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
-            string selectedLanguage = languageElement.GetAttribute("innerHTML");
-            if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Select</div>") ||
-                (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
+            int maxLenErrorMsg = 400;
+            try
             {
-                languageElement.Click();
-                int languageIndex = 0;
-                for (int i = 0; i < supportedLanguages.Length; i++)
+                wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
+                IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
+                string selectedLanguage = languageElement.GetAttribute("innerHTML");
+                if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Select</div>") ||
+                    (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
                 {
-                    if (string.Equals(supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                    languageElement.Click();
+                    int languageIndex = 0;
+                    for (int i = 0; i < supportedLanguages.Length; i++)
                     {
-                        languageIndex = i;
-                        break;
+                        if (string.Equals(supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                        {
+                            languageIndex = i;
+                            break;
+                        }
                     }
-                }
-                //
-                for (int i = 0; i < languageIndex; i++)
-                {
-                    sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                    //
+                    for (int i = 0; i < languageIndex; i++)
+                    {
+                        sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                        Thread.Sleep(200);
+                    }
                     Thread.Sleep(200);
-                }
-                Thread.Sleep(200);
-                sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
 
+                }
+                //sim.Keyboard.KeyPress(VirtualKeyCode.END);
             }
-            sim.Keyboard.KeyPress(VirtualKeyCode.END);
+            catch (Exception ex)
+            {
+                string msgError = "Error on: languageElement: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                //throw new Exception(first100Chars);//propage this error
+            }
         }
 
         static void selectCategory(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
@@ -837,7 +871,7 @@ public static class Http
                 IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
 
                 categoryElement.Click();
-                sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                //sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
 
                 Thread.Sleep(200);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);

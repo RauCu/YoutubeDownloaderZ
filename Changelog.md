@@ -1,3 +1,13 @@
+### v1.9.117 (13-Aug-2023)
+Sửa lỗi không tự động đăng video được do GJW thay đổi logic liên quan đến mục Category, Language, và cách đăng video Short.
+
+Lưu ý 1: sau khi phần mềm đăng video xong, cần tự sửa lại mục Category cho đúng, vì phần 
+mềm không tự biết video có Category là gì.
+
+Lưu ý 2: phần đăng video short của GJW đang bị 1 lỗi, đó là chức năng 2 nút Cancel và Publish đang bị ngược:
+bấm nút Cancel thì đăng được video, còn bấm nút Publish thì video sẽ ở trạng thái Draft. Nhờ các dtu báo cho
+GJW để sửa. Sau đó phần mềm đăng video này sẽ sửa theo.
+
 ### v1.9.116 (04-Aug-2023)
 Sửa lỗi không tự động đăng video được do GJW thay đổi logic liên quan đến mục Category.
 Lưu ý: sau khi phần mềm đăng video xong, cần tự sửa lại mục Category cho đúng, vì phần 
