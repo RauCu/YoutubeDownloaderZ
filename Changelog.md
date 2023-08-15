@@ -1,3 +1,6 @@
+### v1.9.118 (15-Aug-2023)
+Luôn chọn video chất lượng cao nhất thì tải nhiều video 1 lúc
+
 ### v1.9.117 (13-Aug-2023)
 Sửa lỗi không tự động đăng video được do GJW thay đổi logic liên quan đến mục Category, Language, và cách đăng video Short.
 

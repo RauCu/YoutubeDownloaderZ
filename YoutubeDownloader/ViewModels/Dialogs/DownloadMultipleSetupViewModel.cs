@@ -51,7 +51,8 @@ public class DownloadMultipleSetupViewModel : DialogScreen<IReadOnlyList<Downloa
     public void OnViewLoaded()
     {
         SelectedContainer = _settingsService.LastContainer;
-        SelectedVideoQualityPreference = _settingsService.LastVideoQualityPreference;
+        //SelectedVideoQualityPreference = _settingsService.LastVideoQualityPreference;
+        SelectedVideoQualityPreference = VideoQualityPreference.Highest;
     }
 
     public void CopyTitle() => Clipboard.SetText(Title!);
