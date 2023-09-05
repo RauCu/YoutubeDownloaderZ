@@ -1,3 +1,6 @@
+### v1.9.119 (05-Sep-2023)
+Bấm nút Publish khi đăng short video (thay vì bấm nút Cancel), tiêu đề sẽ không bị chuyển về dạng ngày giờ nữa
+
 ### v1.9.118 (15-Aug-2023)
 Luôn chọn video chất lượng cao nhất thì tải nhiều video 1 lúc
 

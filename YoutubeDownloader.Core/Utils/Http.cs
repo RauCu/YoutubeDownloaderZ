@@ -760,7 +760,7 @@ public static class Http
                 // Publish button
                 Thread.Sleep(1000);
                 string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[2]"; // PUBLISH 
-                selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[1]"; // CANCEL
+                //selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[1]"; // CANCEL
 
                 bool clickDoneBtnSuccess = false;
                 int MAX_TRY_DONE = 1;
