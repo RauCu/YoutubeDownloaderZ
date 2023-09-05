@@ -1,3 +1,7 @@
+### v1.9.120 (06-Sep-2023)
+Sửa lỗi không tải video từ Facebook được.
+Sử dụng bản build từ https://github.com/RauCu/yt-dlp/releases
+
 ### v1.9.119 (05-Sep-2023)
 Bấm nút Publish khi đăng short video (thay vì bấm nút Cancel), tiêu đề sẽ không bị chuyển về dạng ngày giờ nữa
 
