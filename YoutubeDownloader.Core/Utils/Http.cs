@@ -341,7 +341,7 @@ public static class Http
 
     static int count = 0;
     static bool testEnabled = false;
-    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, string category, bool scheduleEnabled, string language)
+    public static bool UploadVideo(IWebDriver driver, bool isShortVideo, string path, string title, bool scheduleEnabled, bool unlistedEnabled, int SelectedCategoryIndex,  string language)
     {
         count++;
         bool result = false;
@@ -639,7 +639,7 @@ public static class Http
                 Thread.Sleep(1000);
 
                 // Category
-                selectCategory(driver, sim, wait, isShortVideo);
+                selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
 
                 // Language
                 selectLanguage(driver, sim, wait2Second, isShortVideo);
@@ -681,7 +681,10 @@ public static class Http
                     throw new Exception(first100Chars);//propage this error
                 }
                 //
-                
+
+                selectUnlisted(driver, sim, wait2Second, isShortVideo, unlistedEnabled);
+                //
+
                 if (scheduleEnabled)
                 {
                     
@@ -749,12 +752,13 @@ public static class Http
             }
             else
             {
-
+                // Unlisted
+                selectUnlisted(driver, sim, wait2Second, isShortVideo, unlistedEnabled);
                 // Language
                 selectLanguage(driver, sim, wait2Second, isShortVideo);
 
                 //Category
-                selectCategory(driver, sim, wait, isShortVideo);
+                selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
                 sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                 // Publish button
@@ -788,6 +792,60 @@ public static class Http
             result = true;
         }
         return result;
+
+        static void selectUnlisted(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, bool unlistedEnabled)
+        {
+            if (!unlistedEnabled) return;
+            int maxLenErrorMsg = 400;
+            if (isShortVideo)
+            {
+                Thread.Sleep(1000);
+                
+                string unlistedXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[1]/div/div/div";
+
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(unlistedXpath)));
+                    IWebElement unlistedElement = driver.FindElement(By.XPath(unlistedXpath));
+
+                    unlistedElement.Click();
+                    for (int i = 0; i < 2; i++) // Unlisted
+                    {
+                        sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                        //Thread.Sleep(200);
+                    }
+
+                    Thread.Sleep(200);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                }
+                catch (Exception ex)
+                {
+                    string msgError = "Error on: unlistedElement: " + ex.ToString();
+                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                    Console.WriteLine(msgError);
+                    throw new Exception(first100Chars);//propage this error
+                }
+            }
+            else
+            {
+                Thread.Sleep(1000);
+                string unlistedEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[3]/div/div[1]/div/div/label[3]/span[1]/input";
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(unlistedEnabledBtnXpath)));
+                    IWebElement elementCheckBoxUnlistedEnabled = driver.FindElement(By.XPath(unlistedEnabledBtnXpath));
+                    Thread.Sleep(1000);
+                    elementCheckBoxUnlistedEnabled.Click();
+                }
+                catch (Exception ex)
+                {
+                    string msgError = "Error on: elementCheckBoxUnlistedEnabled: " + ex.ToString();
+                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                    Console.WriteLine(msgError);
+                    throw new Exception(first100Chars);//propage this error
+                }
+            }
+        }
 
         static void selectLanguage(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
         {
@@ -837,7 +895,7 @@ public static class Http
                     for (int i = 0; i < languageIndex; i++)
                     {
                         sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
-                        Thread.Sleep(200);
+                        //Thread.Sleep(200);
                     }
                     Thread.Sleep(200);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
@@ -854,7 +912,7 @@ public static class Http
             }
         }
 
-        static void selectCategory(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
+        static void selectCategory(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, int selectedCategoryIndex)
         {
             // language
             Thread.Sleep(1000);
@@ -871,7 +929,16 @@ public static class Http
                 IWebElement categoryElement = driver.FindElement(By.XPath(categoryXpath));
 
                 categoryElement.Click();
-                //sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                for (int i = 0; i < 50; i++) // reset
+                {
+                    sim.Keyboard.KeyPress(VirtualKeyCode.UP);
+                    //Thread.Sleep(200);
+                }
+                for (int i = 0; i < selectedCategoryIndex; i++) // New & Politics
+                {
+                    sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                    //Thread.Sleep(200);
+                }
 
                 Thread.Sleep(200);
                 sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
@@ -886,6 +953,8 @@ public static class Http
             
         }
     }
+
+
     public static IWebDriver GetDriver()
     {
         IWebDriver? driver = null;

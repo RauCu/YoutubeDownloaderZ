@@ -444,10 +444,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             }
         }
         //
-        if(text.Contains("begins in"))
-        {
-            result = true;
-        }
+
         return result;
     }
 
@@ -462,6 +459,10 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 result = true;
                 break;
             }
+        }
+        if (text.Contains("begins in"))
+        {
+            result = true;
         }
         return result;
     }

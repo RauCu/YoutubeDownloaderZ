@@ -1,3 +1,10 @@
+### v1.9.121 (16-Sep-2023)
+- Cho phép chọn thể loại video khi đăng (nếu không chọn thì mặc định thể loại News & Politics sẽ được dùng)
+- Cho phép đăng ở chế độ ẩn (Unlisted)
+- Sửa lỗi màn hình đăng video đứng lâu khi có video ở trạng thái "Transcoding begins in * min"
+- Bổ sung thêm các trang được hỗ trợ tải video ở dòng chữ ngoài giao diện chính:
+ "Sao chép và dán đường link Youtube, Facebook, Tiktok, Instagram, Pinterest ..."
+
 ### v1.9.120 (06-Sep-2023)
 Sửa lỗi không tải video từ Facebook được.
 Sử dụng bản build từ https://github.com/RauCu/yt-dlp/releases

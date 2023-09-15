@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -58,6 +57,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
      DownloadStatus.Deleted;
 
     public static bool ScheduleEnabled { get; set; } = false;
+    public static bool UnlistedEnabled { get; set; } = false;
+    public static int SelectedCategoryIndex { get; set; } = 21; // News & Politics
+
     public bool SelectedToUpload { get; set; } = false;
     public bool UploadDone { get; set; } = false;
     public bool AlreadyUploaded { get; set; } = false;
@@ -247,7 +249,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen
         };
 
-        Font LargeFont = new Font("Arial", 14);
+        Font LargeFont = new Font("Arial", 12);
 
         System.Windows.Forms.Label email_passLabel = new System.Windows.Forms.Label() { Left = 50, Top = 15, Width = 600, Text = text };
         email_passLabel.Font = LargeFont;
@@ -268,7 +270,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         System.Windows.Forms.CheckBox checkBoxScheduleEnable = new System.Windows.Forms.CheckBox()
         {
             AutoSize = false,
-            Text = "HẸN 24 TIẾNG SAU\nMỚI ĐĂNG",
+            Text = "HẸN 24 TIẾNG\nSAU MỚI ĐĂNG",
             Left = 50,
             Top = 190,
             Width = 350,
@@ -282,6 +284,59 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         checkBoxScheduleEnable.Checked = ScheduleEnabled;
         checkBoxScheduleEnable.Click += (sender, e) => { ScheduleEnabled = checkBoxScheduleEnable.CheckState == System.Windows.Forms.CheckState.Checked ? true : false; };
 
+        //
+        System.Windows.Forms.ComboBox categoryComboBox = new System.Windows.Forms.ComboBox();
+        categoryComboBox.Location = new System.Drawing.Point(50, 235);
+        categoryComboBox.Text = "CHỌN THỂ LOẠI";
+        categoryComboBox.Size = new System.Drawing.Size(225, 200);
+        categoryComboBox.Font = LargeFont;
+        categoryComboBox.BackColor = System.Drawing.Color.Orange;
+        categoryComboBox.ForeColor = System.Drawing.Color.Black;
+
+        //
+        string[] supportedCategories = {
+            "Architecture & Engineering",
+            "Arts & Design",
+            "Autos",
+            "Business",
+            "Career",
+            "Classical Music",
+            "Dance",
+            "Education",
+            "Entertainment",
+            "Fashion & Beauty",
+            "Food",
+            "Gaming",
+            "Government",
+            "Health & Fitness",
+            "History & Culture",
+            "Kids",
+            "Life Hacks",
+            "Lifestyle",
+            "Military",
+            "Mindfulness",
+            "Nature",
+            "News & Politics",
+            "Nonprofit",
+            "Pets",
+            "Popular Music",
+            "Real Estate & Finance",
+            "Relationship",
+            "Science & Tech",
+            "Spirituality",
+            "Sports",
+            "Supernatural",
+            "Travel"
+        };
+        foreach (string category in supportedCategories)
+        {
+            categoryComboBox.Items.Add(category);
+        }
+        SelectedCategoryIndex = 21;
+        categoryComboBox.SelectedIndexChanged += (sender, e) => { SelectedCategoryIndex = categoryComboBox.SelectedIndex; };
+
+        //
+
         System.Windows.Forms.Button confirmation = new System.Windows.Forms.Button()
         {
             Text = "DÁN VÀ ĐĂNG NHẬP",
@@ -291,13 +346,38 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             Top = 190,
             DialogResult = System.Windows.Forms.DialogResult.OK
         };
+
+        //
+
+        System.Windows.Forms.CheckBox checkBoxUnlistedEnable = new System.Windows.Forms.CheckBox()
+        {
+            AutoSize = false,
+            Text = "ĐĂNG VIDEO Ở\nCHẾ ĐỘ UNLISTED",
+            Left = 275 + 150 + 50,
+            Top = 190,
+            Width = 350,
+            Height = 40 + 30 + 30,
+            Font = LargeFont,
+            ForeColor = Color.Red,
+            Size = new System.Drawing.Size(225, 50)
+        };
+
+        UnlistedEnabled = false;
+        checkBoxUnlistedEnable.Checked = UnlistedEnabled;
+        checkBoxUnlistedEnable.Click += (sender, e) => { UnlistedEnabled = checkBoxUnlistedEnable.CheckState == System.Windows.Forms.CheckState.Checked ? true : false; };
+
+        //
+
         confirmation.Font = LargeFont;
         confirmation.Click += (sender, e) => { email_passTextBox.Text = Clipboard.GetText(); prompt.Close(); };
         prompt.Controls.Add(email_passLabel);
         prompt.Controls.Add(email_passLabelError);
         prompt.Controls.Add(email_passTextBox);
+        prompt.Controls.Add(categoryComboBox);
         prompt.Controls.Add(checkBoxScheduleEnable);
         prompt.Controls.Add(confirmation);
+        prompt.Controls.Add(checkBoxUnlistedEnable);
+        
         prompt.AcceptButton = confirmation;
 
         string email_passText = "";
@@ -469,10 +549,6 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }
         }
 
-        string category = "Entertainment";
-
-        // .VideoQuality?.MaxHeight
-
         bool isShortVideo = false;
         if (Video!.Duration?.TotalSeconds <= 60)
         {
@@ -484,7 +560,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
         UploadDone = false;
         UploadError = false;
-        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled, Http.language);
+        Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, ScheduleEnabled, UnlistedEnabled, SelectedCategoryIndex, Http.language);
     }
 
 
@@ -538,7 +614,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                 goto re_enter;
             }
 
-            string category = "Entertainment";
+            
 
             if (email != "" && pass != "")
             {
@@ -587,7 +663,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                             isShortVideo = true;
                         }
                     }
-                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, category, ScheduleEnabled, Http.language);
+                    Http.UploadVideo(driver, isShortVideo, videoPath, Video!.Title, ScheduleEnabled, UnlistedEnabled, SelectedCategoryIndex, Http.language);
                 }
             }
         }

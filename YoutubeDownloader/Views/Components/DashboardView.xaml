@@ -57,7 +57,7 @@
                         Grid.Column="1"
                         Margin="0,6,6,8"
                         VerticalAlignment="Bottom"
-                        materialDesign:HintAssist.Hint="Đường link Youtube hoặc từ khóa tìm kiếm"
+                        materialDesign:HintAssist.Hint="Đường link Youtube, Facebook, Tiktok, Instagram, Pinterest ... hoặc từ khóa tìm kiếm"
                         materialDesign:TextFieldAssist.DecorationVisibility="Hidden"
                         AcceptsReturn="True"
                         BorderThickness="0"
@@ -241,7 +241,7 @@
                     TextAlignment="Center"
                     TextWrapping="Wrap">
                     <Run Text="Sao chép và dán" />
-                    <Run FontWeight="SemiBold" Text="đường link Youtube" />
+                    <Run FontWeight="SemiBold" Text="đường link Youtube, Facebook, Tiktok, Instagram, Pinterest ..." />
                     <Run Text="hoặc nhập vào " />
                     <Run FontWeight="SemiBold" Text="từ khóa tìm kiếm" />
                     <Run Text="rồi bấm phím" />
