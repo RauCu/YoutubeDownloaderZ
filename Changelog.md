@@ -1,3 +1,6 @@
+### v1.9.122 (16-Sep-2023)
+- Sửa lỗi màn hình đăng video đứng sau khi đăng xong video
+
 ### v1.9.121 (16-Sep-2023)
 - Cho phép chọn thể loại video khi đăng (nếu không chọn thì mặc định thể loại News & Politics sẽ được dùng)
 - Cho phép đăng ở chế độ ẩn (Unlisted)
