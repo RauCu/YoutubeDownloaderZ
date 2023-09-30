@@ -1,3 +1,6 @@
+### v1.9.124 (30-Sep-2023)
+- Buộc người dùng phải chọn thể loại của video (category) rồi mới cho đăng video.
+
 ### v1.9.123 (30-Sep-2023)
 - Sửa lỗi chọn Category bị sai (Ví dụ: chọn New thì nó nhẩy lên Nature)
 

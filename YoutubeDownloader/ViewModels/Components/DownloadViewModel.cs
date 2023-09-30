@@ -58,7 +58,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     public static bool ScheduleEnabled { get; set; } = false;
     public static bool UnlistedEnabled { get; set; } = false;
-    public static int SelectedCategoryIndex { get; set; } = 21; // News & Politics
+    public static int SelectedCategoryIndex { get; set; } = -1; // News & Politics
 
     public bool SelectedToUpload { get; set; } = false;
     public bool UploadDone { get; set; } = false;
@@ -238,7 +238,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         return Regex.Replace(lines, @"^\s*$\n|\r", string.Empty, RegexOptions.Multiline).TrimEnd();
     }
 
-    public static string ShowDialog(string text, string error, string caption)
+    public static string ShowDialog(string text, string error, string caption, bool isSignedInOnly = false)
     {
         System.Windows.Forms.Form prompt = new System.Windows.Forms.Form()
         {
@@ -332,7 +332,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         {
             categoryComboBox.Items.Add(category);
         }
-        SelectedCategoryIndex = 21;
+        SelectedCategoryIndex = -1;
         categoryComboBox.SelectedIndexChanged += (sender, e) => { SelectedCategoryIndex = categoryComboBox.SelectedIndex; };
 
         //
@@ -395,6 +395,10 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }
 
             email_passText = Regex.Replace(email_passText, @"\s+", " ");
+            if(isSignedInOnly == false && SelectedCategoryIndex == -1)
+            {
+                email_passText = "close_not_selected_category";
+            }
         }
         else
         {
@@ -436,17 +440,22 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
     }
 
-    public static IWebDriver? SignInGJWStatic(out bool login_success)
+    public static IWebDriver? SignInGJWStatic(out bool login_success, bool isSignedInOnly)
     {
         login_success = false;
         IWebDriver? driver = null;
         try
         {
-            string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW");
+            string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW", isSignedInOnly);
         re_enter:
             if (email_pass == "close")
             {
                 return null;
+            }else if (email_pass == "close_not_selected_category")
+            {
+                email_pass = ShowDialog("Chưa chọn thể loại (Category). Vui lòng chọn.",
+                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW");
+                goto re_enter;
             }
 
             string[] parts = email_pass.Trim().Split(" ");
@@ -503,6 +512,11 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             if (email_pass == "close")
             {
                 return null;
+            }else if (email_pass == "close_not_selected_category")
+            {
+                email_pass = ShowDialog("Chưa chọn thể loại (Category). Vui lòng chọn.",
+                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW");
+                goto re_enter;
             }
 
             string[] parts = email_pass.Trim().Split(" ");
@@ -597,6 +611,12 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             if (email_pass == "close")
             {
                 return;
+            }
+            else if (email_pass == "close_not_selected_category")
+            {
+                email_pass = ShowDialog("Chưa chọn thể loại (Category). Vui lòng chọn.",
+                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW");
+                goto re_enter;
             }
 
             string[] parts = email_pass.Trim().Split(" ");

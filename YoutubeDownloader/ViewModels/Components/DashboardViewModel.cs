@@ -217,7 +217,12 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 #pragma warning disable CS8604 // Possible null reference argument.
         if (isBrowserClosed(mDriver))
         {
-            mDriver = DownloadViewModel.SignInGJWStatic(out login_success);
+            bool isSignedInOnly = true;
+            if(NumberVideoNeedToUpload > 0)
+            {
+                isSignedInOnly = false;
+            }
+            mDriver = DownloadViewModel.SignInGJWStatic(out login_success, isSignedInOnly);
             if (!login_success)
             {
                 // await _dialogManager.ShowDialogAsync(
