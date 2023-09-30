@@ -1,3 +1,6 @@
+### v1.9.125 (30-Sep-2023)
+- Buộc người dùng phải chọn thể loại của video (category) rồi mới cho đăng video. (lần fix 2)
+
 ### v1.9.124 (30-Sep-2023)
 - Buộc người dùng phải chọn thể loại của video (category) rồi mới cho đăng video.
 

@@ -454,7 +454,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }else if (email_pass == "close_not_selected_category")
             {
                 email_pass = ShowDialog("Chưa chọn thể loại (Category). Vui lòng chọn.",
-                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW");
+                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW", isSignedInOnly);
                 goto re_enter;
             }
 
@@ -469,7 +469,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             else
             {
                 email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.",
-                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW");
+                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW", isSignedInOnly);
                 goto re_enter;
             }
 
