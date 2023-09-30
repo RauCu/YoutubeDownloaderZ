@@ -934,7 +934,7 @@ public static class Http
                     sim.Keyboard.KeyPress(VirtualKeyCode.UP);
                     //Thread.Sleep(200);
                 }
-                for (int i = 0; i < selectedCategoryIndex; i++) // New & Politics
+                for (int i = 0; i < selectedCategoryIndex ; i++) // New & Politics
                 {
                     sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
                     //Thread.Sleep(200);

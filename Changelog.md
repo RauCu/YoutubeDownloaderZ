@@ -1,3 +1,6 @@
+### v1.9.123 (30-Sep-2023)
+- Sửa lỗi chọn Category bị sai (Ví dụ: chọn New thì nó nhẩy lên Nature)
+
 ### v1.9.122 (16-Sep-2023)
 - Sửa lỗi màn hình đăng video đứng sau khi đăng xong video
 
