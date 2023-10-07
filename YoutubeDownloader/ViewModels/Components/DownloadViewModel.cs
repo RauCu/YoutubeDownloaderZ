@@ -352,7 +352,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         System.Windows.Forms.CheckBox checkBoxUnlistedEnable = new System.Windows.Forms.CheckBox()
         {
             AutoSize = false,
-            Text = "ĐĂNG VIDEO Ở\nCHẾ ĐỘ UNLISTED",
+            Text = "ĐĂNG VIDEO Ở\nCHẾ ĐỘ ẨN (UNLISTED)",
             Left = 275 + 150 + 50,
             Top = 190,
             Width = 350,
@@ -769,15 +769,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         //                     MessageBoxButton.YesNo,
         //                     MessageBoxImage.Question) == MessageBoxResult.Yes)
         // {
-        string[] parts = Video!.Title.Split(" ");
-        string newTitle = "";
-        for (int i = 1; i < parts.Length - 1; i++)
-        {
-            newTitle += parts[i] + " ";
-        }
-
-        // TODO: bỏ 2 từ đầu và 2 từ cuối
-        string url = "https://www.ganjing.com/search?s=" + newTitle + "&type=video";
+        string url = "https://www.ganjing.com/search?s=" + Video!.Title;
         // System.Diagnostics.Process.Start(url);
         Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
         // IWebDriver? driver = null;

@@ -1,3 +1,6 @@
+### v1.9.126 (07-Oct-2023)
+- Sửa lỗi check trùng video không chính xác
+
 ### v1.9.125 (30-Sep-2023)
 - Buộc người dùng phải chọn thể loại của video (category) rồi mới cho đăng video. (lần fix 2)
 
