@@ -1,3 +1,6 @@
+### v1.9.127 (18-Oct-2023)
+- Sửa lỗi lúc đầu mở cửa sổ YoutubeSync thay vì Channel Setting
+
 ### v1.9.126 (07-Oct-2023)
 - Sửa lỗi check trùng video không chính xác
 

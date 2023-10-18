@@ -102,7 +102,7 @@ public static class Http
             int maxLenErrorMsg = 400;
 
             // Channel Settings menu
-            string channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[6]/div[2]";
+            string channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[7]";
 
             bool clickChannelSettingMenuBtnSuccess = false;
             int MAX_TRY_CLICK_BTN = 15;
