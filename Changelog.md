@@ -1,3 +1,6 @@
+### v1.9.128 (19-Oct-2023)
+- Hỗ trợ chọn ngôn ngữ khi đăng video ở các kênh tin tức
+
 ### v1.9.127 (18-Oct-2023)
 - Sửa lỗi lúc đầu mở cửa sổ YoutubeSync thay vì Channel Setting
 

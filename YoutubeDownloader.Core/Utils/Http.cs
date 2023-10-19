@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Net.NetworkInformation;
 using System.Threading;
 using AngleSharp.Text;
 using Microsoft.Win32;
@@ -12,7 +11,6 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Edge;
 using OpenQA.Selenium.IE;
-using OpenQA.Selenium.Internal;
 using OpenQA.Selenium.Support.UI;
 using WebDriverManager;
 using WebDriverManager.DriverConfigs.Impl;
@@ -21,12 +19,24 @@ using WindowsInput;
 using WindowsInput.Native;
 using YoutubeDownloader.Core.Downloading;
 using YoutubeExplode.Videos;
-using YoutubeExplode.Videos.ClosedCaptions;
 
 namespace YoutubeDownloader.Core.Utils;
 
 public static class Http
 {
+    public static string[] supportedLanguages = {
+                    "English",
+                    "中文",
+                    "Français",
+                    "Deutsch",
+                    "Italiano",
+                    "日本",
+                    "Русский",
+                    "한국어",
+                    "Tiếng Việt",
+                    "Español",
+                    "Others"
+                };
 
     public static string getVideoID(IVideo? video)
     {
@@ -450,6 +460,10 @@ public static class Http
             }
             Thread.Sleep(2000);
 
+            // select Language (only for New Channel, e.g: Minneapolis News
+            // https://www.ganjingworld.com/channel/1ff02d08oli5W1X7GnCzOyKs11500c )
+            selectLanguageForNewChannel(driver, sim, wait2Second, isShortVideo, supportedLanguages);
+
             string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
             if (isShortVideo)
             {
@@ -642,7 +656,7 @@ public static class Http
                 selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
 
                 // Language
-                selectLanguage(driver, sim, wait2Second, isShortVideo);
+                selectLanguage(driver, sim, wait2Second, isShortVideo, supportedLanguages);
                 sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                 // next button
@@ -755,7 +769,7 @@ public static class Http
                 // Unlisted
                 selectUnlisted(driver, sim, wait2Second, isShortVideo, unlistedEnabled);
                 // Language
-                selectLanguage(driver, sim, wait2Second, isShortVideo);
+                selectLanguage(driver, sim, wait2Second, isShortVideo, supportedLanguages);
 
                 //Category
                 selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
@@ -846,26 +860,11 @@ public static class Http
                 }
             }
         }
-
-        static void selectLanguage(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
+       
+        static void selectLanguage(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, string[] supportedLanguages)
         {
             // language
             Thread.Sleep(1000);
-            string[] supportedLanguages = {
-                    "English",
-                    "中文",
-                    "Français",
-                    "Deutsch",
-                    "Italiano",
-                    "日本",
-                    "Русский",
-                    "한국어",
-                    "Tiếng Việt",
-                    "Español",
-                    "Others"
-                };
-
-            //string categoryXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[3]/div/div[1]/div/div/input";
             string languageXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[2]/div/div/div";
             if (!isShortVideo)
             {
@@ -879,6 +878,57 @@ public static class Http
                 IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
                 string selectedLanguage = languageElement.GetAttribute("innerHTML");
                 if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Select</div>") ||
+                    (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
+                {
+                    languageElement.Click();
+                    int languageIndex = 0;
+                    for (int i = 0; i < supportedLanguages.Length; i++)
+                    {
+                        if (string.Equals(supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                        {
+                            languageIndex = i;
+                            break;
+                        }
+                    }
+                    //
+                    for (int i = 0; i < languageIndex; i++)
+                    {
+                        sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                        //Thread.Sleep(200);
+                    }
+                    Thread.Sleep(200);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+                }
+                //sim.Keyboard.KeyPress(VirtualKeyCode.END);
+            }
+            catch (Exception ex)
+            {
+                string msgError = "Error on: languageElement: " + ex.ToString();
+                var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                Console.WriteLine(msgError);
+                //throw new Exception(first100Chars);//propage this error
+            }
+        }
+
+        static void selectLanguageForNewChannel(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, string[] supportedLanguages)
+        {
+            if (isShortVideo)
+            {
+                return;
+            }
+            
+            // language
+            Thread.Sleep(1000);
+
+            string languageXpath = "//*[@id=\"lang\"]/div";
+            int maxLenErrorMsg = 400;
+            try
+            {
+                wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
+                IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
+                string selectedLanguage = languageElement.GetAttribute("innerHTML");
+                if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Language</div>") ||
                     (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
                 {
                     languageElement.Click();
