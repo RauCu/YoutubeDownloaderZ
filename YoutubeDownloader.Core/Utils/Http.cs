@@ -190,6 +190,7 @@ public static class Http
             //
             int maxLenErrorMsg = 400;
             string signInBtn = "/html/body/div[1]/div/header/div/div[1]/div/button[2]/span";
+                    signInBtn = "/html/body/div/div/header/div/div[3]/div/button[2]/span";
 
             bool clickSignInBtnSuccess = false;
             int MAX_TRY_SIGNIN_BTN = 15;
@@ -246,14 +247,30 @@ public static class Http
             //driver.Navigate().GoToUrl("https://studio.ganjing.com");
             Thread.Sleep(5000);
 
-            int MAX_RETRY = 15;
+            int MAX_RETRY = 5;
             int retry_count = 0;
-
+            string userInfoXpath = "/html/body/div[1]/div/header/div/div[3]/div";
+            bool clickUserInfoBtnSuccess = false;
             while (true)
             {
-                if (driver.PageSource.Contains("Good Evening,") ||
-                    driver.PageSource.Contains("Good Morning,") ||
-                    driver.PageSource.Contains("Good Afternoon,"))
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(userInfoXpath)));
+                    IWebElement elementUserInfoBtn = driver.FindElement(By.XPath(userInfoXpath));
+                    elementUserInfoBtn.Click();
+                    clickUserInfoBtnSuccess = true;
+                }
+                catch (Exception ex)
+                {
+
+                    string msgError = "Error on: elementUserInfoBtn: " + ex.ToString();
+                    var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                    Console.WriteLine(msgError);
+                    clickUserInfoBtnSuccess = false;
+                }
+                Thread.Sleep(500);
+
+                if (clickUserInfoBtnSuccess)
                 {
                     login_success = true;
                     driver.Navigate().GoToUrl("https://studio.ganjing.com");
@@ -261,12 +278,6 @@ public static class Http
                     Http.language = GetLangluageChannell(driver);
 
                     driver.Navigate().GoToUrl("https://studio.ganjing.com");
-                    break;
-                }
-                else if (driver.PageSource.Contains("Sign in to your account"))
-                {
-                    language = "";
-                    login_success = false;
                     break;
                 }
                 else
@@ -1079,6 +1090,7 @@ public static class Http
                     //
                     EdgeOptions options = new EdgeOptions();
                     options.AddArgument("--ignore-certificate-errors");
+                    options.AddArgument("--guest");
 
                     // Open MS Edge
                     driver = new EdgeDriver(edgeDriverService, options);

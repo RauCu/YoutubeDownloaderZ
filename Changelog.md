@@ -1,3 +1,6 @@
+### v1.9.129 (23-Oct-2023)
+- Sửa lỗi không đăng nhập tự động GJW được do GJW thay đổi giao diện
+
 ### v1.9.128 (19-Oct-2023)
 - Hỗ trợ chọn ngôn ngữ khi đăng video ở các kênh tin tức
 
