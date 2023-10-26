@@ -1,3 +1,6 @@
+###v1.9.130 (26-Oct-2023)
+- Sửa lỗi sai thể loại (chọn Pets mà khi đăng lại ra Popular Music)
+
 ### v1.9.129 (23-Oct-2023)
 - Sửa lỗi không đăng nhập tự động GJW được do GJW thay đổi giao diện
 
