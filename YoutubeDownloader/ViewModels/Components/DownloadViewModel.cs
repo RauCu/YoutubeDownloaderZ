@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows;
@@ -233,12 +234,37 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
 
     }
 
-    private static string RemoveEmptyLines(string lines)
+    public static string RemoveEmptyLines(string lines)
     {
         return Regex.Replace(lines, @"^\s*$\n|\r", string.Empty, RegexOptions.Multiline).TrimEnd();
     }
 
-    public static string ShowDialog(string text, string error, string caption, bool isSignedInOnly = false)
+
+    public static void setCategory(string cat)
+    {
+        try
+        {
+            SelectedCategoryIndex = Int32.Parse(cat)  - 1;
+        }
+        catch (Exception)
+        {
+            for (int i = 0; i < supportedCategories.Length; i++)
+            {
+                if (supportedCategories[i].Equals(cat, StringComparison.OrdinalIgnoreCase))
+                {
+                    SelectedCategoryIndex = i;
+                    break;
+                }
+            }
+        }
+       
+        if (SelectedCategoryIndex == -1)
+        {
+            SelectedCategoryIndex = 0; // default
+        }
+        
+    }
+    public static string ShowDialog(string text, string error, string caption, bool isSignedInOnly = false, int forMultipleGJWChannel = -1)
     {
         System.Windows.Forms.Form prompt = new System.Windows.Forms.Form()
         {
@@ -294,43 +320,11 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         categoryComboBox.ForeColor = System.Drawing.Color.Black;
 
         //
-        string[] supportedCategories = {
-          "Architecture & Engineering",
-          "Arts & Design",
-          "Autos",
-          "Business",
-          "Career",
-          "Classical Music",
-          "Dance",
-          "Education",
-          "Entertainment",
-          "Fashion & Beauty",
-          "Food",
-          "Gaming",
-          "Government",
-          "Health & Fitness",
-          "History & Culture",
-          "Kids",
-          "Life Hacks",
-          "Lifestyle",
-          "Military",
-          "Mindfulness",
-          "Nature",
-          "News & Politics",
-          "Nonprofit",
-          "Pets",
-          "Popular Music",
-          "Real Estate & Finance",
-          "Relationship",
-          "Science & Tech",
-          "Spirituality",
-          "Sports",
-          "Supernatural",
-          "Travel"
-        };
-        foreach (string category in supportedCategories)
+        
+        
+        for(int i =0; i < supportedCategories.Length; i++)
         {
-            categoryComboBox.Items.Add(category);
+            categoryComboBox.Items.Add((i+1)+ ": " + supportedCategories[i] + " - " + supportedCategories_VN[i]);
         }
         SelectedCategoryIndex = -1;
         categoryComboBox.SelectedIndexChanged += (sender, e) => { SelectedCategoryIndex = categoryComboBox.SelectedIndex; };
@@ -375,29 +369,58 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         prompt.Controls.Add(email_passTextBox);
         prompt.Controls.Add(categoryComboBox);
         prompt.Controls.Add(checkBoxScheduleEnable);
+        if (forMultipleGJWChannel>=0)
+        {
+            confirmation.Text = "ĐĂNG ( cho kênh số: " + (forMultipleGJWChannel + 1) +" )";
+        }
         prompt.Controls.Add(confirmation);
         prompt.Controls.Add(checkBoxUnlistedEnable);
         
         prompt.AcceptButton = confirmation;
 
         string email_passText = "";
+        if (forMultipleGJWChannel >= 0)
+        {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+            email_passText = AutoDownUpDB.videos.Keys.ElementAt(forMultipleGJWChannel);
+            string[] p = email_passText.Split("::");
+            if (p.Length == 3)
+            {
+                setCategory(p[2]);
+                
+            }
+            if(SelectedCategoryIndex == -1)
+            {
+                SelectedCategoryIndex = 0;
+            }
+            categoryComboBox.SelectedIndex = SelectedCategoryIndex;
+
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+        }
         if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
         {
-            email_passTextBox.Text = RemoveEmptyLines(email_passTextBox.Text);
-            if (email_passTextBox.Lines.Length >= 2)
+            if (forMultipleGJWChannel >= 0)
             {
-                email_passTextBox.Text = email_passTextBox.Lines[0] + Environment.NewLine + email_passTextBox.Lines[1];
-                email_passText = email_passTextBox.Lines[0] + " " + email_passTextBox.Lines[1];
             }
-            else if (email_passTextBox.Lines.Length == 1)
+            else
             {
-                email_passText = email_passTextBox.Lines[0];
-            }
+                email_passTextBox.Text = RemoveEmptyLines(email_passTextBox.Text);
+                if (email_passTextBox.Lines.Length >= 2)
+                {
+                    email_passTextBox.Text = email_passTextBox.Lines[0] + Environment.NewLine + email_passTextBox.Lines[1];
+                    email_passText = email_passTextBox.Lines[0] + "::" + email_passTextBox.Lines[1];
+                }
+                else if (email_passTextBox.Lines.Length == 1)
+                {
+                    string[] p = email_passTextBox.Lines[0].Split(" ");
+                    email_passText = p[0] + "::" + p[1];
+                }
 
-            email_passText = Regex.Replace(email_passText, @"\s+", " ");
-            if(isSignedInOnly == false && SelectedCategoryIndex == -1)
-            {
-                email_passText = "close_not_selected_category";
+                email_passText = Regex.Replace(email_passText, @"\s+", " ");
+                if (isSignedInOnly == false && SelectedCategoryIndex == -1)
+                {
+                    email_passText = "close_not_selected_category";
+                }
             }
         }
         else
@@ -408,6 +431,75 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
     }
 
     int videoWidth = 0; int videoHeight = 0;
+    private static string[] supportedCategories = {
+          "Architecture & Engineering",
+          "Arts & Design",
+          "Autos",
+          "Business",
+          "Career",
+          "Classical Music",
+          "Dance",
+          "Education",
+          "Entertainment",
+          "Fashion & Beauty",
+          "Food",
+          "Gaming",
+          "Government",
+          "Health & Fitness",
+          "History & Culture",
+          "Kids",
+          "Life Hacks",
+          "Lifestyle",
+          "Military",
+          "Mindfulness",
+          "Nature",
+          "News & Politics",
+          "Nonprofit",
+          "Pets",
+          "Popular Music",
+          "Real Estate & Finance",
+          "Relationship",
+          "Science & Tech",
+          "Spirituality",
+          "Sports",
+          "Supernatural",
+          "Travel"
+        };
+
+    private static string[] supportedCategories_VN = {
+          "Công nghệ kiến trúc",
+          "Nghệ thuật & Thiết kế",
+          "Ô tô",
+          "Việc kinh doanh",
+          "Sự nghiệp",
+          "Nhạc cổ điển",
+          "Nhảy",
+          "Giáo dục",
+          "Sự giải trí",
+          "Thời trang & Làm đẹp",
+          "Đồ ăn",
+          "Chơi game",
+          "Chính phủ",
+          "Sức khỏe & Thể hình",
+          "Lịch sử & Văn hóa",
+          "Trẻ em",
+          "Mẹo vặt",
+          "Cách sống",
+          "Quân đội",
+          "Sự quan tâm",
+          "Thiên nhiên",
+          "Tin tức & Chính trị",
+          "Phi lợi nhuận",
+          "Vật nuôi",
+          "Âm nhạc đại chúng",
+          "Bất động sản & Tài chính",
+          "Mối quan hệ",
+          "Khoa học & Công nghệ",
+          "Tâm linh",
+          "Các môn thể thao",
+          "Siêu nhiên",
+          "Du lịch"
+        };
 
     public void GetVideoInfo(string videoPath)
     {
@@ -440,13 +532,32 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
     }
 
-    public static IWebDriver? SignInGJWStatic(out bool login_success, bool isSignedInOnly)
+    public static IWebDriver? SignInGJWStatic(out bool login_success, bool isSignedInOnly, int uploadForMultipleGJWChannel)
     {
         login_success = false;
         IWebDriver? driver = null;
         try
         {
-            string email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW", isSignedInOnly);
+            string email_pass = "";
+            if (uploadForMultipleGJWChannel == -1 || uploadForMultipleGJWChannel == 0)
+            {
+                email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW", isSignedInOnly, uploadForMultipleGJWChannel);
+            }
+            else
+            {
+                //SelectedCategoryIndex = -1;
+                email_pass = AutoDownUpDB.videos.Keys.ElementAt(uploadForMultipleGJWChannel);
+                string[] p = email_pass.Split("::");
+                if (p.Length == 3)
+                {
+                    setCategory(p[2]);
+                }
+                if (SelectedCategoryIndex == -1)
+                {
+                    SelectedCategoryIndex = 0; // default
+                }
+            }
+
         re_enter:
             if (email_pass == "close")
             {
@@ -454,22 +565,27 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }else if (email_pass == "close_not_selected_category")
             {
                 email_pass = ShowDialog("Chưa chọn thể loại (Category). Vui lòng chọn.",
-                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW", isSignedInOnly);
+                "Hãy chọn 1 thể loại phù hợp với nội dung của video, ví dụ Âm Nhạc (Music), Thú cưng (Pets), ...", "Đăng nhập kênh GJW", isSignedInOnly, uploadForMultipleGJWChannel);
                 goto re_enter;
             }
 
-            string[] parts = email_pass.Trim().Split(" ");
+            string[] parts = email_pass.Trim().Split("::");
             string email = "";
             string pass = "";
-            if (parts.Length == 2)
+            string category = "";
+            if (parts.Length == 2 || parts.Length == 3)
             {
                 email = parts[0];
                 pass = parts[1];
+                if(parts.Length == 3)
+                {
+                    category = parts[2];
+                }
             }
             else
             {
                 email_pass = ShowDialog("Email và mật khẩu sai định dạng, vui lòng nhập lại.",
-                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW", isSignedInOnly);
+                    "  Email và mật khẩu phải ở 2 dòng khác nhau; hoặc có thể ở chung 1 dòng nhưng phải cách nhau bởi dấu cách!", "Đăng nhập kênh GJW", isSignedInOnly, uploadForMultipleGJWChannel);
                 goto re_enter;
             }
 

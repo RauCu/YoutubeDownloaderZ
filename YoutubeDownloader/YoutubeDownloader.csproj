@@ -87,5 +87,15 @@
 
   <Target Name="Copy LayDanhSachVideoKenhYT before publish" BeforeTargets="PrepareForPublish">
     <Copy SourceFiles="$(ProjectDir)/LayDanhSachVideoKenhYT.exe" DestinationFiles="$(PublishDir)/LayDanhSachVideoKenhYT.exe" />
-  </Target>	
+  </Target>
+
+  <!-- This copy DangVideoNhieuKenh.txt to output directory-->
+  <Target Name="Copy DangVideoNhieuKenh before build" BeforeTargets="PreBuildEvent">
+    <Copy SourceFiles="$(ProjectDir)/DangVideoNhieuKenh.txt" DestinationFiles="$(OutDir)/DangVideoNhieuKenh.txt" />
+  </Target>
+
+  <Target Name="Copy DangVideoNhieuKenh before publish" BeforeTargets="PrepareForPublish">
+    <Copy SourceFiles="$(ProjectDir)/DangVideoNhieuKenh.txt" DestinationFiles="$(PublishDir)/DangVideoNhieuKenh.txt" />
+  </Target>
+  
 </Project>

@@ -28,6 +28,7 @@ using static System.Windows.Forms.LinkLabel;
 using System.Text;
 using System.Windows.Threading;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -36,6 +37,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     private bool allItemsAreChecked;
     public event PropertyChangedEventHandler PropertyChanged;
     private String selectedFolder;
+    private String selectedFile;
 
     public bool AllItemsAreChecked
     {
@@ -100,6 +102,25 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             base.NotifyOfPropertyChange("NumberVideoNeedToUpload");
         }
     }
+    int GJWChannelNumber = -1;
+    public bool OpenMutileAccountVideo
+    {
+        get { return p_OpenMutileAccountVideo; }
+
+        set
+        {
+            p_OpenMutileAccountVideo = value;
+            if (p_OpenMutileAccountVideo)
+            {
+                GJWChannelNumber = 0;
+            }
+            else
+            {
+                GJWChannelNumber = -1;
+            }
+            base.NotifyOfPropertyChange("OpenMutileAccountVideo");
+        }
+    }
 
     private string p_TextOfUploadOrSignInButton;
     public string TextOfUploadOrSignInButton
@@ -155,12 +176,15 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         _settingsService.BindAndInvoke(o => o.ParallelLimit, (_, e) => _downloadSemaphore.MaxCount = e.NewValue);
         Progress.Bind(o => o.Current, (_, _) => NotifyOfPropertyChange(() => IsProgressIndeterminate));
         Downloads.Bind(o => o.Count, (_, _) => NotifyOfPropertyChange(() => IsDownloadsAvailable));
+        OpenMutileAccountVideo = false;
+        
 
         // Subscribe to CollectionChanged event
 #pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
         Downloads.CollectionChanged += OnDownloadListChanged;
 #pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
     }
+    public bool p_OpenMutileAccountVideo = false;
 
     public bool CanShowSettings => !IsBusy;
     public async void ShowSettings() => await _dialogManager.ShowDialogAsync(
@@ -218,11 +242,11 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         if (isBrowserClosed(mDriver))
         {
             bool isSignedInOnly = true;
-            if(NumberVideoNeedToUpload > 0)
+            if (NumberVideoNeedToUpload > 0)
             {
                 isSignedInOnly = false;
             }
-            mDriver = DownloadViewModel.SignInGJWStatic(out login_success, isSignedInOnly);
+            mDriver = DownloadViewModel.SignInGJWStatic(out login_success, isSignedInOnly, -1);
             if (!login_success)
             {
                 // await _dialogManager.ShowDialogAsync(
@@ -427,6 +451,263 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         catch (Exception)
                         {
 
+                        }
+                        break;
+                    }
+                    Thread.Sleep(3000);
+                }
+            }
+        }
+    }
+    public async void UploadMultipleVideoMultipleGJWChannel()
+    {
+        GJWChannelNumber = 0;
+        Up_More:
+
+        // reset previous upload status
+        foreach (var download in Downloads.ToArray())
+        {
+            download.UploadDone = false;
+            download.UploadError = false;
+        }
+        //
+        bool allSuccess = true;
+
+#pragma warning disable CS8604 // Possible null reference argument.
+        if (isBrowserClosed(mDriver))
+        {
+            bool isSignedInOnly = true;
+            if(NumberVideoNeedToUpload > 0)
+            {
+                isSignedInOnly = false;
+            }
+            mDriver = DownloadViewModel.SignInGJWStatic(out login_success, isSignedInOnly, GJWChannelNumber);
+            if (!login_success)
+            {
+                // await _dialogManager.ShowDialogAsync(
+                //     _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
+                // );
+                System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                if (mDriver != null)
+                {
+                    currentSize = mDriver.Manage().Window.Size;
+                    mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                }
+                else
+                {
+                    return;
+                }
+
+                string msg = "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!";
+
+                MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                    "Đăng nhập tự động thất bại.",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Question);
+                try
+                {
+                    if (confirm == MessageBoxResult.OK)
+                    {
+                        if (mDriver != null)
+                        {
+                            mDriver.Manage().Window.Size = currentSize;
+                        }
+
+                    }
+                }
+                catch (Exception)
+                {
+
+                }
+            }
+            else
+            {
+                if (NumberVideoNeedToUpload == 0)
+                {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                    mDriver.Manage().Window.Maximize();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                }
+            }
+
+        }
+        int waitingTime = 10000;
+        if (NumberVideoNeedToUpload > 0 && login_success)
+        {
+            foreach (var download in Downloads.ToArray().Reverse())
+            {
+                {   if(GJWChannelNumber !=-1)
+                    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                        if (!AutoDownUpDB.videos.ElementAt(GJWChannelNumber).Value.Contains(download.Video.Url)){
+                            // skip if not belong to current GJW Channel
+                            continue;
+                        }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                    }
+
+                    bool errorOccur = false;
+                    try
+                    {
+#pragma warning disable CS8604 // Possible null reference argument.
+                        download.UploadOnly(mDriver);
+#pragma warning restore CS8604 // Possible null reference argument.
+                    }
+                    catch (Exception ex)
+                    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                        System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                        try
+                        {
+                            if (mDriver != null)
+                            {
+                                currentSize = mDriver.Manage().Window.Size;
+                                mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                            }
+                        }
+                        catch (Exception)
+                        {
+
+                        }
+
+                        if (!mDriver.PageSource.Contains("Upload Limit Reached"))
+                        {
+                            errorOccur = true;
+                            // await _dialogManager.ShowDialogAsync(
+                            //     _viewModelFactory.CreateMessageBoxViewModel("Lỗi", "Đăng video lỗi: " + download.FileNameShort + "\n\n\n" + ex.Message)
+                            // );
+
+
+                            string msg = "Đăng video lỗi, đang lỗi ở video: " + download.FileName + "\n\n\nVui lòng làm theo ĐÚNG 3 BƯỚC sau:\n\n" +
+                                "- BƯỚC 1: trên trình duyệt, XOÁ hoặc đăng thủ công (dùng nút 3-4-5) video đang đăng bị lỗi và các video đang ở trạng thái \"Uploading 0%\" (nếu có).\n" +
+                                "- BƯỚC 2: KHÔNG ĐƯỢC TẮT TRÌNH DUYỆT, quay lại giao diện phần mềm.\n" +
+                                "- BƯỚC 3: bấm nút TẢI LÊN để tiếp tục đăng các video chưa được đăng.\n" +
+                                "-       Lưu ý: ở bước 1, nếu đăng thủ công video lỗi thành công, thì nhớ bỏ tích chọn video đó, để không đăng lại nó nữa.\n" +
+                                "\n\n\n\nThông tin lỗi chi tiết (để dành cho kỹ thuật phân tích lỗi):\n" + ex.Message;
+
+                            MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                                "Lỗi",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Question);
+                            try
+                            {
+                                if (confirm == MessageBoxResult.OK)
+                                {
+                                    if (mDriver != null)
+                                    {
+                                        mDriver.Manage().Window.Size = currentSize;
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+
+                            }
+
+                            // stop upload
+                            allSuccess = false;
+
+                        }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                        else
+                        {
+                            waitingTime = 1;
+                            string msg = "Bạn đã đăng đủ video cho tài khoản GJW này trong hôm nay. \n" +
+                                        "Hãy chuyển qua đăng cho tài khoản GJW khác, hoặc đợi sang ngày mai.";
+                            MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                                "Lỗi",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Question);
+                            try
+                            {
+                                if (confirm == MessageBoxResult.OK)
+                                {
+                                    if (mDriver != null)
+                                    {
+                                        mDriver.Manage().Window.Size = currentSize;
+                                    }
+                                }
+                            }
+                            catch (Exception)
+                            {
+
+                            }
+
+                            // stop upload
+                            allSuccess = true;
+                        }
+
+                        break;
+                    }
+                    finally
+                    {
+                        if (errorOccur == false)
+                        {
+                            download.UploadDone = true;
+                            download.SelectedToUpload = false;
+                        }
+                        else
+                        {
+                            download.UploadError = true;
+                        }
+                    }
+
+                }
+            }
+            if (mDriver != null && allSuccess)
+            {
+                // Đảm bảo là đang ở tab Video chứ không phải ở tab Short thì mới có thể thấy là đang Uploading hay đang Transcoding
+                Http.openVideoTab(mDriver, false);
+
+                Thread.Sleep(waitingTime);
+                while (true)
+                {
+                    string pageSrc = mDriver.PageSource.Replace("Uploading 0%", "");
+                    if (!isUploading(pageSrc))
+                    {
+                        System.Drawing.Size currentSize = mDriver.Manage().Window.Size;
+                        mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+
+                        string msg = "";
+                        if (isTranscoding(pageSrc))
+                        {
+                            msg = "Đang Transcoding ... ";
+                        }
+                        msg += "Có thể tắt trình duyệt được rồi! Đồng ý tắt?";
+                        if (GJWChannelNumber == -1 || GJWChannelNumber == AutoDownUpDB.videos.Keys.Count - 1)
+                        {
+                            MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                                "Đã Upload xong video!",
+                                MessageBoxButton.YesNo,
+                                MessageBoxImage.Question);
+                            try
+                            {
+                                if (confirm == MessageBoxResult.Yes)
+                                {
+                                    mDriver.Quit();
+                                    mDriver = null;
+                                }
+                                else
+                                {
+                                    mDriver.Manage().Window.Size = currentSize;
+                                }
+                            }
+                            catch (Exception)
+                            {
+
+                            }
+                        }
+                        else
+                        {
+                            if(GJWChannelNumber < AutoDownUpDB.videos.Keys.Count -1)
+                            {
+                                Thread.Sleep(3000);
+                                GJWChannelNumber++;
+                                mDriver.Quit();
+                                mDriver = null;
+
+                                goto Up_More;
+                            }
                         }
                         break;
                     }
@@ -960,6 +1241,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 System.Windows.Forms.DialogResult result = dialog.ShowDialog();
                 if (result == System.Windows.Forms.DialogResult.OK)
                 {
+                    OpenMutileAccountVideo = false;
                     selectedFolder = dialog.SelectedPath;
                     try
                     {
@@ -979,19 +1261,19 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                                     string videoID = videoInfo.Id.Substring(0, videoInfo.Id.Length - 5);
 
                                     VideoInfo? videoInfoDB = Database.Find(videoID);
-                                    if(videoInfoDB != null)
+                                    if (videoInfoDB != null)
                                     {
-                                        if((videoInfoDB.URL == "" || videoInfoDB.URL.Contains("youtube.com")))
+                                        if ((videoInfoDB.URL == "" || videoInfoDB.URL.Contains("youtube.com")))
                                         {
                                             youtubeURLs.Add(videoInfoDB.URL == "" ? (youtubeURLBase + videoID) : videoInfoDB.URL);
-                                        
+
                                         }
                                         else
                                         {
                                             otherURLs.Add(videoInfoDB.URL);
                                         }
                                     }
-                                    
+
                                 }
                                 catch (Exception) { }
 
@@ -1046,6 +1328,51 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                     }
                     catch (Exception ex)
                     {
+                        await _dialogManager.ShowDialogAsync(
+                            _viewModelFactory.CreateMessageBoxViewModel(
+                                "LỖI",
+                                "Mở thư mục bị lỗi!\nĐường dẫn thư mục: " + selectedFolder + "\n\n\n" +
+                                "Mã lỗi chi tiết dành cho kỹ thuật:\n" + ex.ToString()
+                            )
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    public async void OpenFileMultiple()
+    {
+        if (!IsBusy)
+        {
+            using (var dialog = new System.Windows.Forms.OpenFileDialog())
+            {
+                dialog.Title = "Duyệt file chứa danh sách video và kênh GJW";
+                dialog.DefaultExt = "txt";
+                dialog.Multiselect = false;
+                dialog.Filter = "txt files (*.txt)|*.txt";
+                dialog.CheckFileExists = true;
+                dialog.CheckPathExists = true;
+                System.Windows.Forms.DialogResult result = dialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                {
+                    selectedFile = dialog.FileName;
+#pragma warning disable CS8601 // Possible null reference assignment.
+                    selectedFolder = Path.GetDirectoryName(selectedFile);
+#pragma warning restore CS8601 // Possible null reference assignment.
+                    try
+                    {
+                        Database.Load(selectedFolder);
+                        AutoDownUpDB.Load(selectedFile);
+                        Query = AutoDownUpDB.getAllVideo();
+                        OpenMutileAccountVideo = true;
+                        
+                        ProcessQueryForFolder();
+                    }
+                    catch (Exception ex)
+                    {
+                        OpenMutileAccountVideo = false;
+                        
                         await _dialogManager.ShowDialogAsync(
                             _viewModelFactory.CreateMessageBoxViewModel(
                                 "LỖI",

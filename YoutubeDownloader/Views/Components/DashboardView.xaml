@@ -26,6 +26,7 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
             <!--  Query and process query button  -->
@@ -34,6 +35,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
@@ -66,10 +68,23 @@
                         PreviewKeyDown="QueryTextBox_OnPreviewKeyDown"
                         Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}"
                         VerticalScrollBarVisibility="Auto" TextChanged="QueryTextBox_TextChanged" />
-
-                    <!--  get list video of a YT channel -->
+                    <!--  upload multiple account -->
                     <Button
                         Grid.Column="2"
+                        Margin="0,6,6,6"
+                        Padding="4"
+                        Command="{s:Action OpenFileMultiple}"
+                        IsDefault="False"
+                        Style="{DynamicResource MaterialDesignFlatButton}"
+                        ToolTip="Tải về và đăng lên nhiều tài khoản GJW">
+                        <materialDesign:PackIcon
+                            Width="24"
+                            Height="24"
+                            Kind="UploadMultiple" />
+                    </Button>
+                    <!--  get list video of a YT channel -->
+                    <Button
+                        Grid.Column="3"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action GetListVideoYTChannel}"
@@ -84,7 +99,7 @@
                     
                     <!--  Open directory button  -->
                     <Button
-                        Grid.Column="3"
+                        Grid.Column="4"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action OpenFolder}"
@@ -99,7 +114,7 @@
                     
                     <!--  Delete query button  -->
                     <Button
-                        Grid.Column="4"
+                        Grid.Column="5"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action DeleteQuery}"
@@ -114,7 +129,7 @@
                     </Button>
                      <!--  Paste query button  -->
                     <Button
-                        Grid.Column="5"
+                        Grid.Column="6"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action PasteQuery}"
@@ -128,7 +143,7 @@
                     </Button>                   
                     <!--  Process query button  -->
                     <Button
-                        Grid.Column="6"
+                        Grid.Column="7"
                         Margin="0,6,6,6"
                         Padding="4"
                         Command="{s:Action ProcessQuery}"
@@ -210,6 +225,25 @@
                     </TextBlock>
                 </Button.Content>
             </Button>
+            <Button
+               Visibility="{Binding OpenMutileAccountVideo, Converter={x:Static converters:BoolToVisibilityConverter.VisibleOrCollapsed}}"
+               Grid.Column="4"
+               Margin="6"
+               Padding="4"
+               Command="{s:Action UploadMultipleVideoMultipleGJWChannel}"
+               Foreground="{DynamicResource MaterialDesignDarkForeground}"
+               Style="{DynamicResource MaterialDesignFlatButton}"
+            
+               ToolTip="{Binding TextOfUploadOrSignInButton}">
+                <Button.Content>
+                    <TextBlock>
+                       <Run Text="TẢI LÊN (cho nhiều kênh)" />
+                    </TextBlock>
+                </Button.Content>
+            </Button>
+
+
+
 
         </Grid>
 

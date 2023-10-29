@@ -1,3 +1,6 @@
+###v1.9.131 (30-Oct-2023)
+- Hỗ trợ tải xuống và đăng video lên nhiều kênh GJW tự động
+
 ###v1.9.130 (26-Oct-2023)
 - Sửa lỗi sai thể loại (chọn Pets mà khi đăng lại ra Popular Music)
 

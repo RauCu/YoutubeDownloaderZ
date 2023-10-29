@@ -1,0 +1,17 @@
+# Những dòng bắt đầu bằng dấu # sẽ là phần ghi chú và bị bỏ qua, phần mềm ko xử lý
+# Kênh 1
+email_kenh1@gmail.com
+Matkhau_kenh1
+# Thể loại của kênh 1, thể loại số 30 (Sports)
+TL: 30
+# sau đó là các đường link video của kênh 1
+https://www.youtube.com/watch?v=6ZedtY5e2R8
+
+
+# Kênh 2
+email_kenh2@gmail.com
+Matkhau_kenh2
+# Thể loại của kênh 2, thể loại số 4 (Business)
+TL: 4
+# sau đó là các đường link video của kênh 2
+https://www.youtube.com/watch?v=6ZedtY5e2R8
