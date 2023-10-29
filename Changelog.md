@@ -1,3 +1,6 @@
+###v1.9.132 (30-Oct-2023)
+- Fix lỗi build
+
 ###v1.9.131 (30-Oct-2023)
 - Hỗ trợ tải xuống và đăng video lên nhiều kênh GJW tự động
 

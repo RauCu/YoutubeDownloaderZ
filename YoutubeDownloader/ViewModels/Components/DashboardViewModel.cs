@@ -1362,7 +1362,9 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 #pragma warning restore CS8601 // Possible null reference assignment.
                     try
                     {
+#pragma warning disable CS8604 // Possible null reference argument.
                         Database.Load(selectedFolder);
+#pragma warning restore CS8604 // Possible null reference argument.
                         AutoDownUpDB.Load(selectedFile);
                         Query = AutoDownUpDB.getAllVideo();
                         OpenMutileAccountVideo = true;

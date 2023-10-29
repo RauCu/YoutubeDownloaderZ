@@ -6,6 +6,7 @@ Matkhau_kenh1
 TL: 30
 # sau đó là các đường link video của kênh 1
 https://www.youtube.com/watch?v=6ZedtY5e2R8
+https://www.youtube.com/watch?v=j7ODwHtVC9I
 
 
 # Kênh 2
@@ -14,4 +15,6 @@ Matkhau_kenh2
 # Thể loại của kênh 2, thể loại số 4 (Business)
 TL: 4
 # sau đó là các đường link video của kênh 2
-https://www.youtube.com/watch?v=6ZedtY5e2R8
+https://www.youtube.com/watch?v=O-5oJqe8wmE
+https://www.youtube.com/watch?v=QjgnuPLJcPo
+https://www.youtube.com/watch?v=gf-_Bf_-pvU
