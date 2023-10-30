@@ -406,7 +406,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             {
                 email_passTextBox.Text = RemoveEmptyLines(email_passTextBox.Text);
                 char tab = '\u0009';
-                email_passTextBox.Text = email_passTextBox.Text.Replace(tab.ToString(), "");
+                email_passTextBox.Text = email_passTextBox.Text.Replace(tab.ToString(), " ");
                 email_passTextBox.Text = string.Join(" ", email_passTextBox.Text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
 
 
