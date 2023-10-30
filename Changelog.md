@@ -1,3 +1,6 @@
+###v1.9.133 (30-Oct-2023)
+- Fix lỗi không đăng nhập được
+
 ###v1.9.132 (30-Oct-2023)
 - Fix lỗi build
 

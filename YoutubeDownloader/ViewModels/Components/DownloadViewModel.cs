@@ -405,6 +405,11 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             else
             {
                 email_passTextBox.Text = RemoveEmptyLines(email_passTextBox.Text);
+                char tab = '\u0009';
+                email_passTextBox.Text = email_passTextBox.Text.Replace(tab.ToString(), "");
+                email_passTextBox.Text = string.Join(" ", email_passTextBox.Text.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+
                 if (email_passTextBox.Lines.Length >= 2)
                 {
                     email_passTextBox.Text = email_passTextBox.Lines[0] + Environment.NewLine + email_passTextBox.Lines[1];
@@ -416,7 +421,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
                     email_passText = p[0] + "::" + p[1];
                 }
 
-                email_passText = Regex.Replace(email_passText, @"\s+", " ");
+                
                 if (isSignedInOnly == false && SelectedCategoryIndex == -1)
                 {
                     email_passText = "close_not_selected_category";
