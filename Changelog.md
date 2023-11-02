@@ -1,16 +1,19 @@
-###v1.9.134 (30-Oct-2023)
+### v1.9.135 (2-Nov-2023)
+- Cập nhật thể loại
+
+### v1.9.134 (30-Oct-2023)
 - Fix lỗi không đăng nhập được (2)
 
-###v1.9.133 (30-Oct-2023)
+### v1.9.133 (30-Oct-2023)
 - Fix lỗi không đăng nhập được
 
-###v1.9.132 (30-Oct-2023)
+### v1.9.132 (30-Oct-2023)
 - Fix lỗi build
 
-###v1.9.131 (30-Oct-2023)
+### v1.9.131 (30-Oct-2023)
 - Hỗ trợ tải xuống và đăng video lên nhiều kênh GJW tự động
 
-###v1.9.130 (26-Oct-2023)
+### v1.9.130 (26-Oct-2023)
 - Sửa lỗi sai thể loại (chọn Pets mà khi đăng lại ra Popular Music)
 
 ### v1.9.129 (23-Oct-2023)
