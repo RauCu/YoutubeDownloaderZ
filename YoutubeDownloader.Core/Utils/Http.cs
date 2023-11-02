@@ -434,12 +434,12 @@ public static class Http
                 Thread.Sleep(1000);
             }
 
-            string uploadVideoXpath = "//*[@id=\"table-videos\"]/table/tbody[1]/tr/td[2]/div/button";
+            string uploadVideoXpath = "//*[@id=\"table-videos\"]/table/tbody[1]/tr/td/div/button";
             //uploadVideoXpath = "/html/body/div[2]/div[3]/div/div[2]/div[3]/div/table/tbody[1]/tr/td[2]/div/button";
 
             if (isShortVideo)
             {
-                uploadVideoXpath = "//*[@id=\"table-shorts\"]/table/tbody[1]/tr/td[2]/div/button";
+                uploadVideoXpath = "//*[@id=\"table-shorts\"]/table/tbody[1]/tr/td/div/button";
             }
             if (count == 2 && testEnabled)
             {

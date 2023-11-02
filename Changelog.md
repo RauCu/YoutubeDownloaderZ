@@ -1,3 +1,6 @@
+### v1.9.136 (3-Nov-2023)
+- Sửa lỗi khi đăng video cho nhiều kênh (cho chọn lẻ video)
+
 ### v1.9.135 (2-Nov-2023)
 - Cập nhật thể loại
 

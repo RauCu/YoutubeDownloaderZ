@@ -395,6 +395,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
             }
             categoryComboBox.SelectedIndex = SelectedCategoryIndex;
 
+            email_passTextBox.Text = p[0] + Environment.NewLine + p[1] + Environment.NewLine + AutoDownUpDB.getAllVideoForChannel(AutoDownUpDB.videos.Keys.ElementAt(forMultipleGJWChannel));
+
+
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
         }
         if (prompt.ShowDialog() == System.Windows.Forms.DialogResult.OK)
@@ -537,14 +540,14 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
     }
 
-    public static IWebDriver? SignInGJWStatic(out bool login_success, bool isSignedInOnly, int uploadForMultipleGJWChannel)
+    public static IWebDriver? SignInGJWStatic(out bool login_success, bool isSignedInOnly, int uploadForMultipleGJWChannel, bool showDialog = true)
     {
         login_success = false;
         IWebDriver? driver = null;
         try
         {
             string email_pass = "";
-            if (uploadForMultipleGJWChannel == -1 || uploadForMultipleGJWChannel == 0)
+            if (showDialog)
             {
                 email_pass = ShowDialog("Email và mật khẩu của kênh GJW", "", "Đăng nhập kênh GJW", isSignedInOnly, uploadForMultipleGJWChannel);
             }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -23,6 +24,20 @@ namespace YoutubeDownloader.Utils
             foreach (var item in videos)
             {
                 videoURLs += item.Value + "\n";
+            }
+            videoURLs = DownloadViewModel.RemoveEmptyLines(videoURLs);
+            return videoURLs;
+        }
+
+        public static string getAllVideoForChannel(string key)
+        {
+            string videoURLs = "";
+            foreach (var item in videos)
+            {
+                if (item.Key == key)
+                {
+                    videoURLs += item.Value + "\n";
+                }
             }
             videoURLs = DownloadViewModel.RemoveEmptyLines(videoURLs);
             return videoURLs;

@@ -459,9 +459,38 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
             }
         }
     }
+    private bool needLogin(int GJWChannelNumber)
+    {
+        bool result = false;
+        if (NumberVideoNeedToUpload > 0)
+        {
+            foreach (var download in Downloads.ToArray().Reverse())
+            {
+                if (download.CanShowFile && download.SelectedToUpload){
+                    if (GJWChannelNumber != -1)
+                    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                        if (AutoDownUpDB.videos.ElementAt(GJWChannelNumber).Value.Contains(download.Video.Url))
+                        {
+                            result = true;
+                            break;
+                        }
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                    }
+                    else
+                    {
+                        result = true;
+                        break;
+                    }
+                }
+            }
+        }
+        return result;
+    }
     public async void UploadMultipleVideoMultipleGJWChannel()
     {
         GJWChannelNumber = 0;
+        bool showDialog = true;
         Up_More:
 
         // reset previous upload status
@@ -476,66 +505,78 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
 #pragma warning disable CS8604 // Possible null reference argument.
         if (isBrowserClosed(mDriver))
         {
-            bool isSignedInOnly = true;
-            if(NumberVideoNeedToUpload > 0)
+            if (needLogin(GJWChannelNumber))
             {
-                isSignedInOnly = false;
-            }
-            mDriver = DownloadViewModel.SignInGJWStatic(out login_success, isSignedInOnly, GJWChannelNumber);
-            if (!login_success)
-            {
-                // await _dialogManager.ShowDialogAsync(
-                //     _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
-                // );
-                System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
-                if (mDriver != null)
+                bool isSignedInOnly = true;
+                if (NumberVideoNeedToUpload > 0)
                 {
-                    currentSize = mDriver.Manage().Window.Size;
-                    mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                    isSignedInOnly = false;
                 }
-                else
+                mDriver = DownloadViewModel.SignInGJWStatic(out login_success, isSignedInOnly, GJWChannelNumber, showDialog);
+                if (!login_success)
                 {
-                    return;
-                }
-
-                string msg = "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!";
-
-                MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
-                    "Đăng nhập tự động thất bại.",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Question);
-                try
-                {
-                    if (confirm == MessageBoxResult.OK)
+                    // await _dialogManager.ShowDialogAsync(
+                    //     _viewModelFactory.CreateMessageBoxViewModel("Đăng nhập tự động thất bại.", "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!")
+                    // );
+                    System.Drawing.Size currentSize = new System.Drawing.Size(480, 320);
+                    if (mDriver != null)
                     {
-                        if (mDriver != null)
+                        currentSize = mDriver.Manage().Window.Size;
+                        mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
+                    }
+                    else
+                    {
+                        return;
+                    }
+
+                    string msg = "Hãy kiểm tra lại để đảm bảo rằng email và mật khẩu đúng. Hoặc hãy đăng nhập thủ công!";
+
+                    MessageBoxResult confirm = System.Windows.MessageBox.Show(msg,
+                        "Đăng nhập tự động thất bại.",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Question);
+                    try
+                    {
+                        if (confirm == MessageBoxResult.OK)
                         {
-                            mDriver.Manage().Window.Size = currentSize;
+                            if (mDriver != null)
+                            {
+                                mDriver.Manage().Window.Size = currentSize;
+                            }
+
                         }
+                    }
+                    catch (Exception)
+                    {
 
                     }
                 }
-                catch (Exception)
+                else
                 {
-
+                    if (NumberVideoNeedToUpload == 0)
+                    {
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
+                        mDriver.Manage().Window.Maximize();
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                    }
                 }
             }
             else
             {
-                if (NumberVideoNeedToUpload == 0)
+                if (GJWChannelNumber < AutoDownUpDB.videos.Keys.Count - 1)
                 {
-#pragma warning disable CS8602 // Dereference of a possibly null reference.
-                    mDriver.Manage().Window.Maximize();
-#pragma warning restore CS8602 // Dereference of a possibly null reference.
+                    GJWChannelNumber++;
+                  
+                    goto Up_More;
                 }
             }
-
         }
         int waitingTime = 10000;
         if (NumberVideoNeedToUpload > 0 && login_success)
         {
             foreach (var download in Downloads.ToArray().Reverse())
             {
+                if (download.CanShowFile && download.SelectedToUpload)
                 {   if(GJWChannelNumber !=-1)
                     {
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
@@ -702,6 +743,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                             if(GJWChannelNumber < AutoDownUpDB.videos.Keys.Count -1)
                             {
                                 Thread.Sleep(3000);
+                                showDialog = false;
                                 GJWChannelNumber++;
                                 mDriver.Quit();
                                 mDriver = null;
