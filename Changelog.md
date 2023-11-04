@@ -1,3 +1,6 @@
+### v1.9.137 (4-Nov-2023)
+- Sửa lỗi khi không đăng video được do GJW cập nhật giao diện
+
 ### v1.9.136 (3-Nov-2023)
 - Sửa lỗi khi đăng video cho nhiều kênh (cho chọn lẻ video)
 

@@ -526,7 +526,8 @@ public static class Http
 
             // select thumbnail
             //string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/div/label/button";
-            string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[1]/div[2]/div/div/div/label/button";
+            string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[1]/div[2]/div/div/div/label/button";
+
             if (!isShortVideo)
             {
                 //selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div/div/img";
@@ -561,8 +562,8 @@ public static class Http
 
             // title
             Thread.Sleep(1000);
-            string titleXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[1]/div/div/div";
-            //titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div[1]";
+            string titleXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[2]/div/div[1]/div/div/div/div/input";
+                // titleXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[2]/div/div[1]/div/div/div/div/input";
             if (isShortVideo)
             {
                 titleXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[1]/div/div/div";
@@ -609,7 +610,8 @@ public static class Http
             //Thread.Sleep(1000);
 
             //string descriptionXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[2]/div/div/div[1]";
-            string descriptionXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[2]/div/div/div";
+            string descriptionXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[1]/div/div[2]/div/div/div";
+
             if (isShortVideo)
             {
                 descriptionXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[2]/div/div[2]/div/div/div[1]";
@@ -640,7 +642,7 @@ public static class Http
 
             if (!isShortVideo)
             {
-                string descriptionLabelXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[2]/div/label";
+                string descriptionLabelXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[1]/div/div[2]/div/label";
                 try
                 {
                     wait2Second.Until(driver => driver.FindElement(By.XPath(descriptionLabelXpath)));
@@ -672,8 +674,8 @@ public static class Http
 
                 // next button
                 Thread.Sleep(1000);
-                string selectNextBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[3]/button[2]";
-
+                sim.Keyboard.KeyPress(VirtualKeyCode.END);
+                string selectNextBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/button[2]";
                 try
                 {
                     wait.Until(driver => driver.FindElement(By.XPath(selectNextBtnXpath)));
@@ -690,7 +692,7 @@ public static class Http
                 }
                 // next2 button
                 Thread.Sleep(1000);
-                string selectNext2BtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[3]/button[2]";
+                string selectNext2BtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/button[2]";
                 try
                 {
                     wait.Until(driver => driver.FindElement(By.XPath(selectNext2BtnXpath)));
@@ -714,7 +716,7 @@ public static class Http
                 {
                     
                     Thread.Sleep(1000);
-                    string scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[3]/div/div[2]/div[1]/span/span[1]/input";
+                    string scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[4]/div/div[3]/div[1]/span/span[1]/input";
                     try
                     {
                         wait.Until(driver => driver.FindElement(By.XPath(scheduleEnabledBtnXpath)));
@@ -731,12 +733,20 @@ public static class Http
                     }
                     //
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
-                    Thread.Sleep(300);
+                    Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
-                    Thread.Sleep(300);
+                    Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(100);
+
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(100);
                     /*for (int i = 0; i < 11; i++) // 11 giờ sau mới đăng
                     {
                         
@@ -748,8 +758,7 @@ public static class Http
                 }
                 // Done button
                 Thread.Sleep(1000);
-                string selectDoneBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[3]/button[2]";
-
+                string selectDoneBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/button[2]";
                 bool clickDoneBtnSuccess = false;
                 int MAX_TRY_DONE = 3;
                 for (int i = 0; i <= MAX_TRY_DONE && clickDoneBtnSuccess == false; i++)
@@ -854,7 +863,7 @@ public static class Http
             else
             {
                 Thread.Sleep(1000);
-                string unlistedEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[3]/div/div[1]/div/div/label[3]/span[1]/input";
+                string unlistedEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[4]/div/div[1]/div/div/label[3]/span[2]/div";
                 try
                 {
                     wait.Until(driver => driver.FindElement(By.XPath(unlistedEnabledBtnXpath)));
@@ -981,7 +990,7 @@ public static class Http
             string categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[3]/div/div/div";
             if (!isShortVideo)
             {
-                categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[3]/div/div[1]/div";
+                categoryXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[2]/div/div[3]/div/div[1]/div";
                 //"//*[@id=\"dialog_1691141263158\"]/div[3]/div/div/div/div/div[2]/div[2]/div[1]/div/div[3]/div/div[1]/div";              
             }
             try
