@@ -28,6 +28,7 @@ public static class Http
                     "English",
                     "中文",
                     "Français",
+                    "Bahasa Indonesia",
                     "Deutsch",
                     "Italiano",
                     "日本",

@@ -1,3 +1,6 @@
+### v1.9.138 (6-Nov-2023)
+- Thêm tiếng Indonesia
+
 ### v1.9.137 (4-Nov-2023)
 - Sửa lỗi khi không đăng video được do GJW cập nhật giao diện
 
