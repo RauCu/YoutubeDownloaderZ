@@ -192,6 +192,7 @@ public static class Http
             int maxLenErrorMsg = 400;
             string signInBtn = "/html/body/div[1]/div/header/div/div[1]/div/button[2]/span";
                     signInBtn = "/html/body/div/div/header/div/div[3]/div/button[2]/span";
+                    signInBtn = "/html/body/div[1]/div/header/div/div[3]/div/button[1]/span";
 
             bool clickSignInBtnSuccess = false;
             int MAX_TRY_SIGNIN_BTN = 15;

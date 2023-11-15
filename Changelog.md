@@ -1,3 +1,6 @@
+### v1.9.139 (15-Nov-2023)
+- Sửa lỗi không bấm được nút SignIn do GJW đổi giao diện
+
 ### v1.9.138 (6-Nov-2023)
 - Thêm tiếng Indonesia
 
