@@ -529,6 +529,7 @@ public static class Http
             // select thumbnail
             //string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div[1]/div/div[1]/div/div[2]/div/div/div/div[1]/div/div/div/label/button";
             string selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[1]/div[2]/div/div/div/label/button";
+                   selectThumnailBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[1]/div[2]/div/div/label/button";
 
             if (!isShortVideo)
             {
@@ -719,6 +720,7 @@ public static class Http
                     
                     Thread.Sleep(1000);
                     string scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[4]/div/div[3]/div[1]/span/span[1]/input";
+                           scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[4]/div/div[2]/div[1]/span/span[1]/input";
                     try
                     {
                         wait.Until(driver => driver.FindElement(By.XPath(scheduleEnabledBtnXpath)));
