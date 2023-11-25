@@ -1,3 +1,6 @@
+### v1.9.141 (25-Nov-2023)
+- Sửa lỗi không set được mục ngôn ngữ cho các kênh tin tức
+
 ### v1.9.140 (17-Nov-2023)
 - Sửa lỗi không bấm được nút chọn hình thumbnail do GJW đổi giao diện
 

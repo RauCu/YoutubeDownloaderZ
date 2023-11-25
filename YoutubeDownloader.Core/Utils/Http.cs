@@ -946,6 +946,7 @@ public static class Http
             Thread.Sleep(1000);
 
             string languageXpath = "//*[@id=\"lang\"]/div";
+                   languageXpath = "//*[@id=\"lang\"]";
             int maxLenErrorMsg = 400;
             try
             {
