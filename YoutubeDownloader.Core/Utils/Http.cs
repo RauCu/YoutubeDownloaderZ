@@ -142,7 +142,20 @@ public static class Http
 
             if (clickChannelSettingMenuBtnSuccess)
             {
+                string channelNameStringXpath = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div[1]/div[2]/div[1]/label";
+                try
+                {
+                    wait.Until(driver => driver.FindElement(By.XPath(channelNameStringXpath)));
+                    IWebElement elementChannelNameText = driver.FindElement(By.XPath(channelNameStringXpath));
+                    elementChannelNameText.Click();
+                }
+                catch (Exception)
+                {
+                }
+                InputSimulator sim = new InputSimulator();
+               
 
+                sim.Keyboard.KeyPress(VirtualKeyCode.END);
                 // Language TextField
                 string languageTextField = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div[1]/div[2]/div[3]/div/div";
 
@@ -918,7 +931,7 @@ public static class Http
                     for (int i = 0; i < languageIndex; i++)
                     {
                         sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
-                        //Thread.Sleep(200);
+                        Thread.Sleep(200);
                     }
                     Thread.Sleep(200);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
@@ -967,10 +980,10 @@ public static class Http
                         }
                     }
                     //
-                    for (int i = 0; i < languageIndex; i++)
+                    for (int i = 0; i <= languageIndex; i++)
                     {
                         sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
-                        //Thread.Sleep(200);
+                        Thread.Sleep(50);
                     }
                     Thread.Sleep(200);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);

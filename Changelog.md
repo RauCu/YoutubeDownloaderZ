@@ -1,3 +1,6 @@
+### v1.9.142 (12-Dec-2023)
+- Sửa lỗi set sai ngôn ngữ của các kênh tin tức
+
 ### v1.9.141 (25-Nov-2023)
 - Sửa lỗi không set được mục ngôn ngữ cho các kênh tin tức
 
