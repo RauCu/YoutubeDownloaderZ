@@ -688,7 +688,7 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
         }
 
         bool isShortVideo = false;
-        if (Video!.Duration?.TotalSeconds <= 60)
+        if (Video!.Duration?.TotalSeconds <= 90)
         {
             GetVideoInfo(videoPath);
             if (videoHeight > videoWidth)

@@ -1,3 +1,9 @@
+### v1.9.144 (14-Dec-2023)
+- Mở độ dài video short lên thành 90 giây
+- Sửa lỗi không lấy được video short
+- Thêm script LayDanhSachVideoKenhYT/Build.bat để build LayDanhSachVideoKenhYT.exe
+- Refactor: chuyển script LayDanhSachVideoKenhYT.py vào thư mục LayDanhSachVideoKenhYT cho gọn
+
 ### v1.9.143 (14-Dec-2023)
 - Sửa lỗi set sai ngôn ngữ của các kênh tin tức
 
