@@ -1,3 +1,6 @@
+### v1.9.145 (14-Dec-2023)
+- Sửa lỗi đợi lâu, trình duyệt không tắt khi đăng video xong trong trường hợp video ở trạng thái "Transcoding begins in * min"
+
 ### v1.9.144 (14-Dec-2023)
 - Mở độ dài video short lên thành 90 giây
 - Sửa lỗi không lấy được video short

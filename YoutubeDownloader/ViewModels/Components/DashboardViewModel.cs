@@ -427,7 +427,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
 
                         string msg = "";
-                        if (isTranscoding(pageSrc))
+                        if (isTranscoding(pageSrc) || willTranscode(pageSrc))
                         {
                             msg = "Đang Transcoding ... ";
                         }
@@ -710,7 +710,7 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                         mDriver.Manage().Window.Size = new System.Drawing.Size(480, 320);
 
                         string msg = "";
-                        if (isTranscoding(pageSrc))
+                        if (isTranscoding(pageSrc) || willTranscode(pageSrc))
                         {
                             msg = "Đang Transcoding ... ";
                         }
@@ -790,6 +790,17 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
                 result = true;
                 break;
             }
+        }
+        return result;
+    }
+
+    private bool willTranscode(string text)
+    {
+        bool result = false;
+        string t = "Transcoding begins in";
+        if (text.Contains(t))
+        {
+            result = true;
         }
         return result;
     }
