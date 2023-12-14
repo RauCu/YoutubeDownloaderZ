@@ -980,7 +980,7 @@ public static class Http
                         }
                     }
                     //
-                    for (int i = 0; i <= languageIndex; i++)
+                    for (int i = 0; i < languageIndex; i++)
                     {
                         sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
                         Thread.Sleep(50);
