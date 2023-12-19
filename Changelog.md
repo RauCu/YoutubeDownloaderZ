@@ -1,3 +1,6 @@
+### v1.9.147 (19-Dec-2023)
+- Mở chức năng tự động đăng nhập
+
 ### v1.9.146 (19-Dec-2023)
 - Chức năng tự động đăng video tạm thời bị tắt!
 - Dark mode

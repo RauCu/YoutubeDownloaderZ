@@ -229,8 +229,11 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     {
         if (!_settingsService.IsDarkModeEnabled)
         {
-            DisableUpload();
-            return;
+            if (NumberVideoNeedToUpload > 0)
+            {
+                DisableUpload();
+                return;
+            }
         }
 
         // reset previous upload status
