@@ -44,4 +44,9 @@ public static class MessageBoxViewModelExtensions
         this IViewModelFactory factory,
         string title, string message) =>
         factory.CreateMessageBoxViewModel(title, message, "TẮT", null);
+
+    public static MessageBoxViewModel CreateMessageBoxViewModel2(
+       this IViewModelFactory factory,
+       string title, string message) =>
+       factory.CreateMessageBoxViewModel(title, message, "KHÔNG MUỐN", "CÓ MUỐN XEM");
 }

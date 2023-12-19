@@ -1,3 +1,6 @@
+### v1.9.148 (19-Dec-2023)
+- Thêm video hướng dẫn đăng thủ công
+
 ### v1.9.147 (19-Dec-2023)
 - Mở chức năng tự động đăng nhập
 

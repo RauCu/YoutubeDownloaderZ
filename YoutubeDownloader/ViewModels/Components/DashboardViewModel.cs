@@ -29,6 +29,7 @@ using System.Text;
 using System.Windows.Threading;
 using System.Windows.Forms;
 using Microsoft.Win32;
+using MessageBox = System.Windows.Forms.MessageBox;
 
 namespace YoutubeDownloader.ViewModels.Components;
 
@@ -197,6 +198,12 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
         // IWebDriver driver = Http.GetDriver();
         // driver.Navigate().GoToUrl(url);
+    }
+
+    public void Guide()
+    {
+        string url = "https://www.ganjingworld.com/video/1fmaedt4qtc6q7n9FPgwTaF9z1d01c?playlistID=1ff41rph6likfNRaA6hssga15e0p";
+        Process.Start(new ProcessStartInfo() { FileName = url, UseShellExecute = true });
     }
     public void UploadVideo()
     {
@@ -498,11 +505,14 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     public async void DisableUpload()
     {
         await _dialogManager.ShowDialogAsync(
-        _viewModelFactory.CreateMessageBoxViewModel(
-            "Chức năng tự động đăng video tạm thời bị tắt!",
-            "Thông báo: Chức năng tự động đăng video tạm thời bị tắt.\nVui lòng đăng video bằng cách thủ công! \n\nLý do: các bạn đăng video tự động không kiểm duyệt lại nội dung video trước khi đăng lên GJW dẫn tới rất nhiều nội dung không tốt được đưa lên nền tảng!"
-            )
-        );
+         _viewModelFactory.CreateMessageBoxViewModel2(
+             "Chức năng tự động đăng video tạm thời bị tắt!",
+             "Lý do: các bạn đăng video tự động không kiểm duyệt lại nội dung video trước khi đăng lên GJW dẫn tới rất nhiều nội dung không tốt được đưa lên nền tảng! " +
+             "\n\nVui lòng đăng thủ công. " +
+             "\n\nBạn có muốn tham khảo video hướng dẫn không?" +
+             "\n\n(Hãy để ý đến các mục:\n- kiểm tra trùng\n- copy tiêu đề\n- copy đường dẫn đến hình thumbnail\n- copy đường dẫn đến video)"
+             )
+         );
     }
     public async void UploadMultipleVideoMultipleGJWChannel()
     {
