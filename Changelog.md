@@ -1,3 +1,7 @@
+### v1.9.146 (19-Dec-2023)
+- Chức năng tự động đăng video tạm thời bị tắt!
+- Dark mode
+
 ### v1.9.145 (14-Dec-2023)
 - Sửa lỗi đợi lâu, trình duyệt không tắt khi đăng video xong trong trường hợp video ở trạng thái "Transcoding begins in * min"
 

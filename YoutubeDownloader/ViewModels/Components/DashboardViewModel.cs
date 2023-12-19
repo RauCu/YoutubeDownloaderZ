@@ -227,6 +227,11 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
     string language = "";
     public async void UploadMultipleVideo()
     {
+        if (!_settingsService.IsDarkModeEnabled)
+        {
+            DisableUpload();
+            return;
+        }
 
         // reset previous upload status
         foreach (var download in Downloads.ToArray())
@@ -487,8 +492,23 @@ public class DashboardViewModel : PropertyChangedBase, IDisposable
         }
         return result;
     }
+    public async void DisableUpload()
+    {
+        await _dialogManager.ShowDialogAsync(
+        _viewModelFactory.CreateMessageBoxViewModel(
+            "Chức năng tự động đăng video tạm thời bị tắt!",
+            "Thông báo: Chức năng tự động đăng video tạm thời bị tắt.\nVui lòng đăng video bằng cách thủ công! \n\nLý do: các bạn đăng video tự động không kiểm duyệt lại nội dung video trước khi đăng lên GJW dẫn tới rất nhiều nội dung không tốt được đưa lên nền tảng!"
+            )
+        );
+    }
     public async void UploadMultipleVideoMultipleGJWChannel()
     {
+        if (!_settingsService.IsDarkModeEnabled)
+        {
+            DisableUpload();
+            return;
+        }
+
         GJWChannelNumber = 0;
         bool showDialog = true;
         Up_More:
