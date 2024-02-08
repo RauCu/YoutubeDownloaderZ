@@ -1,3 +1,6 @@
+### v1.9.149 (08-Jan-2024)
+- Thêm thể loại "Phim ảnh và TV"
+
 ### v1.9.148 (19-Dec-2023)
 - Thêm video hướng dẫn đăng thủ công
 
