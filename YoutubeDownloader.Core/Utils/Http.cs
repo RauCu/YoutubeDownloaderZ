@@ -27,15 +27,15 @@ public static class Http
     public static string[] supportedLanguages = {
                     "English",
                     "中文",
+                    "日本",
+                    "한국어",
+                    "Deutsch",
+                    "Español",
                     "Français",
                     "Bahasa Indonesia",
-                    "Deutsch",
                     "Italiano",
-                    "日本",
                     "Русский",
-                    "한국어",
                     "Tiếng Việt",
-                    "Español",
                     "Others"
                 };
 

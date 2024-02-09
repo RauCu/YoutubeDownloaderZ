@@ -1,3 +1,6 @@
+### v1.9.150 (09-Jan-2024)
+- Cập nhật danh sách ngôn ngữ
+
 ### v1.9.149 (08-Jan-2024)
 - Thêm thể loại "Phim ảnh và TV"
 
