@@ -1,3 +1,7 @@
+### v1.9.151 (21-April-2024)
+- Sửa lỗi không up được video do thay đổi giao diện (menu Channel Setting)
+- Thêm tính năng đăng sau 24h cho video ngắn
+
 ### v1.9.150 (09-Jan-2024)
 - Cập nhật danh sách ngôn ngữ
 

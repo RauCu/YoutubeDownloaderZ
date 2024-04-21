@@ -114,6 +114,7 @@ public static class Http
 
             // Channel Settings menu
             string channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[7]";
+                   channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[6]/div[2]";
 
             bool clickChannelSettingMenuBtnSuccess = false;
             int MAX_TRY_CLICK_BTN = 15;
@@ -751,6 +752,8 @@ public static class Http
                     //
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);                    
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
@@ -758,12 +761,14 @@ public static class Http
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
 
+                    /*
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
+                    */
                     /*for (int i = 0; i < 11; i++) // 11 giờ sau mới đăng
                     {
                         
@@ -812,9 +817,43 @@ public static class Http
                 selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
                 sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
+                if (scheduleEnabled)
+                {
+                    
+                    Thread.Sleep(1000);
+                    string scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[5]/div[1]/span/span[1]/input";
+                           
+                    try
+                    {
+                        wait.Until(driver => driver.FindElement(By.XPath(scheduleEnabledBtnXpath)));
+                        IWebElement elementBtnScheduleEnabled = driver.FindElement(By.XPath(scheduleEnabledBtnXpath));
+                        Thread.Sleep(1000);
+                        elementBtnScheduleEnabled.Click();
+                    }
+                    catch (Exception ex)
+                    {
+                        string msgError = "Error on: scheduleEnabledBtnXpath: " + ex.ToString();
+                        var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
+                        Console.WriteLine(msgError);
+                        throw new Exception(first100Chars);//propage this error
+                    }
+                    //
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);                    
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(100);
+
+                }
+
                 // Publish button
                 Thread.Sleep(1000);
-                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[2]"; // PUBLISH 
+                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/div/button[2]"; // PUBLISH
                 //selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[1]"; // CANCEL
 
                 bool clickDoneBtnSuccess = false;
