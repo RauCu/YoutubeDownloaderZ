@@ -115,6 +115,7 @@ public static class Http
             // Channel Settings menu
             string channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[7]";
                    channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[6]/div[2]";
+                   channelSettingMenuBtn = "/html/body/div[2]/div[1]/div/div[2]/div[7]/div[2]";
 
             bool clickChannelSettingMenuBtnSuccess = false;
             int MAX_TRY_CLICK_BTN = 15;
