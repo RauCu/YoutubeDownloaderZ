@@ -316,9 +316,10 @@ def takeInput():
         inputText.insert("1.0", pyperclip.paste())
         logText.insert(END, "LỖI RỒI: ID kênh hoặc đường link không đúng định dạng.")
         logText.insert(END, "\nĐể lấy ID kênh:")
-        logText.insert(END, "\n\t- Bước 1: BẤM VÀO ĐÂY để mở trang hỗ trợ https://http5.org/chan", hyperlink.add(partial(webbrowser.open,"https://http5.org/chan")))
-        logText.insert(END, "\n\t- Bước 2: dán đường link 1 video bất kỳ của kênh vào, và bấm nút 'Phân tách Kênh hoặc Parse Channel'")
-        logText.insert(END, "\n\t- Bước 3: Copy ID kênh ở dòng ID, bắt đầu bằng chữ UC, ví dụ: UCsSrvUHWzNt7yXWxzOkyjhw ")
+        logText.insert(END, "\n\t- Bước 1: BẤM VÀO ĐÂY để mở trang hỗ trợ https://seostudio.tools/youtube-channel-id", hyperlink.add(partial(webbrowser.open,"https://seostudio.tools/youtube-channel-id")))
+        logText.insert(END, "\n\t- Bước 2: Copy đường link của kênh, cách làm: bấm vào tên kênh hoặc hình đại diện của kênh khi đang phát 1 video bất kỳ, link của kênh sẽ có chữ @ ở gần cuối dạng @xxxx), ví dụ: https://www.youtube.com/@tramcuuho_traitim")
+        logText.insert(END, "\n\t- Bước 3: Dán đường link của kênh vào, và bấm nút 'Find Now'")
+        logText.insert(END, "\n\t- Bước 4: Copy ID kênh ở dòng Channel ID, bắt đầu bằng chữ UC, ví dụ: UCsSrvUHWzNt7yXWxzOkyjhw")
 
 titleLabel = Label(text="Nhập ID của 1 kênh Youtube (bắt đầu bằng chữ UC, ví dụ: UCsSrvUHWzNt7yXWxzOkyjhw)\nhoặc đường link kênh (có dạng https://www.youtube.com/channel/ID_kênh)", font= ('Arial', 16, 'bold'))
 

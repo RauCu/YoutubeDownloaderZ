@@ -237,30 +237,85 @@ public static class Http
 
             try
             {
-                string emailCSSSelector = "input[placeholder='Email address*']";
                 // wait maximum 10 seconds
-                wait.Until(driver => driver.FindElement(By.CssSelector(emailCSSSelector)));
-
-                IWebElement elementTxtBoxEmail = driver.FindElement(By.CssSelector(emailCSSSelector));
+/*                string emailTxtStr = "email";
+                wait.Until(driver => driver.FindElement(By.Name(emailTxtStr)));
+                IWebElement elementTxtBoxEmail = driver.FindElement(By.Name(emailTxtStr));
                 elementTxtBoxEmail.SendKeys(email);
 
-                IWebElement elementTxtBoxPass = driver.FindElement(By.CssSelector("input[placeholder='Password*']"));
+                string continueBtnStr = "//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/button/span";
+                //wait.Until(driver => driver.FindElement(By.Name(continueBtnStr)));
+                IWebElement elementContinueBtn = driver.FindElement(By.XPath(continueBtnStr));
+                elementContinueBtn.Click();
+
+                Thread.Sleep(2000);
+                string passwordTxtStr = "password";
+                //wait.Until(driver => driver.FindElement(By.Name(passwordTxtStr)));
+                IWebElement elementTxtBoxPass = driver.FindElement(By.Name(passwordTxtStr));
                 elementTxtBoxPass.SendKeys(pass);
-                elementTxtBoxPass.Submit();
+                elementTxtBoxPass.Submit();*/
             }catch(Exception)
             {
-                string emailCSSSelector = "//*[@id=\"__next\"]/main/div/div[2]/div/div[1]/form/div[1]/div/input";
+               /* string emailCSSSelector = "//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/div[3]/div[2]/input";
                 // wait maximum 10 seconds
                 wait.Until(driver => driver.FindElement(By.XPath(emailCSSSelector)));
 
                 IWebElement elementTxtBoxEmail = driver.FindElement(By.XPath(emailCSSSelector));
                 elementTxtBoxEmail.SendKeys(email);
 
-                IWebElement elementTxtBoxPass = driver.FindElement(By.XPath("//*[@id=\"__next\"]/main/div/div[2]/div/div[1]/form/div[2]/div/input"));
+                IWebElement elementContinueBtn = driver.FindElement(By.XPath("//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/button/span"));
+                elementContinueBtn.SendKeys(pass);
+                elementContinueBtn.Submit();
+
+                IWebElement elementTxtBoxPass = driver.FindElement(By.XPath("//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/div[4]/div[2]/input"));
+                elementTxtBoxPass.SendKeys(pass);
+                elementTxtBoxPass.Submit();*/
+            }
+            try
+            {
+                string emailTxtStr = "email";
+                // wait maximum 10 seconds
+                wait.Until(driver => driver.FindElement(By.Name(emailTxtStr)));
+                IWebElement elementTxtBoxEmail = driver.FindElement(By.Name(emailTxtStr));
+                elementTxtBoxEmail.SendKeys(email);
+            }
+            catch (Exception)
+            {
+                string emailCSSSelector = "//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/div[3]/div[2]/input";
+                // wait maximum 10 seconds
+                wait.Until(driver => driver.FindElement(By.XPath(emailCSSSelector)));
+                IWebElement elementTxtBoxEmail = driver.FindElement(By.XPath(emailCSSSelector));
+                elementTxtBoxEmail.SendKeys(email);
+            }
+            try
+            {
+                string continueBtnStr = "//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/button/span";
+                //wait.Until(driver => driver.FindElement(By.Name(continueBtnStr)));
+                IWebElement elementContinueBtn = driver.FindElement(By.XPath(continueBtnStr));
+                elementContinueBtn.Click();
+            }
+            catch (Exception)
+            {
+                string continueBtnStr = "/html/body/div[2]/div/div/div[2]/div/div/form/button/span";
+                //wait.Until(driver => driver.FindElement(By.Name(continueBtnStr)));
+                IWebElement elementContinueBtn = driver.FindElement(By.XPath(continueBtnStr));
+                elementContinueBtn.Click();
+            }
+            try
+            {
+                Thread.Sleep(2000);
+                string passwordTxtStr = "password";
+                //wait.Until(driver => driver.FindElement(By.Name(passwordTxtStr)));
+                IWebElement elementTxtBoxPass = driver.FindElement(By.Name(passwordTxtStr));
                 elementTxtBoxPass.SendKeys(pass);
                 elementTxtBoxPass.Submit();
             }
-
+            catch (Exception)
+            {
+                IWebElement elementTxtBoxPass = driver.FindElement(By.XPath("//*[@id=\"headlessui-portal-root\"]/div/div/div[2]/div/div/form/div[4]/div[2]/input"));
+                elementTxtBoxPass.SendKeys(pass);
+                elementTxtBoxPass.Submit();
+            }
             //driver.Navigate().GoToUrl("https://studio.ganjing.com");
             Thread.Sleep(5000);
 

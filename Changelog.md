@@ -1,3 +1,7 @@
+### v1.9.153 (11-Jun-2024)
+- Sửa lỗi không tự động đăng nhập do thay đổi giao diện
+- Sửa lỗi không lấy được danh sách video do trang https://http5.org/chan bị sập
+
 ### v1.9.152 (21-May-2024)
 - Sửa lỗi không up được video do thay đổi giao diện (menu Channel Setting)
 
