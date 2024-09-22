@@ -1074,6 +1074,14 @@ public static class Http
                 wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
                 IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
                 selectedLanguage = languageElement.GetAttribute("innerHTML");
+
+                // fix bug: the languages list inside "Upload video" screen contains 2 items "中文", which is differents languages.txt
+                // 中文正體
+                // 中文简体
+                if (selectedLanguage != null && selectedLanguage.Contains("中文"))
+                {
+                    selectedLanguage = "中文";
+                }
                 /*if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Language</div>") ||
                     (!selectedLanguage.Equals("") && !Http.supportedLanguages.Contains(selectedLanguage)))*/
                 if (updateGUI)
@@ -1090,8 +1098,30 @@ public static class Http
                                 break;
                             }
                         }
+                        // fix bug: 2 "中文" items in the GUI
+                        if (languageIndex == 0 || languageIndex == 1)
+                        {
+                            //"English" +
+                            //"中文"
+                        }
+                        else
+                        {
+                            /*
+                            日本
+                            한국어
+                            Deutsch
+                            Español
+                            Français
+                            Bahasa Indonesia
+                            Italiano
+                            Русский
+                            Tiếng Việt
+                            Others
+                             */
+                            languageIndex++;
+                        }
                         //
-                        sim.Keyboard.KeyPress(VirtualKeyCode.HOME);
+                        sim.Keyboard.KeyPress(VirtualKeyCode.HOME);// 0
                         Thread.Sleep(200);
                         for (int i = 0; i < languageIndex; i++)
                         {

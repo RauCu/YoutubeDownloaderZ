@@ -1,3 +1,6 @@
+### v1.9.155 (22-Sep-2024)
+- Sửa lỗi danh sách ngôn ngữ không đúng (do có chỗ có 2 item "中文", có chỗ lại chỉ có 1 item)
+
 ### v1.9.154 (22-Sep-2024)
 - Sửa lỗi không tự động đăng nhập do thay đổi giao diện
 
