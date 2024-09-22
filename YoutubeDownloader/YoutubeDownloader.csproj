@@ -14,6 +14,9 @@
   <ItemGroup>
     <None Remove="avatar_trang.jpg" />
     <None Remove="banner_trang.jpg" />
+	<None Remove="category_en.txt" />
+	<None Remove="category_vi.txt" />
+	<None Remove="languages.txt" />	  
   </ItemGroup>
 
   <ItemGroup>
@@ -23,6 +26,15 @@
     <Content Include="banner_trang.jpg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+	<Content Include="category_en.txt">
+	  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Include="category_vi.txt">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
+	<Content Include="languages.txt">
+		<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	</Content>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
+using System.Timers;
 using AngleSharp.Text;
 using Microsoft.Win32;
 using OpenQA.Selenium;
@@ -24,20 +26,7 @@ namespace YoutubeDownloader.Core.Utils;
 
 public static class Http
 {
-    public static string[] supportedLanguages = {
-                    "English",
-                    "中文",
-                    "日本",
-                    "한국어",
-                    "Deutsch",
-                    "Español",
-                    "Français",
-                    "Bahasa Indonesia",
-                    "Italiano",
-                    "Русский",
-                    "Tiếng Việt",
-                    "Others"
-                };
+    public static string[] supportedLanguages = File.ReadAllLines(Directory.GetCurrentDirectory() + "/languages.txt");
 
     public static string getVideoID(IVideo? video)
     {
@@ -104,7 +93,7 @@ public static class Http
     };
 
     public static string language = "";
-    public static string GetLangluageChannell(IWebDriver driver)
+    public static string GetLanguageChannel(IWebDriver driver)
     {
         string language = "";
         if (driver != null)
@@ -159,7 +148,7 @@ public static class Http
 
                 sim.Keyboard.KeyPress(VirtualKeyCode.END);
                 // Language TextField
-                string languageTextField = "/html/body/div[2]/div[3]/div/div[3]/div[2]/div[1]/div[2]/div[3]/div/div";
+                string languageTextField = "//*[@id=\"lang\"]";
 
                 bool languageTextFieldFound= false;
 
@@ -207,7 +196,7 @@ public static class Http
             int maxLenErrorMsg = 400;
             string signInBtn = "/html/body/div[1]/div/header/div/div[1]/div/button[2]/span";
                     signInBtn = "/html/body/div/div/header/div/div[3]/div/button[2]/span";
-                    signInBtn = "/html/body/div[1]/div/header/div/div[3]/div/button[1]/span";
+                    signInBtn = "/html/body/div[2]/div/header/div[1]/div[3]/div[6]/button/span[2]";
 
             bool clickSignInBtnSuccess = false;
             int MAX_TRY_SIGNIN_BTN = 15;
@@ -296,7 +285,7 @@ public static class Http
             }
             catch (Exception)
             {
-                string continueBtnStr = "/html/body/div[2]/div/div/div[2]/div/div/form/button/span";
+                string continueBtnStr = "/html/body/div[3]/div/div/div[2]/div/div/form/button/span";
                 //wait.Until(driver => driver.FindElement(By.Name(continueBtnStr)));
                 IWebElement elementContinueBtn = driver.FindElement(By.XPath(continueBtnStr));
                 elementContinueBtn.Click();
@@ -321,7 +310,7 @@ public static class Http
 
             int MAX_RETRY = 5;
             int retry_count = 0;
-            string userInfoXpath = "/html/body/div[1]/div/header/div/div[3]/div";
+            string userInfoXpath = "/html/body/div[2]/div[1]/header/div[1]/div[3]/div[5]/button/div[1]/div";
             bool clickUserInfoBtnSuccess = false;
             while (true)
             {
@@ -347,7 +336,7 @@ public static class Http
                     login_success = true;
                     driver.Navigate().GoToUrl("https://studio.ganjing.com");
                     Http.language = "";
-                    Http.language = GetLangluageChannell(driver);
+                    Http.language = GetLanguageChannel(driver);
 
                     driver.Navigate().GoToUrl("https://studio.ganjing.com");
                     break;
@@ -545,7 +534,8 @@ public static class Http
 
             // select Language (only for New Channel, e.g: Minneapolis News
             // https://www.ganjingworld.com/channel/1ff02d08oli5W1X7GnCzOyKs11500c )
-            selectLanguageForNewChannel(driver, sim, wait2Second, isShortVideo, supportedLanguages);
+            // try to update GUI with current language
+            selectLanguageForNewChannel(driver, sim, wait2Second, isShortVideo, true /* update GUI*/);
 
             string selectFileBtnXpath = "//button[normalize-space() = 'Select File']";
             if (isShortVideo)
@@ -554,6 +544,10 @@ public static class Http
             }
             try
             {
+
+                // For long video, give time for user to have a change to select another language
+                Thread.Sleep(5000);
+
                 wait.Until(driver => driver.FindElement(By.XPath(selectFileBtnXpath)));
                 IWebElement elementBtnSelectVideoFile = driver.FindElement(By.XPath(selectFileBtnXpath));
                 elementBtnSelectVideoFile.Click();
@@ -566,11 +560,17 @@ public static class Http
                 throw new Exception(first100Chars);//propage this error
             }
             // select video
-            Thread.Sleep(5000);
+            Thread.Sleep(3000);
             //System.Windows.Clipboard.SetText(path);
             sim.Keyboard.TextEntry(path);
             //sim.Keyboard.ModifiedKeyStroke(VirtualKeyCode.CONTROL, VirtualKeyCode.VK_V);
             sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+
+
+            // For long video, check again if language is changed by user
+            if (!isShortVideo)
+                Http.language = selectLanguageForNewChannel(driver, sim, wait2Second, isShortVideo, false /* not update GUI, just get current value*/);
+
 
             // select 720
             string select720BtnXpath = "/html/body/div[4]/div[3]/div/div[3]/button[2]";
@@ -713,7 +713,7 @@ public static class Http
             Thread.Sleep(1000);
 
 
-            if (!isShortVideo)
+            if (!isShortVideo) // long video
             {
                 string descriptionLabelXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[1]/div[2]/div[1]/div/div[2]/div/label";
                 try
@@ -742,13 +742,13 @@ public static class Http
                 selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
 
                 // Language
-                selectLanguage(driver, sim, wait2Second, isShortVideo, supportedLanguages);
+                selectLanguage(driver, sim, wait2Second, isShortVideo);
                 sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                 // next button
                 Thread.Sleep(1000);
                 sim.Keyboard.KeyPress(VirtualKeyCode.END);
-                string selectNextBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/button[2]";
+                string selectNextBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div/div[2]/button";
                 try
                 {
                     wait.Until(driver => driver.FindElement(By.XPath(selectNextBtnXpath)));
@@ -808,14 +808,19 @@ public static class Http
                     //
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     Thread.Sleep(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-                    Thread.Sleep(100);                    
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                     /*
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
@@ -862,12 +867,12 @@ public static class Http
                     }
                 }
             }
-            else
+            else // short video
             {
                 // Unlisted
                 selectUnlisted(driver, sim, wait2Second, isShortVideo, unlistedEnabled);
                 // Language
-                selectLanguage(driver, sim, wait2Second, isShortVideo, supportedLanguages);
+                selectLanguage(driver, sim, wait2Second, isShortVideo);
 
                 //Category
                 selectCategory(driver, sim, wait, isShortVideo, SelectedCategoryIndex);
@@ -878,7 +883,7 @@ public static class Http
                     
                     Thread.Sleep(1000);
                     string scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[5]/div[1]/span/span[1]/input";
-                           
+                           scheduleEnabledBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[6]/div[1]/span/span[1]/input";
                     try
                     {
                         wait.Until(driver => driver.FindElement(By.XPath(scheduleEnabledBtnXpath)));
@@ -896,20 +901,25 @@ public static class Http
                     //
                     sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
                     Thread.Sleep(100);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
-                    Thread.Sleep(100);                    
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RIGHT);
                     Thread.Sleep(100);
                     sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
                     Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.TAB);
+                    Thread.Sleep(100);                    
+                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                    Thread.Sleep(100);
+                    sim.Keyboard.KeyPress(VirtualKeyCode.END);
 
                 }
 
                 // Publish button
                 Thread.Sleep(1000);
-                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/div/button[2]"; // PUBLISH
+                string selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/div/button"; // PUBLISH
                 //selectPublishBtnXpath = "/html/body/div[3]/div[3]/div/div/div/div[2]/button[1]"; // CANCEL
 
                 bool clickDoneBtnSuccess = false;
@@ -993,36 +1003,38 @@ public static class Http
             }
         }
        
-        static void selectLanguage(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, string[] supportedLanguages)
+        static void selectLanguage(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo)
         {
             // language
             Thread.Sleep(1000);
-            string languageXpath = "/html/body/div[3]/div[3]/div/div/div/div[1]/div[2]/div/div[3]/div/div[2]/div/div/div";
-            if (!isShortVideo)
-            {
-                languageXpath = "//*[@id=\"lang\"]/div";
-               
-            }
+
+            string languageXpath = "//*[@id=\"lang\"]/div";
+                   //languageXpath = "//*[@id=\"lang\"]";
+
             int maxLenErrorMsg = 400;
             try
             {
                 wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
                 IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
                 string selectedLanguage = languageElement.GetAttribute("innerHTML");
-                if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Select</div>") ||
-                    (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
+                /*                if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Select</div>") ||
+                                    (!selectedLanguage.Equals("") && !Http.supportedLanguages.Contains(selectedLanguage)))*/
+                if (selectedLanguage == null || (selectedLanguage != null && !selectedLanguage.Equals(Http.language)))
                 {
                     languageElement.Click();
                     int languageIndex = 0;
-                    for (int i = 0; i < supportedLanguages.Length; i++)
+                    for (int i = 0; i < Http.supportedLanguages.Length; i++)
                     {
-                        if (string.Equals(supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                        if (string.Equals(Http.supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
                         {
                             languageIndex = i;
                             break;
                         }
                     }
                     //
+
+                    sim.Keyboard.KeyPress(VirtualKeyCode.HOME);
+                    Thread.Sleep(200);
                     for (int i = 0; i < languageIndex; i++)
                     {
                         sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
@@ -1043,11 +1055,12 @@ public static class Http
             }
         }
 
-        static void selectLanguageForNewChannel(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, string[] supportedLanguages)
+        static string selectLanguageForNewChannel(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, bool updateGUI = true)
         {
+            string selectedLanguage = Http.language;
             if (isShortVideo)
             {
-                return;
+                return selectedLanguage;
             }
             
             // language
@@ -1060,39 +1073,52 @@ public static class Http
             {
                 wait.Until(driver => driver.FindElement(By.XPath(languageXpath)));
                 IWebElement languageElement = driver.FindElement(By.XPath(languageXpath));
-                string selectedLanguage = languageElement.GetAttribute("innerHTML");
-                if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Language</div>") ||
-                    (!selectedLanguage.Equals("") && !supportedLanguages.Contains(selectedLanguage)))
+                selectedLanguage = languageElement.GetAttribute("innerHTML");
+                /*if (selectedLanguage == null || selectedLanguage.Equals("") || selectedLanguage.Equals("<div style=\"color: var(--text-secondary);\">Language</div>") ||
+                    (!selectedLanguage.Equals("") && !Http.supportedLanguages.Contains(selectedLanguage)))*/
+                if (updateGUI)
                 {
-                    languageElement.Click();
-                    int languageIndex = 0;
-                    for (int i = 0; i < supportedLanguages.Length; i++)
+                    if (selectedLanguage == null || (selectedLanguage != null && !selectedLanguage.Equals(Http.language)))
                     {
-                        if (string.Equals(supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                        languageElement.Click();
+                        int languageIndex = 0;
+                        for (int i = 0; i < Http.supportedLanguages.Length; i++)
                         {
-                            languageIndex = i;
-                            break;
+                            if (string.Equals(Http.supportedLanguages.ElementAt(i), Http.language, StringComparison.OrdinalIgnoreCase))
+                            {
+                                languageIndex = i;
+                                break;
+                            }
                         }
-                    }
-                    //
-                    for (int i = 0; i < languageIndex; i++)
-                    {
-                        sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
-                        Thread.Sleep(50);
-                    }
-                    Thread.Sleep(200);
-                    sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
+                        //
+                        sim.Keyboard.KeyPress(VirtualKeyCode.HOME);
+                        Thread.Sleep(200);
+                        for (int i = 0; i < languageIndex; i++)
+                        {
+                            sim.Keyboard.KeyPress(VirtualKeyCode.DOWN);
+                            Thread.Sleep(50);
+                        }
+                        Thread.Sleep(200);
+                        sim.Keyboard.KeyPress(VirtualKeyCode.RETURN);
 
+                    }
+
+                    //sim.Keyboard.KeyPress(VirtualKeyCode.END);
                 }
-                //sim.Keyboard.KeyPress(VirtualKeyCode.END);
             }
             catch (Exception ex)
             {
+                
                 string msgError = "Error on: languageElement: " + ex.ToString();
                 var first100Chars = msgError.Length <= maxLenErrorMsg ? msgError : msgError.Substring(0, maxLenErrorMsg);
                 Console.WriteLine(msgError);
                 //throw new Exception(first100Chars);//propage this error
             }
+            if(selectedLanguage == null)
+            {
+                selectedLanguage = Http.language;
+            }
+            return selectedLanguage;
         }
 
         static void selectCategory(IWebDriver driver, InputSimulator sim, WebDriverWait wait, bool isShortVideo, int selectedCategoryIndex)

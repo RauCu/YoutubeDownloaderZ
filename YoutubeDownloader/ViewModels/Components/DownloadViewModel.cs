@@ -439,77 +439,9 @@ public class DownloadViewModel : PropertyChangedBase, IDisposable
     }
 
     int videoWidth = 0; int videoHeight = 0;
-    private static string[] supportedCategories = {
-          "Architecture",
-          "Arts & Design",
-          "Autos",
-          "Beauty & Fashion",
-          "Business",
-          "Career",
-          "Classical Music",
-          "Dance",
-          "Education",
-          "Entertainment",
-          "Finance & Investments",
-          "Food",
-          "Gaming",
-          "Government",
-          "Health & Fitness",
-          "History & Culture",
-          "Kids",
-          "Life Hacks",
-          "Lifestyle",
-          "Military",
-          "Mindfulness",
-          "Movies & TV",
-          "Nature",
-          "News & Politics",
-          "Nonprofit",
-          "Pets",
-          "Popular Music",
-          "Relationship",
-          "Science & Tech",
-          "Spirituality",
-          "Sports",
-          "Supernatural",
-          "Travel"
-        };
+    private static string[] supportedCategories = File.ReadAllLines(Directory.GetCurrentDirectory() + "/category_en.txt");
 
-    private static string[] supportedCategories_VN = {
-        "Kiến trúc",
-        "Nghệ thuật & Thiết kế",
-        "Ô tô",
-        "Sắc đẹp & Thời trang",
-        "Kinh doanh",
-        "Sự nghiệp",
-        "Nhạc cổ điển",
-        "Nhảy",
-        "Giáo dục",
-        "Giải trí",
-        "Tài chính & Đầu tư",
-        "Đồ ăn",
-        "Trò chơi điện tử",
-        "Chính phủ",
-        "Sức khỏe & Thể hình",
-        "Lịch sử & Văn hóa",
-        "Trẻ em",
-        "Mẹo vặt",
-        "Cách sống",
-        "Quân đội",
-        "Tỉnh thức",
-        "Phim ảnh và TV",
-        "Thiên nhiên",
-        "Tin tức & Chính trị",
-        "Phi lợi nhuận",
-        "Vật nuôi",
-        "Nhạc pop",
-        "Mối quan hệ",
-        "Khoa học & Công nghệ",
-        "Tâm linh",
-        "Thể thao",
-        "Siêu nhiên",
-        "Du lịch"
-        };
+    private static string[] supportedCategories_VN = File.ReadAllLines(Directory.GetCurrentDirectory() + "/category_vi.txt");
 
     public void GetVideoInfo(string videoPath)
     {
