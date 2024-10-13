@@ -1,3 +1,6 @@
+### v1.9.156 (13-Oct-2024)
+- Cập nhật lên YoutubeExplode v6.4.3 để sửa lỗi "Response status code does not indicate success: 403 (Forbidden)": https://www.youtube.com/watch?v=tuAVLbeSNLM
+
 ### v1.9.155 (22-Sep-2024)
 - Sửa lỗi danh sách ngôn ngữ không đúng (do có chỗ có 2 item "中文", có chỗ lại chỉ có 1 item)
 
