@@ -1,3 +1,6 @@
+### v1.9.157 (31-Jan-2025)
+- Cập nhật lên YoutubeExplode v6.5.2 để sửa lỗi "Video '*' is unplayable. Reason: 'Please sign in'": https://www.youtube.com/watch?v=tuAVLbeSNLM
+
 ### v1.9.156 (13-Oct-2024)
 - Cập nhật lên YoutubeExplode v6.4.3 để sửa lỗi "Response status code does not indicate success: 403 (Forbidden)": https://www.youtube.com/watch?v=tuAVLbeSNLM
 
