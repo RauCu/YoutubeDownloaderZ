@@ -1,3 +1,7 @@
+### v1.9.158 (31-Jan-2025)
+Fix CI: Dùng v4 thay vì v3 (đã deprecate) của actions/upload-artifact or actions/download-artifact
+https://github.blog/changelog/2024-04-16-deprecation-notice-v3-of-the-artifact-actions/
+
 ### v1.9.157 (31-Jan-2025)
 - Cập nhật lên YoutubeExplode v6.5.2 để sửa lỗi "Video '*' is unplayable. Reason: 'Please sign in'": https://www.youtube.com/watch?v=tuAVLbeSNLM
 
